@@ -569,6 +569,86 @@ details p{margin-top:8px;font-size:13.5px}
 .created-qr p{font-size:13.5px;color:var(--ink2);margin:4px 0}
 .price-preview{font-weight:700;color:var(--orange)!important;font-variant-numeric:tabular-nums}
 
+/* KKD Zimmet & Digital Signature */
+.ppe-pending-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.ppe-pending-card{border:1px solid var(--yellow-border);background:var(--surface);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow-sm)}
+.ppe-pending-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.ppe-pending-head b{font-size:15px;font-weight:700;color:var(--ink)}
+.ppe-pending-head small{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.ppe-pending-items{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:9px;background:var(--surface-alt);border:1px solid var(--line-soft)}
+.ppe-pending-items div{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px;color:var(--ink2)}
+.ppe-pending-items strong{font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
+.ppe-pending-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:4px}
+.ppe-pending-foot small{font-size:12px;color:var(--muted)}
+.ppe-line-row{display:grid;grid-template-columns:1fr 92px 36px;gap:8px;align-items:center;margin-bottom:8px}
+.ppe-line-row select,.ppe-line-row input{height:40px;border:1px solid #cbd5e1;border-radius:8px;padding:0 10px;font-size:14px;background:var(--surface);color:var(--ink)}
+.ppe-line-row input{text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.ppe-line-row button{height:40px;border:1px solid var(--line);border-radius:8px;background:var(--surface-alt);color:var(--muted);font-size:18px;line-height:1}
+.ppe-line-row button:hover{border-color:var(--red-border);background:var(--red-soft);color:var(--red)}
+.legal-check{display:flex;align-items:flex-start;gap:11px;padding:13px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface-alt);cursor:pointer;margin:12px 0;transition:border-color .15s var(--ease),background .15s var(--ease)}
+.legal-check:has(input:checked){border-color:var(--green-border);background:var(--green-soft)}
+.legal-check input{width:18px!important;height:18px!important;min-width:18px;margin-top:2px;accent-color:var(--green);cursor:pointer}
+.legal-check span{font-size:12.5px;line-height:1.55;color:var(--ink2)}
+.legal-check strong{display:block;font-size:13px;color:var(--ink);margin-bottom:3px}
+.sig-wrap{border:1.5px solid #cbd5e1;border-radius:10px;background:#fff;overflow:hidden;margin-top:8px}
+.sig-head{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--surface-alt);border-bottom:1px solid var(--line-soft);font-size:12.5px;color:var(--muted)}
+.sig-head b{color:var(--ink);font-weight:700}
+.sig-status{font-weight:600;color:var(--muted)}
+.sig-status.ready{color:var(--green)}
+.sig-stage{position:relative;background:#fff}
+.sig-stage::after{content:'';position:absolute;left:18px;right:18px;bottom:26px;border-bottom:1px dashed #cbd5e1;pointer-events:none}
+.sig-canvas{display:block;width:100%;height:140px;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair}
+.sig-wrap.compact .sig-canvas{height:114px}
+.sig-foot{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-top:1px solid var(--line-soft);background:var(--surface-alt);font-size:12px;color:var(--muted)}
+.sig-clear{border:1px solid var(--line);background:#fff;color:var(--ink2);border-radius:7px;padding:5px 10px;font-size:12px;font-weight:600}
+.sig-clear:hover{border-color:var(--red-border);color:var(--red);background:var(--red-soft)}
+.ppe-mode-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.ppe-mode-toggle label{display:flex;align-items:flex-start;gap:9px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;background:var(--surface)}
+.ppe-mode-toggle label:has(input:checked){border-color:var(--orange);background:var(--orange-soft)}
+.ppe-mode-toggle input{margin-top:3px;accent-color:var(--orange)}
+.ppe-mode-toggle b{display:block;font-size:13px;color:var(--ink)}
+.ppe-mode-toggle small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.35}
+.ppe-row-actions{display:flex;gap:6px;justify-content:flex-end;white-space:nowrap}
+.btn.sm{height:32px;padding:0 10px;font-size:12.5px;border-radius:7px}
+.alert-cards article{justify-content:space-between}
+.alert-cards .alert-card-main{display:flex;align-items:center;gap:12px;min-width:0}
+
+/* Official A4 KKD Document */
+.ppe-doc{background:#fff;border:1px solid #cbd5e1;border-radius:10px;padding:24px;color:#0f172a;font-size:13px;line-height:1.5}
+.ppe-doc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding-bottom:14px;border-bottom:2px solid #0f172a;margin-bottom:16px}
+.ppe-doc-head h4{margin:0;font-size:16px;font-weight:800;letter-spacing:-.01em;color:#0f172a}
+.ppe-doc-head p{margin:3px 0 0;font-size:12px;color:#475569}
+.ppe-doc-no{text-align:right;font-variant-numeric:tabular-nums}
+.ppe-doc-no b{display:block;font-family:var(--font-mono);font-size:13.5px;color:#0f172a}
+.ppe-doc-no small{font-size:11.5px;color:#475569}
+.ppe-doc-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:16px}
+.ppe-doc-meta div{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;border-bottom:1px dotted #e2e8f0;padding-bottom:4px}
+.ppe-doc-meta div:nth-last-child(-n+2){border-bottom:0;padding-bottom:0}
+.ppe-doc-meta span{color:#64748b}
+.ppe-doc-meta b{color:#0f172a;text-align:right}
+.ppe-doc-table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12.5px}
+.ppe-doc-table th,.ppe-doc-table td{border:1px solid #cbd5e1;padding:7px 9px;text-align:left}
+.ppe-doc-table th{background:#f1f5f9;font-weight:700;color:#0f172a;font-size:11px;text-transform:uppercase;letter-spacing:.02em}
+.ppe-doc-table td.num-col,.ppe-doc-table th.num-col{text-align:right;font-variant-numeric:tabular-nums}
+.ppe-doc-table td.wet-cell,.ppe-doc-table th.wet-cell{width:92px;min-width:92px;text-align:center}
+.ppe-doc-table td.wet-cell{height:28px;color:#cbd5e1;font-size:10px}
+.ppe-doc-summary{margin:0 0 14px;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;font-size:12px;line-height:1.6;color:#1e293b}
+.ppe-doc-summary b{color:#0f172a;margin-right:6px}
+.ppe-doc-legal{padding:12px 14px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;margin-bottom:18px;font-size:12px;line-height:1.6;color:#1e293b}
+.ppe-doc-legal b{display:block;font-size:12px;color:#0f172a;margin-bottom:4px}
+.ppe-doc-sigs{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ppe-doc-sigbox{border:1px solid #cbd5e1;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;justify-content:space-between;min-height:152px}
+.ppe-doc-sigbox small{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#64748b}
+.ppe-doc-sigbox b{display:block;font-size:13.5px;color:#0f172a;margin-top:2px}
+.ppe-sig-preview{height:84px;display:flex;align-items:center;justify-content:center;border-bottom:1px dashed #cbd5e1;margin:8px 0}
+.ppe-sig-preview.wet-space{align-items:flex-end;padding-bottom:6px;border-bottom:1px solid #94a3b8;color:#94a3b8;font-size:11px;letter-spacing:.03em}
+.ppe-sig-preview svg{width:100%;max-width:240px;height:78px;display:block}
+.ppe-sig-pending-txt{font-size:12px;color:#b45309;font-weight:600}
+.ppe-doc-sigmeta{font-size:11px;color:#64748b;font-variant-numeric:tabular-nums}
+.ppe-doc-page{page-break-after:always;break-after:page}
+.ppe-doc-page:last-child{page-break-after:auto;break-after:auto}
+#ppePrintRoot{display:none}
+
 /* Responsive */
 @media(max-width:1180px){
   .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -622,6 +702,7 @@ details p{margin-top:8px;font-size:13.5px}
   .created-qr{grid-template-columns:1fr}
 }
 @media print{
+  @page{size:A4 portrait;margin:10mm}
   .sidebar,.topbar,.toolbar,.btn,.panel:not(.print-area),#toasts,#modalRoot{display:none!important}
   .main{margin:0}
   .print-area{display:block!important;border:0;box-shadow:none;padding:0}
@@ -629,6 +710,10 @@ details p{margin-top:8px;font-size:13.5px}
   .print-area .data-table{min-width:0;font-size:11px}
   #content{padding:0}
   .data-table th,.data-table td{padding:7px}
+  body.print-ppe-form #app,body.print-ppe-form #modalRoot,body.print-ppe-form #toasts,body.print-ppe-form .loader{display:none!important}
+  body.print-ppe-form #ppePrintRoot{display:block!important;padding:0}
+  body.print-ppe-form .ppe-doc{border:0;padding:0;box-shadow:none;border-radius:0}
+  body.print-ppe-form .ppe-doc-table tr,body.print-ppe-form .ppe-doc-sigs,body.print-ppe-form .ppe-doc-legal,body.print-ppe-form .ppe-doc-summary{break-inside:avoid;page-break-inside:avoid}
 }
 </style>
 <script type="text/plain" id="gasCode">/*
@@ -648,14 +733,16 @@ const CFG = Object.freeze({
   sheets: {
     data: 'VERİ', stock: 'STOK_KARTLARI', incoming: 'GIRIS_HAREKETLERI',
     outgoing: 'CIKIS_HAREKETLERI', approvals: 'ONAY_HAVUZU',
-    recipes: 'PLANLI_BAKIM_RECETE', log: 'LOG', faults: 'Açık Arizalar'
+    recipes: 'PLANLI_BAKIM_RECETE', ppeForms: 'KKD_ZIMMET', log: 'LOG', faults: 'Açık Arizalar'
   },
   spreadsheetId: '1AtCrVmav8bIQno5aeP-sFtS3L90KwdipMpZtFeP1KT4',
-  apiVersion: 'V8.7-ONAY2',
+  apiVersion: 'V8.7-KKD',
   sessionHours: 8,
   roles: ['OP', 'MEK_ADMIN', 'ISG_ADMIN', 'YONETICI'],
   periods: ['AYLIK', '3 AYLIK', '6 AYLIK', 'YILLIK']
 });
+
+const KKD_LEGAL_TEXT = '6331 sayılı İş Sağlığı ve Güvenliği Kanunu ve Kişisel Koruyucu Donanımların İşyerlerinde Kullanılması Hakkında Yönetmelik uyarınca yukarıda belirtilen KKD’leri eksiksiz, sağlam ve kullanıma hazır teslim aldığımı; çalışma süresince talimatlara uygun şekilde kullanacağımı, bakımını yapacağımı ve hasar/eskime durumunda derhal bildirip yenisini talep edeceğimi beyan ve taahhüt ederim.';
 
 /* Yalnızca sayfa HİÇ yoksa oluştururken kullanılır. Mevcut sayfaya sütun eklenmez. */
 const HEADERS = Object.freeze({
@@ -664,6 +751,7 @@ const HEADERS = Object.freeze({
   outgoing: ['KAYIT NO','TARİH','ID','PARÇA KODU','MALZEME','OPERATÖR','MAKİNE','ADET','BİRİM','ÇIKIŞ TÜRÜ','ONAY','ONAYLAYAN','TALEP NO'],
   approvals: ['TALEP NO','TARİH','OPERATÖR','ID','MALZEME','MAKİNE','ADET','DURUM','ONAYLAYAN','ONAY TARİHİ'],
   recipes: ['MAKİNE','PERİYOT','MALZEME ID','PARÇA KODU','MALZEME','STANDART ADET'],
+  ppeForms: ['FORM NO','TARİH','OPERATÖR','TESLİM EDEN','STOK ID','PARÇA KODU','MALZEME','ADET','BİRİM','DURUM','ONAY METNİ','İMZA','İMZA TARİHİ','ÇIKIŞ ID','NOT'],
   log: ['TARİH','KULLANICI','ROL','İŞLEM','KAYNAK ID','DETAY']
 });
 
@@ -688,12 +776,16 @@ function route_(action, p, token) {
   if (action === 'onayHavuzu') action = p.operation === 'create' ? 'approvalCreate' : p.operation === 'decide' ? 'approvalDecide' : 'approvalList';
   if (action === 'planliBakimRecete') action = p.operation === 'save' ? 'recipeSave' : p.operation === 'bulkCheckout' ? 'recipeBulkCheckout' : 'recipeList';
   if (action === 'kkdAnaliz') action = 'ppeAnalysis';
+  if (action === 'kkdZimmetListe') action = 'ppeFormList';
+  if (action === 'kkdZimmetOlustur') action = 'ppeFormCreate';
+  if (action === 'kkdZimmetImzala') action = 'ppeFormSign';
   if (action === 'hareketAnaliz') action = 'movementAnalysis';
   if (action === 'maliyetAnaliz') action = 'costAnalysis';
   const user = verifySession_(token);
   const read = {
     bootstrap: () => bootstrap_(user), stockList: () => filteredStock_(user),
     approvalList: () => approvalList_(user), recipeList: () => recipeList_(user, p),
+    ppeFormList: () => ppeFormList_(user),
     ppeAnalysis: () => ppeAnalysis_(user, p), movementAnalysis: () => movementAnalysis_(user, p),
     costAnalysis: () => costAnalysis_(user, p)
   };
@@ -702,7 +794,8 @@ function route_(action, p, token) {
     checkout: () => checkout_(user, p), stockIn: () => stockIn_(user, p), stockCount: () => stockCount_(user, p),
     itemCreate: () => itemCreate_(user, p), itemUpdate: () => itemUpdate_(user, p),
     approvalCreate: () => approvalCreate_(user, p), approvalDecide: () => approvalDecide_(user, p),
-    recipeSave: () => recipeSave_(user, p), recipeBulkCheckout: () => recipeBulkCheckout_(user, p)
+    recipeSave: () => recipeSave_(user, p), recipeBulkCheckout: () => recipeBulkCheckout_(user, p),
+    ppeFormCreate: () => ppeFormCreate_(user, p), ppeFormSign: () => ppeFormSign_(user, p)
   };
   if (!write[action]) throw new Error('Bilinmeyen işlem: ' + action);
   const lock = LockService.getScriptLock(); lock.waitLock(20000);
@@ -998,6 +1091,7 @@ function outs_() {
 function bootstrap_(u) {
   return {
     user:u, stock:filteredStock_(u), approvals:u.role === 'OP' ? [] : approvalList_(u), recipes:recipeList_(u, {}),
+    ppeForms:ppeFormList_(u),
     movements:recentMovements_(u), lists:dataLists_(), serverTime:now_(), apiVersion:CFG.apiVersion, capabilities:capabilities_(u)
   };
 }
@@ -1021,7 +1115,8 @@ function dataLists_() {
   };
   return {
     types:get('MALZEME TÜR','MALZEME TÜRÜ','KATEGORİ'), companies:get('FİRMA BİLGİLERİ','FİRMA'), units:get('BİRİM'),
-    usage:get('MALZEME DEPO ŞEKLİ'), shelves:get('RAFNO','RAF NO'), machines:get('MAKİNE ADI','MAKİNE')
+    usage:get('MALZEME DEPO ŞEKLİ'), shelves:get('RAFNO','RAF NO'), machines:get('MAKİNE ADI','MAKİNE'),
+    operators:users_().filter(x => x.role === 'OP').map(x => x.name)
   };
 }
 
@@ -1040,8 +1135,12 @@ function checkout_(u, p) {
       const depocu = depotApproverByPin_(p.depotApproverPin, item.depot);
       if (!depocu) throw new Error('Depocu PIN geçersiz veya bu depo için yetkisiz.');
       const id = writeExit_(u, item, qty, machine, 'DEPO ONAYI', depocu.name, '');
-      log_(u, 'STOK_CIKIS_DEPO_ONAYLI', id, {item:item.id, qty:qty, machine:machine, approver:depocu.name});
-      return {completed:true, depotApproved:true, approver:depocu.name, id:id, remaining:item.stock - qty, autoLogout:u.role === 'OP'};
+      let ppeFormNo = '';
+      if (isIsg && p.ppeAccepted && validSignature_(p.ppeSignature)) {
+        ppeFormNo = recordSignedPpeExit_(u, item, qty, id, p.ppeSignature, depocu.name, p.note || 'QR / İSG Dolabı');
+      }
+      log_(u, 'STOK_CIKIS_DEPO_ONAYLI', id, {item:item.id, qty:qty, machine:machine, approver:depocu.name, ppeFormNo:ppeFormNo});
+      return {completed:true, depotApproved:true, approver:depocu.name, id:id, ppeFormNo:ppeFormNo, remaining:item.stock - qty, autoLogout:u.role === 'OP'};
     }
     if (p.promptDepotApproval && !p.sendApproval) {
       return {depotApprovalRequired:true, message:'Bu parça için Depo Onayı Gerekli.'};
@@ -1057,8 +1156,12 @@ function checkout_(u, p) {
     else return {approvalRequired:true, message:'Bu makinede açık arıza veya planlı bakım kaydı bulunamadı — Yönetici Onayı Gerekli'};
   }
   const id = writeExit_(u, item, qty, machine, p.source || 'QR', approver, '');
-  log_(u, 'STOK_CIKIS', id, {item:item.id, qty:qty, machine:machine, approver:approver});
-  return {completed:true, id:id, remaining:item.stock - qty, autoLogout:u.role === 'OP'};
+  let ppeFormNo = '';
+  if (isIsg && p.ppeAccepted && validSignature_(p.ppeSignature)) {
+    ppeFormNo = recordSignedPpeExit_(u, item, qty, id, p.ppeSignature, approver || u.name, p.note || 'QR / İSG Dolabı');
+  }
+  log_(u, 'STOK_CIKIS', id, {item:item.id, qty:qty, machine:machine, approver:approver, ppeFormNo:ppeFormNo});
+  return {completed:true, id:id, ppeFormNo:ppeFormNo, remaining:item.stock - qty, autoLogout:u.role === 'OP'};
 }
 function hasActiveMaintenance_(machine) {
   let book; try { book = faultBook_(); } catch (e) { return true; }
@@ -1365,18 +1468,185 @@ function recipeBulkCheckout_(u, p) {
   return {completed:true, ids:ids, autoLogout:u.role === 'OP'};
 }
 
+/* ===================== KKD ZİMMET & İMZA ===================== */
+function validSignature_(sig) {
+  const s = String(sig || '').trim();
+  return s.length >= 12 && s.length <= 16000 && /^SIG1:[ML0-9.,\s-]+$/.test(s);
+}
+function verifyOperatorPin_(operatorName, pin) {
+  const clean = String(pin || '').replace(/\s+/g,'').trim();
+  if (!/^\d{4,8}$/.test(clean)) return null;
+  const u = users_().find(x => norm_(x.name) === norm_(operatorName) && constantTime_(x.pin, clean));
+  return u ? {name:u.name, role:u.role} : null;
+}
+function recordSignedPpeExit_(u, item, qty, exitId, signature, issuer, note) {
+  const formNo = uid_('KKD'), t = now_();
+  append_(CFG.sheets.ppeForms, HEADERS.ppeForms, {
+    FORM_NO:formNo, TARIH:t, OPERATOR:u.name, TESLIM_EDEN:issuer || u.name,
+    STOK_ID:item.id, PARCA_KODU:item.code, MALZEME:item.name, ADET:qty, BIRIM:item.unit,
+    DURUM:'İMZALANDI', ONAY_METNI:KKD_LEGAL_TEXT, IMZA:String(signature).trim(), IMZA_TARIHI:t,
+    CIKIS_ID:exitId || '', NOT:String(note || '').trim()
+  });
+  log_(u, 'KKD_ZIMMET_IMZALANDI', formNo, {operator:u.name, item:item.id, qty:qty, exitId:exitId});
+  return formNo;
+}
+function ppeFormList_(u) {
+  if (['OP','ISG_ADMIN','YONETICI'].indexOf(u.role) < 0) return [];
+  if (!depotBook_().getSheetByName(CFG.sheets.ppeForms)) return [];
+  const rows = objects_(CFG.sheets.ppeForms);
+  const map = {};
+  rows.forEach(o => {
+    const formNo = s_(o.FORM_NO).trim(); if (!formNo) return;
+    const op = s_(o.OPERATOR).trim();
+    if (u.role === 'OP' && norm_(op) !== norm_(u.name)) return;
+    const rawSt = norm_(o.DURUM);
+    const status = rawSt === 'IMZALANDI' ? 'İMZALANDI' : 'İMZA BEKLİYOR';
+    if (!map[formNo]) {
+      map[formNo] = {
+        formNo:formNo, date:iso_(o.TARIH) || s_(o.TARIH).trim(), operator:op,
+        issuer:s_(o.TESLIM_EDEN).trim(), status:status,
+        legalText:s_(o.ONAY_METNI).trim() || KKD_LEGAL_TEXT,
+        signature:s_(o.IMZA).trim(), signedAt:iso_(o.IMZA_TARIHI) || s_(o.IMZA_TARIHI).trim(),
+        note:s_(o.NOT).trim(), items:[], totalQty:0
+      };
+    }
+    const f = map[formNo];
+    const qty = n_(o.ADET);
+    f.items.push({
+      row:o._row, itemId:s_(o.STOK_ID).trim(), code:s_(o.PARCA_KODU).trim(),
+      name:s_(o.MALZEME).trim(), qty:qty, unit:s_(o.BIRIM).trim() || 'AD', exitId:s_(o.CIKIS_ID).trim()
+    });
+    f.totalQty += qty;
+    if (status === 'İMZA BEKLİYOR') f.status = 'İMZA BEKLİYOR';
+    if (!f.signature && o.IMZA) f.signature = s_(o.IMZA).trim();
+    if (!f.signedAt && o.IMZA_TARIHI) f.signedAt = iso_(o.IMZA_TARIHI) || s_(o.IMZA_TARIHI).trim();
+  });
+  return Object.values(map).sort((a,b) => {
+    const ap = a.status === 'İMZA BEKLİYOR' ? 0 : 1, bp = b.status === 'İMZA BEKLİYOR' ? 0 : 1;
+    return ap - bp || parseDate_(b.date) - parseDate_(a.date);
+  });
+}
+function ppeFormCreate_(u, p) {
+  requireRole_(u, ['ISG_ADMIN','YONETICI']);
+  const operator = String(p.operator || '').trim();
+  if (!operator) throw new Error('KKD teslim edilecek operatör seçilmelidir.');
+  if (!Array.isArray(p.items) || !p.items.length) throw new Error('En az bir KKD ekipmanı eklenmelidir.');
+  const stockCheck = {};
+  const lines = p.items.map(row => {
+    const item = item_(row.itemId || row.code);
+    if (item.depot !== 'ISG') throw new Error('KKD zimmet formuna yalnız İSG deposu malzemeleri eklenebilir: ' + item.code);
+    const qty = n_(row.qty);
+    if (qty <= 0) throw new Error(item.name + ' için miktar 0’dan büyük olmalıdır.');
+    stockCheck[item.id] = (stockCheck[item.id] || 0) + qty;
+    if (stockCheck[item.id] > item.stock) throw new Error('Yetersiz stok: ' + item.name + ' (Mevcut: ' + item.stock + ' ' + item.unit + ')');
+    return {item:item, qty:qty};
+  });
+  const signNow = !!p.signNow;
+  let sig = '';
+  if (signNow) {
+    if (!p.accepted) throw new Error('6331 sayılı İSG Kanunu teslim ve kullanım beyanı onaylanmalıdır.');
+    if (!validSignature_(p.signature)) throw new Error('Geçerli bir operatör imzası çizilmelidir.');
+    if (!verifyOperatorPin_(operator, p.operatorPin)) throw new Error('Operatör PIN doğrulaması başarısız (' + operator + ').');
+    sig = String(p.signature).trim();
+  }
+  const formNo = uid_('KKD'), t = now_(), note = String(p.note || '').trim();
+  const exitIds = [];
+  lines.forEach(line => {
+    let exitId = '';
+    if (signNow) {
+      exitId = writeExit_({name:operator, role:'OP'}, line.item, line.qty, 'PERSONEL KKD', 'KKD_ZIMMET', u.name, formNo);
+      exitIds.push(exitId);
+    }
+    append_(CFG.sheets.ppeForms, HEADERS.ppeForms, {
+      FORM_NO:formNo, TARIH:t, OPERATOR:operator, TESLIM_EDEN:u.name,
+      STOK_ID:line.item.id, PARCA_KODU:line.item.code, MALZEME:line.item.name,
+      ADET:line.qty, BIRIM:line.item.unit,
+      DURUM:signNow ? 'İMZALANDI' : 'İMZA BEKLİYOR',
+      ONAY_METNI:KKD_LEGAL_TEXT, IMZA:sig, IMZA_TARIHI:signNow ? t : '',
+      CIKIS_ID:exitId, NOT:note
+    });
+  });
+  log_(u, signNow ? 'KKD_ZIMMET_IMZALANDI' : 'KKD_ZIMMET_OLUSTURULDU', formNo, {operator:operator, count:lines.length, exitIds:exitIds});
+  return {formNo:formNo, status:signNow ? 'İMZALANDI' : 'İMZA BEKLİYOR', exitIds:exitIds};
+}
+function ppeFormSign_(u, p) {
+  requireRole_(u, ['OP','ISG_ADMIN','YONETICI']);
+  const formNo = String(p.formNo || '').trim();
+  if (!formNo) throw new Error('Form numarası eksik.');
+  if (!depotBook_().getSheetByName(CFG.sheets.ppeForms)) throw new Error('KKD_ZIMMET sayfası bulunamadı.');
+  const rows = objects_(CFG.sheets.ppeForms).filter(o => s_(o.FORM_NO).trim() === formNo);
+  if (!rows.length) throw new Error('KKD zimmet formu bulunamadı: ' + formNo);
+  const alreadySigned = rows.every(o => norm_(o.DURUM) === 'IMZALANDI');
+  if (alreadySigned) throw new Error('Bu KKD zimmet formu daha önce imzalanmış.');
+  const operator = s_(rows[0].OPERATOR).trim();
+  const issuer = s_(rows[0].TESLIM_EDEN).trim();
+  if (u.role === 'OP') {
+    if (norm_(operator) !== norm_(u.name)) throw new Error('Yalnızca kendi adınıza düzenlenen KKD formlarını imzalayabilirsiniz.');
+  } else {
+    if (!verifyOperatorPin_(operator, p.operatorPin)) throw new Error('Operatör PIN doğrulaması başarısız (' + operator + ').');
+  }
+  if (!p.accepted) throw new Error('6331 sayılı İSG Kanunu teslim ve kullanım beyanını onaylamanız gerekir.');
+  if (!validSignature_(p.signature)) throw new Error('Lütfen imza alanına geçerli bir imza çizin.');
+
+  const stockNeed = {};
+  const resolved = rows.map(o => {
+    const item = item_(s_(o.STOK_ID).trim() || s_(o.PARCA_KODU).trim());
+    const qty = n_(o.ADET);
+    if (qty <= 0) throw new Error('Form satırında geçersiz adet bulundu.');
+    stockNeed[item.id] = (stockNeed[item.id] || 0) + qty;
+    if (stockNeed[item.id] > item.stock) throw new Error('İmza anında stok yetersiz: ' + item.name + ' (Mevcut: ' + item.stock + ' ' + item.unit + ')');
+    return {row:o._row, item:item, qty:qty};
+  });
+
+  const s = sh_(CFG.sheets.ppeForms), h = s.getRange(1,1,1,s.getLastColumn()).getDisplayValues()[0].map(norm_);
+  const col = k => h.indexOf(k) + 1;
+  const cStatus = col('DURUM'), cText = col('ONAY_METNI'), cSig = col('IMZA'), cSigned = col('IMZA_TARIHI'), cExit = col('CIKIS_ID');
+  const signedAt = now_(), sig = String(p.signature).trim(), exitIds = [];
+  resolved.forEach(x => {
+    const exitId = writeExit_({name:operator, role:'OP'}, x.item, x.qty, 'PERSONEL KKD', 'KKD_ZIMMET', issuer || u.name, formNo);
+    exitIds.push(exitId);
+    if (cStatus) setValueSafe_(s.getRange(x.row, cStatus), 'İMZALANDI');
+    if (cText) setValueSafe_(s.getRange(x.row, cText), KKD_LEGAL_TEXT);
+    if (cSig) setValueSafe_(s.getRange(x.row, cSig), sig);
+    if (cSigned) setValueSafe_(s.getRange(x.row, cSigned), signedAt);
+    if (cExit) setValueSafe_(s.getRange(x.row, cExit), exitId);
+  });
+  log_(u, 'KKD_ZIMMET_IMZALANDI', formNo, {operator:operator, signedBy:u.name, exitIds:exitIds});
+  return {formNo:formNo, status:'İMZALANDI', signedAt:signedAt, exitIds:exitIds};
+}
+
 /* ===================== ANALİZ ===================== */
 function ppeAnalysis_(u, p) {
   requireRole_(u, ['ISG_ADMIN','YONETICI']);
-  const days = p.range === '3m' ? 90 : (p.range === 'month' ? Math.max(1, new Date().getDate()) : 30);
-  const since = new Date(Date.now() - days * 86400000);
-  const personnel = users_().filter(x => x.role === 'OP').map(x => x.name);
-  const exits = outs_().filter(o => o.depot === 'ISG' && parseDate_(o.date) >= since);
+  const range = String(p.range || '30d'), now = new Date();
+  const since = range === 'all' ? new Date(0) : range === 'year' ? new Date(now.getFullYear(), 0, 1) : range === '3m' ? new Date(Date.now() - 90 * 86400000) : range === 'month' ? new Date(now.getFullYear(), now.getMonth(), 1) : new Date(Date.now() - 30 * 86400000);
+  const days = range === 'all' ? 0 : Math.max(1, Math.ceil((now.getTime() - since.getTime()) / 86400000));
+  const rangeLabels = {'30d':'Son 30 Gün','month':'Bu Ay','3m':'Son 3 Ay','year':'Bu Yıl','all':'Tüm Zamanlar'};
+  const exits = outs_().filter(o => o.depot === 'ISG' && (range === 'all' || parseDate_(o.date) >= since));
+  const baseNames = users_().filter(x => x.role === 'OP').map(x => x.name);
+  const seen = {};
+  const personnel = [];
+  baseNames.forEach(n => { const k = norm_(n); if (k && !seen[k]) { seen[k] = true; personnel.push(n); } });
+  exits.forEach(e => { const k = norm_(e.person); if (k && !seen[k]) { seen[k] = true; personnel.push(e.person); } });
   const cards = personnel.map(name => {
-    const own = exits.filter(e => norm_(e.person) === norm_(name));
-    return {name:name, count:own.length, total:own.reduce((s,e) => s + e.qty, 0), items:[...new Set(own.map(e => e.name).filter(Boolean))], last:own.length ? own.map(e => e.date).sort().pop() : ''};
+    const own = exits.filter(e => norm_(e.person) === norm_(name)).sort((a,b) => parseDate_(a.date) - parseDate_(b.date));
+    const sumMap = {};
+    own.forEach(e => {
+      const k = norm_(e.code || e.name);
+      if (!sumMap[k]) sumMap[k] = {code:e.code||'', name:e.name||'', qty:0, unit:e.unit||'AD', count:0, last:''};
+      sumMap[k].qty += e.qty; sumMap[k].count++;
+      if (!sumMap[k].last || parseDate_(e.date) >= parseDate_(sumMap[k].last)) sumMap[k].last = e.date;
+    });
+    const summary = Object.values(sumMap).sort((a,b) => b.qty - a.qty);
+    const records = own.map(e => ({date:e.date, code:e.code||'', name:e.name||'', qty:e.qty, unit:e.unit||'AD', source:e.source||'', exitId:e.id||''}));
+    return {
+      name:name, count:own.length, total:own.reduce((s,e) => s + e.qty, 0),
+      items:summary.map(x => x.name).filter(Boolean),
+      last:own.length ? own[own.length - 1].date : '',
+      summary:summary, records:records
+    };
   });
-  return {rangeDays:days, none:cards.filter(x => x.count === 0), cards:cards};
+  return {range:range, rangeLabel:rangeLabels[range]||'Son 30 Gün', rangeDays:days, periodStart:since.toISOString(), periodEnd:now.toISOString(), none:cards.filter(x => x.count === 0), cards:cards};
 }
 function movementAnalysis_(u, p) {
   requireRole_(u, ['MEK_ADMIN','ISG_ADMIN','YONETICI']);
@@ -1555,7 +1825,8 @@ function TEST_SUTUNLAR() {
     GIRIS_HAREKETLERI:show(CFG.sheets.incoming, ['KAYIT NO','TARİH','PARÇA KODU','ADET','BİRİM','YAPAN','İŞLEM TÜRÜ']),
     CIKIS_HAREKETLERI:show(CFG.sheets.outgoing, ['KAYIT NO','TARİH','ID','PARÇA KODU','MALZEME','OPERATÖR','MAKİNE','ADET','BİRİM','ÇIKIŞ TÜRÜ','ONAY','ONAYLAYAN','TALEP NO']),
     ONAY_HAVUZU:show(CFG.sheets.approvals, ['TALEP NO','TARİH','OPERATÖR','ID','MALZEME','MAKİNE','ADET','DURUM','ONAYLAYAN','ONAY TARİHİ']),
-    PLANLI_BAKIM_RECETE:show(CFG.sheets.recipes, ['MAKİNE','PERİYOT','MALZEME ID','PARÇA KODU','MALZEME','STANDART ADET'])
+    PLANLI_BAKIM_RECETE:show(CFG.sheets.recipes, ['MAKİNE','PERİYOT','MALZEME ID','PARÇA KODU','MALZEME','STANDART ADET']),
+    KKD_ZIMMET:show(CFG.sheets.ppeForms, ['FORM NO','TARİH','OPERATÖR','TESLİM EDEN','STOK ID','MALZEME','ADET','DURUM','İMZA','İMZA TARİHİ','ÇIKIŞ ID'])
   };
   Logger.log(JSON.stringify(out, null, 2));
   return out;
@@ -1617,9 +1888,12 @@ const ICONS={
  copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
  list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
- trend:'<path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/>'
+ trend:'<path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/>',
+ pen:'<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z"/>',
+ fileCheck:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/>'
 };
 function ic(name,cls=''){return`<span class="ic ${cls}" aria-hidden="true"><svg viewBox="0 0 24 24">${ICONS[name]||''}</svg></span>`;}
+const KKD_LEGAL_TEXT='6331 sayılı İş Sağlığı ve Güvenliği Kanunu ve Kişisel Koruyucu Donanımların İşyerlerinde Kullanılması Hakkında Yönetmelik uyarınca yukarıda belirtilen KKD’leri eksiksiz, sağlam ve kullanıma hazır teslim aldığımı; çalışma süresince talimatlara uygun şekilde kullanacağımı, bakımını yapacağımı ve hasar/eskime durumunda derhal bildirip yenisini talep edeceğimi beyan ve taahhüt ederim.';
 const NAV=[
  ['dashboard','grid','Genel Bakış',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
  ['qr','scan','Operatör QR',['OP','MEK_ADMIN','ISG_ADMIN','YONETICI']],
@@ -1627,7 +1901,7 @@ const NAV=[
  ['movements','arrows','Hareketler',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
  ['approvals','checkCircle','Onay Bekleyenler',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
  ['maintenance','wrench','Planlı Bakım',['OP','MEK_ADMIN','YONETICI']],
- ['ppe','shield','KKD Analizi',['ISG_ADMIN','YONETICI']],
+ ['ppe','shield','KKD & Zimmet',['OP','ISG_ADMIN','YONETICI']],
  ['analysis','chart','Tüketim & ABC',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
  ['costs','wallet','Maliyet Analizi',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
  ['labels','qr','QR Etiketleri',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
@@ -1658,7 +1932,20 @@ const DEMO={
   {id:'BOM-04',machine:'Kondanser Boru Makinesi',period:'YILLIK',itemId:'MEK-0003',qty:40}
  ],
  activeJobs:['Kondanser Boru Makinesi','Paketleme Makinesi'],
- lists:{types:['RULMAN','KAYIŞ','SENSÖR','YAĞ','KİMYASAL','İSG MALZEME'],companies:['SKF','Optibelt','Omron','3M','Beybi','Uvex'],units:['AD','ÇİFT','LİTRE','KG','MT'],usage:['BAKIM SARF','PLANLI BAKIM','KRİTİK MALZEME','İSG / KKD'],shelves:['A-01','A-04','E-03','Y-02','K-02','İSG-01','İSG-02','İSG-03','İSG-04'],machines:['Kondanser Boru Makinesi','Paketleme Makinesi','Dolum Makinesi','Kompresör','Kazan Dairesi']}
+ ppeForms:[
+  {formNo:'KKD-2026-001',date:new Date(Date.now()-1800000).toISOString(),operator:'Bakım Operatörü',issuer:'İSG Depo Sorumlusu',status:'İMZA BEKLİYOR',legalText:KKD_LEGAL_TEXT,signature:'',signedAt:'',note:'Aylık rutin KKD yenileme',totalQty:3,items:[
+   {itemId:'ISG-0001',code:'ELD-NIT-L',name:'Nitril Eldiven L',qty:2,unit:'ÇİFT',exitId:''},
+   {itemId:'ISG-0002',code:'GOZ-SEF',name:'Şeffaf Koruyucu Gözlük',qty:1,unit:'AD',exitId:''}
+  ]},
+  {formNo:'KKD-2026-002',date:new Date(Date.now()-2*86400000).toISOString(),operator:'Engin Vardar',issuer:'İSG Depo Sorumlusu',status:'İMZALANDI',legalText:KKD_LEGAL_TEXT,signature:'SIG1:M42,88L58,42L70,84L92,62L116,74L142,48L164,76L196,64L230,72L264,58L298,66',signedAt:new Date(Date.now()-2*86400000+300000).toISOString(),note:'Bölüm 1 bakım ekibi',totalQty:4,items:[
+   {itemId:'ISG-0001',code:'ELD-NIT-L',name:'Nitril Eldiven L',qty:2,unit:'ÇİFT',exitId:'CIK-D006'},
+   {itemId:'ISG-0003',code:'MAS-FFP2',name:'FFP2 Toz Maskesi',qty:2,unit:'AD',exitId:'CIK-D008'}
+  ]},
+  {formNo:'KKD-2026-003',date:new Date(Date.now()-5*86400000).toISOString(),operator:'Murat Kaya',issuer:'Bakım Şefi',status:'İMZALANDI',legalText:KKD_LEGAL_TEXT,signature:'SIG1:M38,76L66,46L82,80L108,52L134,82L168,58L204,74L244,62L284,70',signedAt:new Date(Date.now()-5*86400000+180000).toISOString(),note:'Gürültülü alan çalışması',totalQty:1,items:[
+   {itemId:'ISG-0004',code:'KUL-SNR32',name:'Kulak Koruyucu SNR 32',qty:1,unit:'AD',exitId:'CIK-D009'}
+  ]}
+ ],
+ lists:{types:['RULMAN','KAYIŞ','SENSÖR','YAĞ','KİMYASAL','İSG MALZEME'],companies:['SKF','Optibelt','Omron','3M','Beybi','Uvex'],units:['AD','ÇİFT','LİTRE','KG','MT'],usage:['BAKIM SARF','PLANLI BAKIM','KRİTİK MALZEME','İSG / KKD'],shelves:['A-01','A-04','E-03','Y-02','K-02','İSG-01','İSG-02','İSG-03','İSG-04'],machines:['Kondanser Boru Makinesi','Paketleme Makinesi','Dolum Makinesi','Kompresör','Kazan Dairesi'],operators:['Bakım Operatörü','Engin Vardar','Murat Kaya','Ayşe Demir']}
 };
 DEMO.stock.forEach((x,i)=>{x.unitPrice=[18.5,42,3.25,27,6.5,1.1,8.75,2.4,14][i]||0;x.totalPrice=x.stock*x.unitPrice;});
 for(let i=0;i<56;i++){
@@ -1667,7 +1954,7 @@ for(let i=0;i<56;i++){
 }
 
 const ORIGINAL_HTML='<!doctype html>\n'+document.documentElement.outerHTML.replace(/<script[^>]*src="\/@vite\/client"[^>]*><\/script>\s*/gi,'');
-const state={user:null,session:'',page:'dashboard',data:null,mode:localStorage.getItem('depo.mode')||'demo',directUrl:localStorage.getItem('depo.directUrl')||'',busy:false,stockFilter:{depot:'TUMU',query:'',status:'TUMU'},movQuery:'',analysis:null,ppe:null,cost:null,costFilter:{range:'year',depot:'TUMU',group:'machine',query:'',sort:'cost'},pendingQr:new URLSearchParams(location.search).get('qr')||''};
+const state={user:null,session:'',page:'dashboard',data:null,mode:localStorage.getItem('depo.mode')||'demo',directUrl:localStorage.getItem('depo.directUrl')||'',busy:false,stockFilter:{depot:'TUMU',query:'',status:'TUMU'},movQuery:'',analysis:null,ppe:null,ppeTab:'analysis',ppeRange:'30d',ppeUsageQuery:'',ppeFilter:{status:'TUMU',query:''},cost:null,costFilter:{range:'year',depot:'TUMU',group:'machine',query:'',sort:'cost'},pendingQr:new URLSearchParams(location.search).get('qr')||''};
 
 async function api(action,payload={}){
  if(state.mode==='demo') return demoApi(action,payload);
@@ -1675,7 +1962,12 @@ async function api(action,payload={}){
  if(!endpoint)throw Error('Apps Script adresi tanımlı değil.');
  const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':state.mode==='direct'?'text/plain;charset=utf-8':'application/json'},body:JSON.stringify({action,payload,session:state.session})});
  const out=await r.json().catch(()=>({ok:false,error:'Sunucu geçerli JSON döndürmedi.'}));
- if(!r.ok||!out.ok)throw Error(out.error||`HTTP ${r.status}`); return out.data;
+ if(!r.ok||!out.ok){
+  const msg=out.error||`HTTP ${r.status}`;
+  if(/Bilinmeyen işlem:\s*ppeForm/i.test(msg))throw Error('Canlı Kod.gs henüz KKD Zimmet sürümüne (V8.7-KKD) güncellenmemiş. Yönetici olarak Bağlantı sekmesinden yeni Kod.gs’yi dağıtın.');
+  throw Error(msg);
+ }
+ return out.data;
 }
 async function demoApi(action,p={}){
  await new Promise(r=>setTimeout(r,90));
@@ -1688,19 +1980,74 @@ async function demoApi(action,p={}){
  const visibleStock=()=>DEMO.stock.filter(x=>state.user.role==='YONETICI'||state.user.role==='OP'||(state.user.role==='MEK_ADMIN'&&x.depot==='MEKANIK')||(state.user.role==='ISG_ADMIN'&&x.depot==='ISG'));
  const recipes=()=>DEMO.recipes.map(r=>{const x=DEMO.stock.find(i=>i.id===r.itemId);return{...r,code:x?.code,name:x?.name,unit:x?.unit,shelf:x?.shelf,stock:x?.stock||0,ready:(x?.stock||0)>=r.qty};});
  const visibleApprovals=()=>DEMO.approvals.filter(x=>state.user.role==='YONETICI'||(state.user.role==='MEK_ADMIN'&&x.depot==='MEKANIK')||(state.user.role==='ISG_ADMIN'&&x.depot==='ISG'));
- if(action==='bootstrap')return{user:state.user,stock:visibleStock(),approvals:state.user.role==='OP'?[]:visibleApprovals(),recipes:recipes(),movements:DEMO.movements,lists:DEMO.lists,serverTime:today()};
+ const visiblePpeForms=()=>{
+  if(!['OP','ISG_ADMIN','YONETICI'].includes(state.user.role))return[];
+  return DEMO.ppeForms.filter(f=>state.user.role!=='OP'||norm(f.operator)===norm(state.user.name))
+   .sort((a,b)=>(a.status==='İMZA BEKLİYOR'?0:1)-(b.status==='İMZA BEKLİYOR'?0:1)||+new Date(b.date)-+new Date(a.date));
+ };
+ const isValidSig=s=>typeof s==='string'&&s.length>=12&&/^SIG1:[ML0-9.,\s-]+$/.test(s.trim());
+ if(action==='bootstrap')return{user:state.user,stock:visibleStock(),approvals:state.user.role==='OP'?[]:visibleApprovals(),recipes:recipes(),ppeForms:visiblePpeForms(),movements:DEMO.movements,lists:DEMO.lists,serverTime:today(),apiVersion:'V8.7-KKD'};
  if(action==='stockList')return visibleStock(); if(action==='approvalList')return visibleApprovals(); if(action==='recipeList')return recipes().filter(x=>(!p.machine||x.machine===p.machine)&&(!p.period||x.period===p.period));
+ if(action==='ppeFormList')return visiblePpeForms();
+ if(action==='ppeFormCreate'){
+  if(!['ISG_ADMIN','YONETICI'].includes(state.user.role))throw Error('Bu işlem için yetkiniz yok.');
+  const op=String(p.operator||'').trim();if(!op)throw Error('Operatör seçilmelidir.');
+  if(!Array.isArray(p.items)||!p.items.length)throw Error('En az bir KKD ekipmanı eklenmelidir.');
+  const need={}, lines=p.items.map(row=>{
+   const x=DEMO.stock.find(i=>i.id===row.itemId&&i.depot==='ISG');if(!x)throw Error('Geçersiz İSG ekipmanı.');
+   const q=Number(row.qty);if(!(q>0))throw Error('Miktar 0’dan büyük olmalıdır.');
+   need[x.id]=(need[x.id]||0)+q;if(need[x.id]>x.stock)throw Error('Yetersiz stok: '+x.name);
+   return{x,q};
+  });
+  const signNow=!!p.signNow;
+  if(signNow){
+   if(!p.accepted)throw Error('6331 sayılı İSG Kanunu beyanı onaylanmalıdır.');
+   if(!isValidSig(p.signature))throw Error('Geçerli operatör imzası çizilmelidir.');
+   const cleanPin=String(p.operatorPin||'').replace(/\s+/g,'').trim();
+   const opUser=DEMO.users.find(u=>norm(u.name)===norm(op)&&u.pin===cleanPin&&u.active);
+   if(!opUser)throw Error('Operatör PIN doğrulaması başarısız ('+op+').');
+  }
+  const formNo=uid('KKD'), t=today();
+  const items=lines.map(({x,q})=>{
+   let exitId='';
+   if(signNow){x.stock-=q;x.outgoing+=q;exitId=uid('CIK');DEMO.movements.unshift({id:exitId,date:t,person:op,itemId:x.id,code:x.code,name:x.name,depot:'ISG',qty:q,unit:x.unit,machine:'PERSONEL KKD',source:'KKD_ZIMMET'});}
+   return{itemId:x.id,code:x.code,name:x.name,qty:q,unit:x.unit,exitId};
+  });
+  DEMO.ppeForms.unshift({formNo,date:t,operator:op,issuer:state.user.name,status:signNow?'İMZALANDI':'İMZA BEKLİYOR',legalText:KKD_LEGAL_TEXT,signature:signNow?p.signature.trim():'',signedAt:signNow?t:'',note:String(p.note||'').trim(),totalQty:items.reduce((s,i)=>s+i.qty,0),items});
+  return{formNo,status:signNow?'İMZALANDI':'İMZA BEKLİYOR'};
+ }
+ if(action==='ppeFormSign'){
+  const f=DEMO.ppeForms.find(x=>x.formNo===p.formNo);if(!f)throw Error('KKD zimmet formu bulunamadı.');
+  if(f.status==='İMZALANDI')throw Error('Bu form daha önce imzalanmış.');
+  if(state.user.role==='OP'){if(norm(f.operator)!==norm(state.user.name))throw Error('Yalnızca kendi formlarınızı imzalayabilirsiniz.');}
+  else{const cleanPin=String(p.operatorPin||'').replace(/\s+/g,'').trim();const opUser=DEMO.users.find(u=>norm(u.name)===norm(f.operator)&&u.pin===cleanPin&&u.active);if(!opUser)throw Error('Operatör PIN doğrulaması başarısız ('+f.operator+').');}
+  if(!p.accepted)throw Error('6331 sayılı İSG Kanunu beyanını onaylamanız gerekir.');
+  if(!isValidSig(p.signature))throw Error('Lütfen imza alanına geçerli bir imza çizin.');
+  const need={};
+  f.items.forEach(it=>{const x=DEMO.stock.find(i=>i.id===it.itemId);if(!x)throw Error('Stok kartı bulunamadı.');need[x.id]=(need[x.id]||0)+it.qty;if(need[x.id]>x.stock)throw Error('Stok yetersiz: '+x.name);});
+  const t=today();
+  f.items.forEach(it=>{const x=DEMO.stock.find(i=>i.id===it.itemId);x.stock-=it.qty;x.outgoing+=it.qty;const eid=uid('CIK');it.exitId=eid;DEMO.movements.unshift({id:eid,date:t,person:f.operator,itemId:x.id,code:x.code,name:x.name,depot:'ISG',qty:it.qty,unit:x.unit,machine:'PERSONEL KKD',source:'KKD_ZIMMET'});});
+  f.status='İMZALANDI';f.signature=p.signature.trim();f.signedAt=t;f.legalText=KKD_LEGAL_TEXT;
+  return{formNo:f.formNo,status:f.status,signedAt:t};
+ }
  if(action==='checkout'){
   const x=DEMO.stock.find(i=>i.id===p.itemId||i.code===p.code);if(!x)throw Error('Stok kartı bulunamadı.');const q=Number(p.qty);if(q<=0||q>x.stock)throw Error('Miktar geçersiz veya stok yetersiz.');
   const consumable=!x.machine||/SARF|ORTAK/.test(norm(x.type+' '+x.usage)), machine=x.depot==='ISG'?(p.machine||'PERSONEL KKD'):(consumable?p.machine:x.machine), depotApproval=needsDepotApprovalUi(x);
   const isDepotApprover=state.user.role==='YONETICI'||(x.depot==='ISG'?state.user.role==='ISG_ADMIN':state.user.role==='MEK_ADMIN');
+  const recordDemoPpe=(exitId,issuer)=>{
+   if(x.depot!=='ISG'||!p.ppeAccepted||!isValidSig(p.ppeSignature))return'';
+   const formNo=uid('KKD'),t=today();
+   DEMO.ppeForms.unshift({formNo,date:t,operator:state.user.name,issuer:issuer||state.user.name,status:'İMZALANDI',legalText:KKD_LEGAL_TEXT,signature:p.ppeSignature.trim(),signedAt:t,note:'QR / İSG Dolabı',totalQty:q,items:[{itemId:x.id,code:x.code,name:x.name,qty:q,unit:x.unit,exitId}]});
+   return formNo;
+  };
   if(depotApproval&&!isDepotApprover){
    if(p.depotApproverPin){
     const clean=String(p.depotApproverPin).replace(/\s+/g,'').trim();
     const approver=DEMO.users.find(u=>u.pin===clean&&u.active&&(u.role==='YONETICI'||(x.depot==='ISG'?u.role==='ISG_ADMIN':u.role==='MEK_ADMIN')));
     if(!approver)throw Error('Depocu PIN geçersiz veya bu depo için yetkisiz.');
-    x.stock-=q;x.outgoing+=q;DEMO.movements.unshift({id:uid('CIK'),date:today(),person:state.user.name,itemId:x.id,code:x.code,name:x.name,depot:x.depot,qty:q,unit:x.unit,machine,source:'DEPO ONAYI'});
-    return{completed:true,depotApproved:true,approver:approver.name,remaining:x.stock,autoLogout:state.user.role==='OP'};
+    const eid=uid('CIK');x.stock-=q;x.outgoing+=q;DEMO.movements.unshift({id:eid,date:today(),person:state.user.name,itemId:x.id,code:x.code,name:x.name,depot:x.depot,qty:q,unit:x.unit,machine,source:'DEPO ONAYI'});
+    const ppeFormNo=recordDemoPpe(eid,approver.name);
+    return{completed:true,depotApproved:true,approver:approver.name,ppeFormNo,remaining:x.stock,autoLogout:state.user.role==='OP'};
    }
    if(p.promptDepotApproval&&!p.sendApproval)return{depotApprovalRequired:true,message:'Bu parça için Depo Onayı Gerekli.'};
    const a={id:uid('ONAY'),date:today(),requester:state.user.name,itemId:x.id,code:x.code,name:x.name,machine,qty:q,unit:x.unit,depot:x.depot,reason:'Depo Onayı Gerekli',status:'BEKLIYOR',depotApproval:true};DEMO.approvals.unshift(a);return{pending:true,depotApproval:true,id:a.id,message:'Depocu onayına istek gönderildi. Talep No: '+a.id,autoLogout:state.user.role==='OP'};
@@ -1709,7 +2056,9 @@ async function demoApi(action,p={}){
    if(p.sendApproval){const a={id:uid('ONAY'),date:today(),requester:state.user.name,itemId:x.id,code:x.code,name:x.name,machine,qty:q,unit:x.unit,depot:x.depot,reason:'Açık arıza veya planlı bakım kaydı bulunamadı',status:'BEKLIYOR'};DEMO.approvals.unshift(a);return{pending:true,id:a.id,autoLogout:state.user.role==='OP'};}
    return{approvalRequired:true,message:'Bu makinede açık arıza veya planlı bakım kaydı bulunamadı — Yönetici Onayı Gerekli'};
   }
-  x.stock-=q;x.outgoing+=q;DEMO.movements.unshift({id:uid('CIK'),date:today(),person:state.user.name,itemId:x.id,code:x.code,name:x.name,depot:x.depot,qty:q,unit:x.unit,machine,source:p.source||'QR'});return{completed:true,remaining:x.stock,autoLogout:state.user.role==='OP'};
+  const eid=uid('CIK');x.stock-=q;x.outgoing+=q;DEMO.movements.unshift({id:eid,date:today(),person:state.user.name,itemId:x.id,code:x.code,name:x.name,depot:x.depot,qty:q,unit:x.unit,machine,source:p.source||'QR'});
+  const ppeFormNo=recordDemoPpe(eid,state.user.name);
+  return{completed:true,ppeFormNo,remaining:x.stock,autoLogout:state.user.role==='OP'};
  }
  if(action==='approvalCreate')return demoApi('checkout',{...p,sendApproval:true});
  if(action==='approvalDecide'){
@@ -1727,9 +2076,45 @@ async function demoApi(action,p={}){
  if(action==='ppeAnalysis')return buildPpe(p.range); if(action==='movementAnalysis')return buildAnalysis(p); if(action==='costAnalysis')return buildCostLocal(DEMO.movements,visibleStock(),p,state.user.role);
  throw Error('Demo işlemi bulunamadı: '+action);
 }
+const PPE_RANGE_LABELS={'30d':'Son 30 Gün','month':'Bu Ay','3m':'Son 3 Ay','year':'Bu Yıl','all':'Tüm Zamanlar'};
+function ppeRangeSince(range='30d'){
+ const now=new Date();
+ if(range==='all')return new Date(0);
+ if(range==='year')return new Date(now.getFullYear(),0,1);
+ if(range==='3m')return new Date(Date.now()-90*86400000);
+ if(range==='month')return new Date(now.getFullYear(),now.getMonth(),1);
+ return new Date(Date.now()-30*86400000);
+}
+function buildPpeFromMovements(movements=[],peopleList=[],range='30d',existingCards=null){
+ const now=new Date(), since=ppeRangeSince(range);
+ const days=range==='all'?0:Math.max(1,Math.ceil((now.getTime()-since.getTime())/86400000));
+ const exits=(movements||[]).filter(m=>m.depot==='ISG'&&(range==='all'||+new Date(m.date)>=+since));
+ const seen={}, people=[];
+ (peopleList||[]).forEach(n=>{const k=norm(n);if(k&&!seen[k]){seen[k]=true;people.push(n);}});
+ (existingCards||[]).forEach(c=>{const k=norm(c.name);if(k&&!seen[k]){seen[k]=true;people.push(c.name);}});
+ exits.forEach(m=>{const k=norm(m.person);if(k&&!seen[k]){seen[k]=true;people.push(m.person);}});
+ const cards=people.map(name=>{
+  const own=exits.filter(m=>norm(m.person)===norm(name)).sort((a,b)=>+new Date(a.date)-+new Date(b.date));
+  const sumMap={};
+  own.forEach(e=>{
+   const k=norm(e.code||e.name);
+   if(!sumMap[k])sumMap[k]={code:e.code||'',name:e.name||'',qty:0,unit:e.unit||'AD',count:0,last:''};
+   sumMap[k].qty+=Number(e.qty)||0;sumMap[k].count++;
+   if(!sumMap[k].last||+new Date(e.date)>=+new Date(sumMap[k].last))sumMap[k].last=e.date;
+  });
+  const summary=Object.values(sumMap).sort((a,b)=>b.qty-a.qty);
+  const records=own.map(e=>({date:e.date,code:e.code||'',name:e.name||'',qty:Number(e.qty)||0,unit:e.unit||'AD',source:e.source||'',exitId:e.id||''}));
+  const prev=(existingCards||[]).find(c=>norm(c.name)===norm(name));
+  if(!records.length&&prev&&prev.count>0){
+   return{...prev,summary:prev.summary||[],records:[]};
+  }
+  return{name,count:own.length,total:own.reduce((s,e)=>s+(Number(e.qty)||0),0),items:summary.map(x=>x.name).filter(Boolean),last:own.length?own[own.length-1].date:'',summary,records};
+ });
+ return{range,rangeLabel:PPE_RANGE_LABELS[range]||'Son 30 Gün',rangeDays:days,periodStart:since.toISOString(),periodEnd:now.toISOString(),cards,none:cards.filter(x=>!x.count)};
+}
 function buildPpe(range='30d'){
- const days=range==='3m'?90:range==='month'?new Date().getDate():30,since=Date.now()-days*86400000,people=DEMO.users.filter(x=>x.role==='OP').map(x=>x.name);
- const cards=people.map(name=>{const xs=DEMO.movements.filter(m=>m.depot==='ISG'&&m.person===name&&+new Date(m.date)>=since);return{name,count:xs.length,total:xs.reduce((s,x)=>s+x.qty,0),items:[...new Set(xs.map(x=>x.name))],last:xs[0]?.date||''};});return{rangeDays:days,cards,none:cards.filter(x=>!x.count)};
+ const people=DEMO.users.filter(x=>x.role==='OP').map(x=>x.name);
+ return buildPpeFromMovements(DEMO.movements,people,range);
 }
 function buildAnalysis(p={}){
  const days=p.range==='all'?99999:p.range==='30d'?30:p.range==='3m'?90:365,since=Date.now()-days*86400000,map={};
@@ -1809,15 +2194,85 @@ function defaultPage(){return state.user?.role==='OP'?'qr':'dashboard';}
 function setBusy(v){state.busy=v;document.body.classList.toggle('busy',v);}
 function toast(message,type='ok'){const t=document.createElement('div');t.className='toast '+type;t.innerHTML=`<b>${ic(type==='ok'?'check':'alert','ic-sm')}</b><span>${esc(message)}</span>`;$('#toasts').append(t);setTimeout(()=>t.remove(),4300);}
 function modal(title,body,actions=''){const root=$('#modalRoot');root.innerHTML=`<div class="modal-back"><section class="modal" role="dialog" aria-modal="true"><header><h3>${esc(title)}</h3><button class="icon-btn" data-close aria-label="Kapat">${ic('close')}</button></header><div class="modal-body">${body}</div>${actions?`<footer>${actions}</footer>`:''}</section></div>`;root.hidden=false;setTimeout(()=>root.querySelector('input,select,button')?.focus(),30);}
-function closeModal(){const r=$('#modalRoot');r.hidden=true;r.innerHTML='';stopCamera();}
+let activeSigPad=null;
+function closeModal(){const r=$('#modalRoot');r.hidden=true;r.innerHTML='';activeSigPad=null;stopCamera();}
 function field(label,control,hint=''){return`<label class="field"><span>${label}</span>${control}${hint?`<small>${hint}</small>`:''}</label>`;}
 function opts(values=[],current=''){return values.map(x=>`<option ${String(x)===String(current)?'selected':''}>${esc(x)}</option>`).join('');}
+
+function sigPadHtml(id='sigCanvas',compact=false,label='Operatör Islak İmza Alanı'){
+ return`<div class="sig-wrap ${compact?'compact':''}"><div class="sig-head"><b>${esc(label)}</b><span class="sig-status" data-sig-status="${esc(id)}">İmza bekleniyor</span></div><div class="sig-stage"><canvas id="${esc(id)}" class="sig-canvas" aria-label="${esc(label)}"></canvas></div><div class="sig-foot"><span>Parmağınızla veya fare ile imzanızı çizin</span><button type="button" class="sig-clear" data-action="sig-clear">Temizle</button></div></div>`;
+}
+function initSigPad(canvas){
+ if(!canvas)return null;
+ const ctx=canvas.getContext('2d'), statusEl=$(`[data-sig-status="${canvas.id}"]`);
+ let strokes=[], cur=null, drawing=false;
+ const setup=()=>{
+  const rect=canvas.getBoundingClientRect(), w=Math.max(260,Math.round(rect.width||360)), h=Math.max(100,Math.round(rect.height||140));
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  canvas.width=w*dpr; canvas.height=h*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.lineWidth=2.3; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#0f172a';
+  redraw();
+ };
+ const redraw=()=>{
+  const rect=canvas.getBoundingClientRect(), w=rect.width||360, h=rect.height||140;
+  ctx.clearRect(0,0,w,h);
+  strokes.forEach(st=>{
+   if(!st.length)return;
+   ctx.beginPath();
+   ctx.moveTo(st[0][0]*w,st[0][1]*h);
+   for(let i=1;i<st.length;i++)ctx.lineTo(st[i][0]*w,st[i][1]*h);
+   if(st.length===1)ctx.lineTo(st[0][0]*w+0.5,st[0][1]*h+0.5);
+   ctx.stroke();
+  });
+ };
+ const updateStatus=()=>{
+  const ok=pointCount()>=4;
+  if(statusEl){statusEl.textContent=ok?'İmza hazır':'İmza bekleniyor';statusEl.classList.toggle('ready',ok);}
+ };
+ const pointCount=()=>strokes.reduce((s,st)=>s+st.length,0);
+ const rel=e=>{
+  const rect=canvas.getBoundingClientRect();
+  return[Math.max(0,Math.min(1,(e.clientX-rect.left)/(rect.width||1))),Math.max(0,Math.min(1,(e.clientY-rect.top)/(rect.height||1)))];
+ };
+ canvas.addEventListener('pointerdown',e=>{
+  e.preventDefault(); canvas.setPointerCapture?.(e.pointerId); drawing=true;
+  const pt=rel(e); cur=[pt]; strokes.push(cur); redraw(); updateStatus();
+ });
+ canvas.addEventListener('pointermove',e=>{
+  if(!drawing||!cur)return; e.preventDefault();
+  const pt=rel(e), last=cur[cur.length-1];
+  const dx=(pt[0]-last[0])*360, dy=(pt[1]-last[1])*130;
+  if(dx*dx+dy*dy<5)return;
+  cur.push(pt); redraw(); updateStatus();
+ });
+ const end=()=>{drawing=false;cur=null;};
+ canvas.addEventListener('pointerup',end);
+ canvas.addEventListener('pointercancel',end);
+ setup();
+ return{
+  clear(){strokes=[];cur=null;redraw();updateStatus();},
+  isEmpty(){return pointCount()<4;},
+  exportSvgPath(){
+   if(pointCount()<4)return'';
+   const W=360,H=130;
+   const d=strokes.filter(st=>st.length).map(st=>st.map((pt,i)=>`${i===0?'M':'L'}${Math.round(pt[0]*W)},${Math.round(pt[1]*H)}`).join('')).join('');
+   return'SIG1:'+d;
+  }
+ };
+}
+function renderSigSvg(sigData){
+ const s=String(sigData||'').trim();
+ if(!/^SIG1:[ML0-9.,\s-]+$/.test(s))return'<span class="ppe-sig-pending-txt">İmza kaydı yok</span>';
+ return`<svg viewBox="0 0 360 130" xmlns="http://www.w3.org/2000/svg" aria-label="Dijital İmza"><path d="${s.slice(5)}" fill="none" stroke="#0f172a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
 
 function renderShell(){
  const app=$('#app');app.innerHTML=`<header class="sidebar"><div class="nav-top"><div class="brand"><span class="brand-mark">M</span><div><b>Mekanik + İSG Depo</b><small>Depo 2027 · V8.7</small></div></div><div class="nav-right"><span class="connection ${state.mode}"><i></i>${state.mode==='demo'?'Demo Modu':state.mode==='proxy'?'Güvenli Bağlantı':'Doğrudan GAS'}</span><button class="btn ghost nav-refresh" data-action="refresh">${ic('refresh','ic-sm')} Yenile</button><div class="side-foot"><div class="avatar">${esc(state.user.name[0])}</div><div><b>${esc(state.user.name)}</b><small>${esc(ROLE_LABEL[state.user.role])}</small></div><button class="icon-btn" data-action="logout" title="Çıkış" aria-label="Çıkış">${ic('logout')}</button></div><button class="icon-btn mobile-menu" data-action="menu" aria-label="Menü">${ic('menu')}</button></div></div><nav id="nav"></nav></header><main class="main"><div class="topbar"><div class="topbar-left"><span class="crumb" id="pageCrumb"></span><h1 id="pageTitle"></h1><p id="pageSub"></p></div><div class="top-actions" id="pageActions"></div></div><div id="content"></div></main>`;
  renderNav();showPage(state.page,false);
 }
-function renderNav(){const nav=$('#nav');nav.innerHTML=NAV.filter(x=>x[3].includes(state.user.role)).map(([id,icon,label])=>`<button class="nav-item ${state.page===id?'active':''}" data-page="${id}">${ic(icon,'ic-sm')}<span>${esc(label)}</span>${id==='approvals'&&pendingCount()?`<em>${pendingCount()}</em>`:''}</button>`).join('');}
+function pendingPpeCount(){return(state.data?.ppeForms||[]).filter(x=>x.status==='İMZA BEKLİYOR').length;}
+function renderNav(){const nav=$('#nav');nav.innerHTML=NAV.filter(x=>x[3].includes(state.user.role)).map(([id,icon,label])=>{const badge=id==='approvals'?pendingCount():id==='ppe'?pendingPpeCount():0;return`<button class="nav-item ${state.page===id?'active':''}" data-page="${id}">${ic(icon,'ic-sm')}<span>${esc(label)}</span>${badge?`<em>${badge}</em>`:''}</button>`;}).join('');}
 function approvalStatus(x){const s=norm(x?.status);return(s==='ONAYLANDI'||s==='ONAY')?'ONAYLANDI':(s==='REDDEDILDI'||s==='REDDET'||s==='IPTAL')?'REDDEDILDI':'BEKLIYOR';}
 function pendingCount(){return state.data?.approvals?.filter(x=>approvalStatus(x)==='BEKLIYOR').length||0;}
 async function bootstrap(){state.data=await api('bootstrap');state.analysis=null;state.ppe=null;state.cost=null;}
@@ -1825,29 +2280,34 @@ function pageActionHtml(p){
  if(p==='dashboard'&&allowed('qr'))return`<button class="btn primary" data-page="qr">${ic('scan','ic-sm')} Hızlı QR Çıkış</button>`;
  if(p==='stock')return`<button class="btn primary" data-action="new-item">${ic('plus','ic-sm')} Yeni Stok Kartı</button>`;
  if(p==='movements')return`<button class="btn ghost" data-action="print-movements">${ic('print','ic-sm')} Yazdır</button>`;
- if(p==='ppe')return`<button class="btn ghost" data-action="print-ppe">${ic('print','ic-sm')} Raporu Yazdır</button>`;
+ if(p==='ppe'){
+  if(state.user?.role==='OP')return`<button class="btn primary" data-action="ppe-self-usage-doc">${ic('print','ic-sm')} KKD Kullanım Raporum (PDF)</button>`;
+  return`<button class="btn primary" data-action="ppe-print-all-usage">${ic('print','ic-sm')} Toplu PDF / İmza Çıktısı</button><button class="btn ghost" data-action="ppe-create">${ic('pen','ic-sm')} KKD Teslim Formu</button>`;
+ }
  if(p==='costs')return`<button class="btn ghost" data-action="export-costs-csv">${ic('download','ic-sm')} CSV İndir</button><button class="btn ghost" data-action="print-costs">${ic('print','ic-sm')} Raporu Yazdır</button>`;
  return'';
 }
 async function showPage(page,update=true){if(!allowed(page))page=defaultPage();state.page=page;if(update){renderNav();$$('.sidebar').forEach(x=>x.classList.remove('open'));}const meta=NAV.find(x=>x[0]===page);const title=meta?.[2]||'';$('#pageCrumb').textContent='Mekanik + İSG Depo / '+title;$('#pageTitle').textContent=title;$('#pageSub').textContent=pageSub(page);$('#pageActions').innerHTML=pageActionHtml(page);const fn={dashboard:renderDashboard,qr:renderQr,stock:renderStock,movements:renderMovements,approvals:renderApprovals,maintenance:renderMaintenance,ppe:renderPpe,analysis:renderAnalysis,costs:renderCosts,labels:renderLabels,connection:renderConnection}[page];await fn();}
-function pageSub(p){return {dashboard:'İki deponun canlı durumu, kritik stoklar ve hızlı erişim',qr:'QR okutun, PIN ile doğrulayın ve malzemeyi güvenle stoktan düşün',stock:'Yetkinize göre canlı mekanik ve İSG stok kartları',movements:'Giriş, çıkış ve sayım hareketlerinin tam dökümü',approvals:'Depocu veya yönetici kararı bekleyen malzeme çıkış talepleri',maintenance:'Periyot bazlı bakım reçeteleri ve tek tuşla toplu set çıkışı',ppe:'Aktif personel ile İSG ekipman çıkışlarının dönemsel karşılaştırması',analysis:'Sıklık, miktar, makine dağılımı ve ABC tüketim sınıflandırması',costs:'Makine ve bölüm bazında tüketim maliyetleri, aylık harcama trendi ve stok değeri',labels:'Mekanik parçalar ve İSG dolabı için yazdırılabilir QR etiketleri',connection:'Güvenli API bağlantısı, Apps Script (Kod.gs) ve tek HTML dışa aktarım'}[p]||'';}
+function pageSub(p){return {dashboard:'İki deponun canlı durumu, kritik stoklar ve hızlı erişim',qr:'QR okutun, PIN ile doğrulayın ve malzemeyi güvenle stoktan düşün',stock:'Yetkinize göre canlı mekanik ve İSG stok kartları',movements:'Giriş, çıkış ve sayım hareketlerinin tam dökümü',approvals:'Depocu veya yönetici kararı bekleyen malzeme çıkış talepleri',maintenance:'Periyot bazlı bakım reçeteleri ve tek tuşla toplu set çıkışı',ppe:state.user?.role==='OP'?'6331 sayılı İSG Kanunu kapsamında adınıza düzenlenen KKD teslim ve imza formları':'6331 sayılı İSG Kanunu kapsamında imzalı KKD teslim tutanakları ve personel kullanımı',analysis:'Sıklık, miktar, makine dağılımı ve ABC tüketim sınıflandırması',costs:'Makine ve bölüm bazında tüketim maliyetleri, aylık harcama trendi ve stok değeri',labels:'Mekanik parçalar ve İSG dolabı için yazdırılabilir QR etiketleri',connection:'Güvenli API bağlantısı, Apps Script (Kod.gs) ve tek HTML dışa aktarım'}[p]||'';}
 function kpi(label,value,note,icon,tone='orange'){return`<article class="kpi ${tone}"><div class="kpi-head"><small>${label}</small><span class="kpi-icon">${ic(icon)}</span></div><strong>${value}</strong><p>${note}</p></article>`;}
 function renderDashboard(){
  const s=state.data.stock, mech=s.filter(x=>x.depot==='MEKANIK'),isg=s.filter(x=>x.depot==='ISG'),low=s.filter(x=>x.stock<=x.min),pending=pendingCount();
- $('#content').innerHTML=`<section class="kpi-grid">${kpi('Mekanik Stok Kartı',mech.length,`${mech.filter(x=>x.stock>x.min).length} kalem yeterli seviyede`,'wrench','orange')}${kpi('İSG Stok Kartı',isg.length,`${num(isg.reduce((a,x)=>a+x.stock,0))} toplam ekipman adedi`,'shield','blue')}${kpi('Kritik / Eksik',low.length,'Sipariş noktasında veya altında','alert','red')}${kpi('Onay Bekleyen',pending,'Karar bekleyen çıkış talebi','checkCircle','green')}</section><section class="split"><article class="panel"><div class="panel-head"><div><h2>Kritik stoklar</h2><p>Öncelikli tedarik veya ikmal gerektiren kartlar</p></div><button class="link" data-page="stock">Tüm stokları gör →</button></div>${low.length?`<div class="critical-list">${low.map(x=>{const pct=x.min>0?Math.min(100,Math.round((x.stock/x.min)*100)):0;return`<button data-item="${x.id}"><div class="crit-info"><b>${esc(x.name)}</b><small><span class="mono">${esc(x.code)}</span> · Raf ${esc(x.shelf)}</small></div><div class="crit-meter"><div class="crit-bar"><i style="width:${pct}%"></i></div><small>Min ${num(x.min)} ${esc(x.unit)}</small></div><strong>${num(x.stock)} <small>${esc(x.unit)}</small></strong></button>`;}).join('')}</div>`:'<div class="empty good">Tüm stok kalemleri minimum seviyenin üzerinde.</div>'}</article><article class="panel"><div class="panel-head"><div><h2>Depo dağılımı</h2><p>Yetkiniz dahilindeki stok kartı özeti</p></div></div><div class="donut-wrap"><div class="donut" style="--p:${s.length?mech.length/s.length*100:0}"><span>${s.length}<small>Toplam Kart</small></span></div><div class="legend"><p><i class="orange"></i>Mekanik Depo <b>${mech.length}</b></p><p><i class="blue"></i>İSG Depo <b>${isg.length}</b></p><p><i class="red"></i>Eksik / Kritik <b>${low.length}</b></p></div></div></article></section><section class="panel"><div class="panel-head"><div><h2>Hızlı işlemler</h2><p>Rolünüze göre sık kullanılan kısayollar</p></div></div><div class="quick">${allowed('qr')?`<button data-page="qr"><b>${ic('scan')}</b><span>QR Çıkış<small>Operatör malzeme düşümü</small></span></button>`:''}${allowed('stock')?`<button data-action="new-item"><b>${ic('plus')}</b><span>Yeni Stok Kartı<small>Malzeme ve ilk giriş kaydı</small></span></button>`:''}${allowed('maintenance')?`<button data-page="maintenance"><b>${ic('wrench')}</b><span>Bakım Reçetesi<small>Periyodik BOM seti hazırla</small></span></button>`:''}${allowed('labels')?`<button data-page="labels"><b>${ic('qr')}</b><span>QR Etiketleri<small>Yazdırılabilir raf ve dolap QR</small></span></button>`:''}</div></section>`;
+ $('#content').innerHTML=`<section class="kpi-grid">${kpi('Mekanik Stok Kartı',mech.length,`${mech.filter(x=>x.stock>x.min).length} kalem yeterli seviyede`,'wrench','orange')}${kpi('İSG Stok Kartı',isg.length,`${num(isg.reduce((a,x)=>a+x.stock,0))} toplam ekipman adedi`,'shield','blue')}${kpi('Kritik / Eksik',low.length,'Sipariş noktasında veya altında','alert','red')}${kpi('Onay Bekleyen',pending,'Karar bekleyen çıkış talebi','checkCircle','green')}</section><section class="split"><article class="panel"><div class="panel-head"><div><h2>Kritik stoklar</h2><p>Öncelikli tedarik veya ikmal gerektiren kartlar</p></div><button class="link" data-page="stock">Tüm stokları gör →</button></div>${low.length?`<div class="critical-list">${low.map(x=>{const pct=x.min>0?Math.min(100,Math.round((x.stock/x.min)*100)):0;return`<button data-item="${x.id}"><div class="crit-info"><b>${esc(x.name)}</b><small><span class="mono">${esc(x.code)}</span> · Raf ${esc(x.shelf)}</small></div><div class="crit-meter"><div class="crit-bar"><i style="width:${pct}%"></i></div><small>Min ${num(x.min)} ${esc(x.unit)}</small></div><strong>${num(x.stock)} <small>${esc(x.unit)}</small></strong></button>`;}).join('')}</div>`:'<div class="empty good">Tüm stok kalemleri minimum seviyenin üzerinde.</div>'}</article><article class="panel"><div class="panel-head"><div><h2>Depo dağılımı</h2><p>Yetkiniz dahilindeki stok kartı özeti</p></div></div><div class="donut-wrap"><div class="donut" style="--p:${s.length?mech.length/s.length*100:0}"><span>${s.length}<small>Toplam Kart</small></span></div><div class="legend"><p><i class="orange"></i>Mekanik Depo <b>${mech.length}</b></p><p><i class="blue"></i>İSG Depo <b>${isg.length}</b></p><p><i class="red"></i>Eksik / Kritik <b>${low.length}</b></p></div></div></article></section><section class="panel"><div class="panel-head"><div><h2>Hızlı işlemler</h2><p>Rolünüze göre sık kullanılan kısayollar</p></div></div><div class="quick">${allowed('qr')?`<button data-page="qr"><b>${ic('scan')}</b><span>QR Çıkış<small>Operatör malzeme düşümü</small></span></button>`:''}${allowed('stock')?`<button data-action="new-item"><b>${ic('plus')}</b><span>Yeni Stok Kartı<small>Malzeme ve ilk giriş kaydı</small></span></button>`:''}${allowed('ppe')?`<button data-page="ppe"><b>${ic('shield')}</b><span>KKD & Zimmet<small>İmzalı teslim tutanağı oluştur</small></span></button>`:''}${allowed('labels')?`<button data-page="labels"><b>${ic('qr')}</b><span>QR Etiketleri<small>Yazdırılabilir raf ve dolap QR</small></span></button>`:''}</div></section>`;
 }
 
 function renderQr(){
- const canAll=state.user.role==='YONETICI'||state.user.role==='OP', stock=state.data.stock;
- $('#content').innerHTML=`<section class="qr-hero"><div><span class="qr-kicker">Hızlı Çıkış Terminali</span><h2>QR kodunu okutun</h2><p>Ürün raf etiketi veya <b>ISG-DOLAP</b> sabit koduyla yetkili malzeme çıkışını başlatın.</p><div class="qr-actions"><button class="btn primary large" data-action="scan">${ic('scan')} QR Okut</button><button class="btn white large" data-action="manual-qr">Kodu Elle Gir</button><button class="btn white large" data-action="open-qr-terminal">${ic('qr','ic-sm')} Bağımsız QR Terminali</button></div></div><div class="scan-visual"><div class="scan-frame"><i></i><i></i><i></i><i></i><span></span>${ic('qr','ic-lg')}</div></div></section><section class="choice-grid"><button data-action="cabinet" ${!canAll&&state.user.role!=='ISG_ADMIN'?'disabled':''}><span class="choice-icon blue">${ic('shield','ic-lg')}</span><div><b>İSG Dolabı</b><p>Tüm KKD ekipmanlarını tek ekrandan seçip üzerinize düşün.</p></div><em>ISG-DOLAP →</em></button><button data-action="maintenance-pick"><span class="choice-icon">${ic('wrench','ic-lg')}</span><div><b>Planlı Bakım Parça Listesi</b><p>Makine ve periyot seçerek bakım setini topluca hazırlayın.</p></div><em>Listeyi aç →</em></button></section><section class="panel"><div class="panel-head"><div><h2>Hızlı ürün seçimi</h2><p>Kamerasız veya manuel işlem için yetkili stok kartları</p></div><span class="meta-inline">${stock.length} kart</span></div><div class="product-strip">${stock.slice(0,12).map(x=>`<button class="${x.depot==='ISG'?'isg-item':''}" data-checkout="${x.id}"><span>${ic(x.depot==='ISG'?'shield':'wrench','ic-sm')}</span><div><b>${esc(x.name)}</b><small><span class="mono">${esc(x.code)}</span> · ${num(x.stock)} ${esc(x.unit)}</small></div></button>`).join('')}</div></section>`;
+ const canAll=state.user.role==='YONETICI'||state.user.role==='OP', stock=state.data.stock, ppeWait=pendingPpeCount();
+ $('#content').innerHTML=`${ppeWait&&state.user.role==='OP'?`<div class="notice" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><span><b>İmzanızı bekleyen ${ppeWait} adet KKD Zimmet Formu var.</b> 6331 sayılı İSG Kanunu kapsamında teslim onayını tamamlamak için inceleyin.</span><button class="btn primary sm" data-page="ppe">${ic('pen','ic-sm')} Formları İmzala</button></div>`:''}<section class="qr-hero"><div><span class="qr-kicker">Hızlı Çıkış Terminali</span><h2>QR kodunu okutun</h2><p>Ürün raf etiketi veya <b>ISG-DOLAP</b> sabit koduyla yetkili malzeme çıkışını başlatın.</p><div class="qr-actions"><button class="btn primary large" data-action="scan">${ic('scan')} QR Okut</button><button class="btn white large" data-action="manual-qr">Kodu Elle Gir</button><button class="btn white large" data-action="open-qr-terminal">${ic('qr','ic-sm')} Bağımsız QR Terminali</button></div></div><div class="scan-visual"><div class="scan-frame"><i></i><i></i><i></i><i></i><span></span>${ic('qr','ic-lg')}</div></div></section><section class="choice-grid"><button data-action="cabinet" ${!canAll&&state.user.role!=='ISG_ADMIN'?'disabled':''}><span class="choice-icon blue">${ic('shield','ic-lg')}</span><div><b>İSG Dolabı</b><p>Tüm KKD ekipmanlarını seçip dijital imzalı zimmet ile üzerinize düşün.</p></div><em>ISG-DOLAP →</em></button><button data-action="maintenance-pick"><span class="choice-icon">${ic('wrench','ic-lg')}</span><div><b>Planlı Bakım Parça Listesi</b><p>Makine ve periyot seçerek bakım setini topluca hazırlayın.</p></div><em>Listeyi aç →</em></button></section><section class="panel"><div class="panel-head"><div><h2>Hızlı ürün seçimi</h2><p>Kamerasız veya manuel işlem için yetkili stok kartları</p></div><span class="meta-inline">${stock.length} kart</span></div><div class="product-strip">${stock.slice(0,12).map(x=>`<button class="${x.depot==='ISG'?'isg-item':''}" data-checkout="${x.id}"><span>${ic(x.depot==='ISG'?'shield':'wrench','ic-sm')}</span><div><b>${esc(x.name)}</b><small><span class="mono">${esc(x.code)}</span> · ${num(x.stock)} ${esc(x.unit)}</small></div></button>`).join('')}</div></section>`;
 }
 function checkoutModal(item){
  const isIsg=item.depot==='ISG', consumable=!item.machine||/SARF|ORTAK/.test(norm(item.type+' '+item.usage));
- modal('Stoktan Düş',`<div class="item-summary"><span class="choice-icon ${isIsg?'blue':''}">${ic(isIsg?'shield':'wrench')}</span><div><b>${esc(item.name)}</b><small><span class="mono">${esc(item.code)}</span> · Raf ${esc(item.shelf)}</small></div><strong>${num(item.stock)} ${esc(item.unit)}</strong></div><form id="checkoutForm"><input type="hidden" name="itemId" value="${esc(item.id)}">${field('Kullanılacak makine / bölüm',consumable&&!isIsg?`<select name="machine" required><option value="">Seçin</option>${opts(state.data.lists.machines)}</select>`:`<input name="machine" value="${esc(isIsg?'PERSONEL KKD':item.machine)}" readonly>`)}${field('Miktar',`<div class="qty"><button type="button" data-qty="-1">−</button><input name="qty" type="number" min="0.01" step="0.01" max="${item.stock}" value="1" required><button type="button" data-qty="1">＋</button></div>`)}<div class="rule-note ${isIsg||consumable?'ok':'warn'}"><b>${isIsg?'Kural C':consumable?'Kural B':'Kural A'}</b><span>${isIsg?'Arıza kontrolü yapılmadan personel üzerine düşer.':consumable?'Ortak kullanım; arıza kaydı aranmaz.':'Makineye özel parça; açık arıza / planlı bakım kontrol edilir.'}</span></div></form>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="submit-checkout">Stoktan Düş</button>`);
+ const ppeSignBlock=isIsg?`<label class="legal-check"><input type="checkbox" id="coPpeAccept"><span><strong>6331 Sayılı İSG Kanunu · KKD Teslim ve Kullanım Beyanı</strong>${esc(KKD_LEGAL_TEXT)}</span></label>${sigPadHtml('coSigCanvas',true,'Teslim Alan İmza (Zorunlu)')}`:'';
+ modal(isIsg?'KKD Teslim Al ve İmzala':'Stoktan Düş',`<div class="item-summary"><span class="choice-icon ${isIsg?'blue':''}">${ic(isIsg?'shield':'wrench')}</span><div><b>${esc(item.name)}</b><small><span class="mono">${esc(item.code)}</span> · Raf ${esc(item.shelf)}</small></div><strong>${num(item.stock)} ${esc(item.unit)}</strong></div><form id="checkoutForm"><input type="hidden" name="itemId" value="${esc(item.id)}">${field('Kullanılacak makine / bölüm',consumable&&!isIsg?`<select name="machine" required><option value="">Seçin</option>${opts(state.data.lists.machines)}</select>`:`<input name="machine" value="${esc(isIsg?'PERSONEL KKD':item.machine)}" readonly>`)}${field('Miktar',`<div class="qty"><button type="button" data-qty="-1">−</button><input name="qty" type="number" min="0.01" step="0.01" max="${item.stock}" value="1" required><button type="button" data-qty="1">＋</button></div>`)}${ppeSignBlock}<div class="rule-note ${isIsg||consumable?'ok':'warn'}"><b>${isIsg?'Yasal KKD':consumable?'Kural B':'Kural A'}</b><span>${isIsg?'İmzanızla birlikte KKD Zimmet Tutanağı otomatik oluşturulup arşivlenir.':consumable?'Ortak kullanım; arıza kaydı aranmaz.':'Makineye özel parça; açık arıza / planlı bakım kontrol edilir.'}</span></div></form>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="submit-checkout">${isIsg?'İmzala ve Teslim Al':'Stoktan Düş'}</button>`);
+ if(isIsg)setTimeout(()=>{activeSigPad=initSigPad($('#coSigCanvas'));},40);
 }
-async function submitCheckout(extra={}){const f=$('#checkoutForm');let p;if(f){if(!f.reportValidity())return;p=Object.fromEntries(new FormData(f));p.qty=Number(p.qty);Object.assign(p,extra);}else if(extra.itemId){p={...extra,qty:Number(extra.qty)};}else return;setBusy(true);try{const r=await api('checkout',p);if(r.approvalRequired)return approvalGate(p,r.message);closeModal();await refreshData();const message=r.depotApproval?(r.message||'Depocu onayına istek gönderildi. Talep No: '+r.id):(r.pending?(r.message||'Talep onay havuzuna gönderildi. Talep No: '+r.id):'Çıkış tamamlandı. Kalan: '+num(r.remaining));toast(message,'ok');if(r.autoLogout)setTimeout(logout,700);}catch(e){toast(e.message,'error');}finally{setBusy(false);}}
+async function submitCheckout(extra={}){const f=$('#checkoutForm');let p;if(f){if(!f.reportValidity())return;p=Object.fromEntries(new FormData(f));p.qty=Number(p.qty);if($('#coSigCanvas')){if(!$('#coPpeAccept')?.checked)return toast('Lütfen 6331 sayılı İSG Kanunu teslim ve kullanım beyanını onaylayın.','error');if(!activeSigPad||activeSigPad.isEmpty())return toast('Lütfen imza alanına imzanızı çizin.','error');p.ppeAccepted=true;p.ppeSignature=activeSigPad.exportSvgPath();}Object.assign(p,extra);}else if(extra.itemId){p={...extra,qty:Number(extra.qty)};}else return;setBusy(true);try{const r=await api('checkout',p);if(r.approvalRequired)return approvalGate(p,r.message);closeModal();await refreshData();const message=r.depotApproval?(r.message||'Depocu onayına istek gönderildi. Talep No: '+r.id):(r.pending?(r.message||'Talep onay havuzuna gönderildi. Talep No: '+r.id):(r.ppeFormNo?`İmzalı KKD teslimi tamamlandı (${r.ppeFormNo}). Kalan: ${num(r.remaining)}`:'Çıkış tamamlandı. Kalan: '+num(r.remaining)));toast(message,'ok');if(r.autoLogout)setTimeout(logout,900);}catch(e){toast(e.message,'error');}finally{setBusy(false);}}
 function approvalGate(payload,message){modal('Yönetici Onayı Gerekli',`<div class="approval-warning"><b>${ic('alert','ic-sm')}</b><p>${esc(message)}</p></div><div class="tabs-mini"><button class="active" data-gate="pin">Anında PIN</button><button data-gate="pool">Onay Havuzu</button></div><div id="gateBody">${field('Yönetici Onay PIN’i','<input id="managerPin" type="password" inputmode="numeric" maxlength="8" placeholder="••••">','Demo yönetici PIN: 4444')}</div>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="gate-confirm">PIN ile Onayla</button>`);$('#modalRoot').dataset.checkout=JSON.stringify(payload);}
-function cabinetModal(){const items=state.data.stock.filter(x=>x.depot==='ISG');modal('İSG Dolabı · ISG-DOLAP',`<div class="cabinet-head"><div class="qr-mini">${qrSvg('ISG-DOLAP')}</div><div><b>Tek sabit dolap QR kodu</b><p>Ekipman ve adedi seçin; arıza kontrolü olmadan personel üzerine düşer.</p></div></div><div class="cabinet-list">${items.map((x,i)=>`<label><input type="radio" name="cabItem" value="${x.id}" ${i===0?'checked':''}><span>${esc(x.name)}<small><span class="mono">${esc(x.code)}</span> · ${num(x.stock)} ${esc(x.unit)}</small></span><em>${x.stock<=x.min?'Eksik':'Hazır'}</em></label>`).join('')}</div>${field('Adet','<input id="cabQty" type="number" min="1" value="1">')}`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="cabinet-submit">Üzerime Düş</button>`);}
+function cabinetModal(){const items=state.data.stock.filter(x=>x.depot==='ISG');modal('İSG Dolabı · ISG-DOLAP',`<div class="cabinet-head"><div class="qr-mini">${qrSvg('ISG-DOLAP')}</div><div><b>Tek sabit dolap QR kodu</b><p>Ekipman ve adedi seçin; sonraki adımda dijital imzanızla zimmet tutanağı oluşur.</p></div></div><div class="cabinet-list">${items.map((x,i)=>`<label><input type="radio" name="cabItem" value="${x.id}" ${i===0?'checked':''}><span>${esc(x.name)}<small><span class="mono">${esc(x.code)}</span> · ${num(x.stock)} ${esc(x.unit)}</small></span><em>${x.stock<=x.min?'Eksik':'Hazır'}</em></label>`).join('')}</div>${field('Adet','<input id="cabQty" type="number" min="1" value="1">')}`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="cabinet-submit">İmza Adımına Geç</button>`);}
 
 function usageLabelUi(value){const n=norm(value).replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim();if(n.includes('DEPO ONAYI GEREKLI'))return['Depo Onayı Gerekli',true];if(n==='KRITIK MALZEME')return['Kritik Malzeme',false];if(n==='PLANLI BAKIM')return['Planlı Bakım',false];if(n==='SARF'||n==='BAKIM SARF')return['Sarf',false];if(n==='ISG'||n==='ISG / KKD'||n==='ISG KKD')return['İSG',false];if(n==='TEKLI MAKINE')return['Tekli Makine',false];if(n==='COKLU MAKINE')return['Çoklu Makine',false];return[String(value).trim(),false];}
 function usageChipsHtml(value){const parts=String(value||'').split('|').map(x=>x.trim()).filter(Boolean);if(!parts.length)return'<span class="usage-empty">—</span>';return`<span class="usage-text" title="${esc(String(value))}">${parts.map(x=>{const[label,approval]=usageLabelUi(x);return approval?`<span class="usage-approval">${esc(label)}</span>`:esc(label);}).join(' · ')}</span>`;}
@@ -1893,7 +2353,7 @@ function newItemModal(){
 function editItemModal(item){const selected=new Set(String(item.usage||'').split('|').map(norm)),depotApproval=needsDepotApprovalUi(item),usageHtml=REGISTRATION_USAGE_UI.map(x=>`<label><input type="checkbox" name="editUsageOption" value="${esc(x)}" ${selected.has(norm(x))?'checked':''}><span>${esc(x)}</span></label>`).join('');modal('Stok Kartını Düzenle',`<form id="editItemForm" class="form-grid"><input type="hidden" name="id" value="${esc(item.id)}">${field('Parça kodu',`<input name="code" value="${esc(item.code)}" required>`)}${field('Malzeme adı',`<input name="name" value="${esc(item.name)}" required>`)}${field('Kategori',`<input name="category" list="editTypes" value="${esc(item.category)}" required><datalist id="editTypes">${opts(state.data.lists.types)}</datalist>`)}${field('Firma',`<input name="company" list="editCompanies" value="${esc(item.company)}"><datalist id="editCompanies">${opts(state.data.lists.companies)}</datalist>`)}${field('Birim',`<select name="unit">${opts(state.data.lists.units,item.unit)}</select>`)}<div class="field form-span-2"><span>Kullanım Şekli · Çoklu seçim</span><div class="usage-grid">${usageHtml}</div><small>Mevcut değerler “ | ” ayıracına göre işaretlenmiştir.</small></div><div class="field form-span-2"><span>Depo Onayı</span><select name="depotApproval"><option value="Gereksiz" ${depotApproval?'':'selected'}>Gereksiz</option><option value="Gerekli" ${depotApproval?'selected':''}>Gerekli</option></select><small>Mevcut kullanım değerine göre otomatik seçilir.</small></div>${field('Raf',`<input name="shelf" list="editShelves" value="${esc(item.shelf)}" required><datalist id="editShelves">${opts(state.data.lists.shelves)}</datalist>`)}${field('Makine',`<select name="machine" ${item.depot==='ISG'||/SARF/.test(norm(item.type))?'disabled':''}><option value="">Ortak kullanım</option>${opts(state.data.lists.machines,item.machine)}</select>`)}${field('Minimum stok',`<input name="min" type="number" min="0" value="${item.min}" required>`)}${field('Birim fiyat',`<input name="unitPrice" type="number" min="0" step="0.01" value="${item.unitPrice||0}" required>`)}${field('Durum',`<select name="active"><option value="AKTİF">AKTİF</option><option value="PASİF">PASİF</option></select>`)}</form>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="item-update-save">Değişiklikleri Kaydet</button>`);}
 
 function renderMovements(){const q=norm(state.movQuery||'');const rows=(state.data.movements||[]).filter(x=>(state.user.role==='YONETICI'||(state.user.role==='MEK_ADMIN'&&x.depot==='MEKANIK')||(state.user.role==='ISG_ADMIN'&&x.depot==='ISG'))&&(!q||norm([x.person,x.name,x.code,x.machine,x.source,x.depot].join(' ')).includes(q))).slice(0,200);$('#content').innerHTML=`<section class="panel table-panel print-area"><div class="toolbar"><div class="search">${ic('search','ic-sm')}<input id="movSearch" placeholder="Personel, malzeme, parça kodu, makine veya kaynak ara..." value="${esc(state.movQuery||'')}"></div><span class="meta-inline">${rows.length} kayıt</span></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Tarih</th><th>Çıkış Yapan</th><th>Malzeme</th><th>Depo</th><th>Makine / Bölüm</th><th class="num-col">Miktar</th><th>Kaynak</th></tr></thead><tbody>${rows.length?rows.map(x=>`<tr><td class="num">${fmt(x.date)}</td><td><b>${esc(x.person)}</b></td><td><b>${esc(x.name)}</b><small class="mono">${esc(x.code)}</small></td><td><span class="depot ${x.depot.toLowerCase()}">${x.depot==='ISG'?'İSG':'Mekanik'}</span></td><td>${esc(x.machine)}</td><td class="big num-col">${num(x.qty)} <small>${esc(x.unit)}</small></td><td><span class="badge neutral">${esc(x.source)}</span></td></tr>`).join(''):'<tr><td colspan="7"><div class="empty">Kriterlere uyan hareket kaydı bulunamadı.</div></td></tr>'}</tbody></table></div></section>`;}
-function renderApprovals(){const rows=[...(state.data.approvals||[])].map(x=>({...x,_st:approvalStatus(x),_dep:(norm(x.depot)==='ISG'||/ISG|KKD/.test(norm((x.machine||'')+' '+(x.itemId||''))))?'ISG':'MEKANIK'})).sort((a,b)=>(a._st==='BEKLIYOR'?0:1)-(b._st==='BEKLIYOR'?0:1));const oldGas=state.mode!=='demo'&&state.data?.apiVersion!=='V8.7-ONAY2';$('#content').innerHTML=`${oldGas?`<div class="approval-warning" style="margin-bottom:16px"><b>${ic('alert','ic-sm')}</b><p><b>Google Apps Script (Kod.gs) eski sürümde çalışıyor!</b> Yeni kayıtların <b>ONAY_HAVUZU</b> tablosuna eksiksiz yazılması için <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs</b>’yi kopyalayın, Apps Script’e yapıştırıp kaydedin ve <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> adımlarını uygulayın (URL değişmez).</p></div>`:''}<section class="approval-kpis">${kpi('Bekleyen',rows.filter(x=>x._st==='BEKLIYOR').length,'Depocu veya yönetici kararı bekleyen','clock','orange')}${kpi('Onaylanan',rows.filter(x=>x._st==='ONAYLANDI').length,'Stoktan düşülen talepler','checkCircle','green')}${kpi('Reddedilen',rows.filter(x=>x._st==='REDDEDILDI').length,'Stok değişmeyen talepler','close','red')}</section><section class="panel"><div class="panel-head"><div><h2>Depocu / Yönetici Onay Havuzu</h2><p>Depo onayı gereken veya açık bakım kaydı bulunmayan çıkış talepleri</p></div><span class="meta-inline">${rows.length} talep</span></div><div class="approval-list">${rows.length?rows.map(x=>`<article><div class="approval-id"><span>${esc(x.id||'—')}</span><small>${x.date?fmt(x.date):'Tarih yok'}</small><span class="depot ${x._dep.toLowerCase()}">${x._dep==='ISG'?'İSG':'Mekanik'}</span>${x.depotApproval?'<span class="badge warning">Depo Onayı</span>':''}</div><div><b>${esc(x.name||'Eksik Talep Kaydı')}</b><p>${x.code?`<span class="mono">${esc(x.code)}</span> · `:''}${esc(x.machine||'—')}${x.qty?` · <strong>${num(x.qty)} ${esc(x.unit||'AD')}</strong>`:''}</p><small>${esc(x.requester||'Operatör yok')} — ${esc(x.reason||'')}</small></div><span class="badge ${x._st==='BEKLIYOR'?'warning':x._st==='ONAYLANDI'?'success':'danger'}">${esc(x._st)}</span>${x._st==='BEKLIYOR'?`<div class="approval-buttons"><button class="btn reject" data-approval="REDDET" data-id="${esc(x.id)}">${x.incomplete?'Reddet / Kapat':'Reddet'}</button>${x.incomplete?'':`<button class="btn approve" data-approval="ONAYLA" data-id="${esc(x.id)}">Onayla</button>`}</div>`:''}</article>`).join(''):'<div class="empty">Onay havuzunda bekleyen veya sonuçlanmış talep yok.</div>'}</div></section>`;}
+function renderApprovals(){const rows=[...(state.data.approvals||[])].map(x=>({...x,_st:approvalStatus(x),_dep:(norm(x.depot)==='ISG'||/ISG|KKD/.test(norm((x.machine||'')+' '+(x.itemId||''))))?'ISG':'MEKANIK'})).sort((a,b)=>(a._st==='BEKLIYOR'?0:1)-(b._st==='BEKLIYOR'?0:1));const oldGas=state.mode!=='demo'&&!['V8.7-ONAY2','V8.7-KKD'].includes(state.data?.apiVersion);$('#content').innerHTML=`${oldGas?`<div class="approval-warning" style="margin-bottom:16px"><b>${ic('alert','ic-sm')}</b><p><b>Google Apps Script (Kod.gs) eski sürümde çalışıyor!</b> Yeni kayıtların <b>ONAY_HAVUZU</b> tablosuna eksiksiz yazılması için <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs</b>’yi kopyalayın, Apps Script’e yapıştırıp kaydedin ve <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> adımlarını uygulayın (URL değişmez).</p></div>`:''}<section class="approval-kpis">${kpi('Bekleyen',rows.filter(x=>x._st==='BEKLIYOR').length,'Depocu veya yönetici kararı bekleyen','clock','orange')}${kpi('Onaylanan',rows.filter(x=>x._st==='ONAYLANDI').length,'Stoktan düşülen talepler','checkCircle','green')}${kpi('Reddedilen',rows.filter(x=>x._st==='REDDEDILDI').length,'Stok değişmeyen talepler','close','red')}</section><section class="panel"><div class="panel-head"><div><h2>Depocu / Yönetici Onay Havuzu</h2><p>Depo onayı gereken veya açık bakım kaydı bulunmayan çıkış talepleri</p></div><span class="meta-inline">${rows.length} talep</span></div><div class="approval-list">${rows.length?rows.map(x=>`<article><div class="approval-id"><span>${esc(x.id||'—')}</span><small>${x.date?fmt(x.date):'Tarih yok'}</small><span class="depot ${x._dep.toLowerCase()}">${x._dep==='ISG'?'İSG':'Mekanik'}</span>${x.depotApproval?'<span class="badge warning">Depo Onayı</span>':''}</div><div><b>${esc(x.name||'Eksik Talep Kaydı')}</b><p>${x.code?`<span class="mono">${esc(x.code)}</span> · `:''}${esc(x.machine||'—')}${x.qty?` · <strong>${num(x.qty)} ${esc(x.unit||'AD')}</strong>`:''}</p><small>${esc(x.requester||'Operatör yok')} — ${esc(x.reason||'')}</small></div><span class="badge ${x._st==='BEKLIYOR'?'warning':x._st==='ONAYLANDI'?'success':'danger'}">${esc(x._st)}</span>${x._st==='BEKLIYOR'?`<div class="approval-buttons"><button class="btn reject" data-approval="REDDET" data-id="${esc(x.id)}">${x.incomplete?'Reddet / Kapat':'Reddet'}</button>${x.incomplete?'':`<button class="btn approve" data-approval="ONAYLA" data-id="${esc(x.id)}">Onayla</button>`}</div>`:''}</article>`).join(''):'<div class="empty">Onay havuzunda bekleyen veya sonuçlanmış talep yok.</div>'}</div></section>`;}
 
 const RECIPE_PERIODS=['AYLIK','3 AYLIK','6 AYLIK','YILLIK'];
 function isAllRecipePeriods(period){return norm(period)==='TUMU';}
@@ -1909,7 +2369,295 @@ function recipeTable(machine,period,rows){const all=isAllRecipePeriods(period);r
 function recipeEditModal(){const machine=$('#recipeMachine').value,period=$('#recipePeriod').value;if(isAllRecipePeriods(period))return toast('Reçeteyi düzenlemek için tek bir periyot seçin.','error');const rows=recipeRows(machine,period);modal('Bakım Reçetesini Düzenle',`<form id="recipeForm"><input type="hidden" name="machine" value="${esc(machine)}"><input type="hidden" name="period" value="${esc(period)}"><div id="recipeEditRows">${rows.map(r=>recipeEditRow(r.itemId,r.qty)).join('')}</div><button type="button" class="add-line" data-action="recipe-line-add">+ Parça ekle</button></form>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="recipe-save">Reçeteyi Kaydet</button>`);}
 function recipeEditRow(id='',qty=1){const parts=state.data.stock.filter(x=>x.depot==='MEKANIK');return`<div class="recipe-edit-row"><select name="itemId" required><option value="">Parça seçin</option>${parts.map(x=>`<option value="${x.id}" ${x.id===id?'selected':''}>${esc(x.code+' · '+x.name+' · '+x.shelf)}</option>`).join('')}</select><input name="qty" type="number" min="0.01" step="0.01" value="${qty}" required><button type="button" data-action="remove-line" aria-label="Sil">×</button></div>`;}
 
-async function renderPpe(){if(!state.ppe)state.ppe=await api('ppeAnalysis',{range:'30d'});const p=state.ppe;$('#content').innerHTML=`<section class="toolbar filters"><div class="seg"><button class="active" data-ppe="30d">Son 30 Gün</button><button data-ppe="month">Bu Ay</button><button data-ppe="3m">Son 3 Ay</button></div><span class="meta-inline">Analiz penceresi: ${p.rangeDays} gün</span></section><section class="ppe-summary">${kpi('Aktif Personel',p.cards.length,'VERİ sayfası aktif kullanıcıları','users','blue')}${kpi('KKD Almayan',p.none.length,`${p.rangeDays} günlük dönemde kayıt yok`,'alert','red')}${kpi('KKD Alan',p.cards.length-p.none.length,'En az bir İSG ekipman çıkışı','checkCircle','green')}</section><section class="panel"><div class="panel-head"><div><h2>Hiç KKD Çekmeyen Personel</h2><p>Seçili dönemde İSG çıkış kaydı bulunmayan aktif personel</p></div><span class="badge ${p.none.length?'danger':'success'}">${p.none.length} kişi</span></div><div class="alert-cards">${p.none.length?p.none.map(x=>`<article><span>${ic('alert','ic-sm')}</span><div><b>${esc(x.name)}</b><p>Seçili dönemde KKD hareketi yok</p></div></article>`).join(''):'<div class="empty good">Tüm aktif personelin seçili dönemde KKD hareketi mevcut.</div>'}</div></section><section class="panel print-area"><div class="panel-head"><div><h2>Personel Bazlı KKD Kullanım Karnesi</h2><p>Son kullanım tarihi, ekipman çeşitleri ve toplam hareket</p></div></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Personel</th><th class="num-col">İşlem</th><th class="num-col">Toplam Miktar</th><th>KKD Çeşitleri</th><th>Son Kullanım</th><th>Durum</th></tr></thead><tbody>${p.cards.map(x=>`<tr><td><b>${esc(x.name)}</b></td><td class="big num-col">${x.count}</td><td class="big num-col">${num(x.total)}</td><td>${esc(x.items.join(', ')||'—')}</td><td class="num">${x.last?fmt(x.last):'—'}</td><td><span class="badge ${x.count?'success':'danger'}">${x.count?'Kullanıyor':'Hareket Yok'}</span></td></tr>`).join('')}</tbody></table></div></section>`;}
+function ppeItemsSummary(items=[]){
+ return items.map(it=>`${it.name} (${num(it.qty)} ${it.unit||'AD'})`).join(', ')||'—';
+}
+function ppeOperatorOptions(){
+ const fromList=state.data?.lists?.operators||[];
+ const fromAnalysis=(state.ppe?.cards||[]).map(x=>x.name);
+ const fromForms=(state.data?.ppeForms||[]).map(x=>x.operator);
+ return[...new Set([...fromList,...fromAnalysis,...fromForms].filter(Boolean))].sort((a,b)=>a.localeCompare(b,'tr'));
+}
+function ppeLineRow(itemId='',qty=1){
+ const isg=state.data.stock.filter(x=>x.depot==='ISG');
+ return`<div class="ppe-line-row"><select name="ppeItemId" required><option value="">KKD ekipmanı seçin</option>${isg.map(x=>`<option value="${esc(x.id)}" ${x.id===itemId?'selected':''}>${esc(x.name)} (${num(x.stock)} ${esc(x.unit)})</option>`).join('')}</select><input name="ppeQty" type="number" min="1" step="1" value="${qty}" required><button type="button" data-action="ppe-remove-line" aria-label="Satırı sil">×</button></div>`;
+}
+function ppeCreateModal(preselectedOp=''){
+ const isg=state.data.stock.filter(x=>x.depot==='ISG');
+ if(!isg.length)return toast('İSG deposunda kayıtlı KKD ekipmanı bulunamadı.','error');
+ const ops=ppeOperatorOptions();
+ const opControl=ops.length?`<select name="operator" required><option value="">Operatör seçin</option>${opts(ops,preselectedOp)}</select>`:`<input name="operator" value="${esc(preselectedOp)}" placeholder="Operatör adı soyadı" required>`;
+ modal('Yeni KKD Teslim & İmza Formu',`<form id="ppeCreateForm">
+  ${field('Teslim Alacak Operatör',opControl)}
+  <div class="field"><span>Teslim Edilecek KKD Ekipmanları</span><div id="ppeCreateLines">${ppeLineRow(isg[0]?.id||'',1)}</div><button type="button" class="add-line" data-action="ppe-line-add">+ KKD ekipmanı ekle</button></div>
+  ${field('Not / Açıklama','<input name="note" maxlength="140" placeholder="Örn: Aylık yenileme, yeni işe giriş, hasarlı değişim...">')}
+  <div class="field"><span>Onay ve İmza Yöntemi</span>
+   <div class="ppe-mode-toggle">
+    <label><input type="radio" name="ppeSignMode" value="pending" checked><div><b>Operatör Onayına Gönder</b><small>Operatör kendi PIN’i ile giriş yaptığında imzalar; imzalayınca stoktan düşer.</small></div></label>
+    <label><input type="radio" name="ppeSignMode" value="now"><div><b>Hemen Şimdi İmzala</b><small>Operatör şu an yanınızdaysa PIN + ıslak dijital imza ile anında tamamlayın.</small></div></label>
+   </div>
+  </div>
+  <div id="ppeSignNowBox" hidden>
+   <label class="legal-check"><input type="checkbox" id="ppeCreateAccept"><span><strong>6331 Sayılı İSG Kanunu · KKD Teslim ve Kullanım Beyanı</strong>${esc(KKD_LEGAL_TEXT)}</span></label>
+   ${sigPadHtml('ppeCreateSigCanvas',true,'Operatör İmzası')}
+   ${field('Operatör Onay PIN’i','<input id="ppeCreateOpPin" type="password" inputmode="numeric" maxlength="8" placeholder="Operatörün kendi PIN’i">',state.mode==='demo'?'Demo operatör PIN’leri: 1111, 1155, 1166, 1177':'İmzanın operatör tarafından atıldığını doğrulamak için gereklidir.')}
+  </div>
+ </form>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="ppe-create-save" id="ppeCreateSubmitBtn">Onaya Gönder</button>`);
+}
+function ppeSignModal(formNo){
+ const f=(state.data?.ppeForms||[]).find(x=>x.formNo===formNo);
+ if(!f)return toast('KKD zimmet formu bulunamadı.','error');
+ const isOp=state.user.role==='OP';
+ modal('KKD Zimmet Formunu İmzala',`<div class="item-summary"><span class="choice-icon blue">${ic('shield')}</span><div><b>${esc(f.operator)}</b><small><span class="mono">${esc(f.formNo)}</span> · Teslim Eden: ${esc(f.issuer||'—')} · ${fmt(f.date)}</small></div><span class="badge warning">İMZA BEKLİYOR</span></div>
+  <div class="ppe-pending-items">${f.items.map(it=>`<div><span><b>${esc(it.name)}</b> <small class="mono">${esc(it.code)}</small></span><strong>${num(it.qty)} ${esc(it.unit||'AD')}</strong></div>`).join('')}</div>
+  ${f.note?`<p style="font-size:12.5px;color:var(--muted);margin-top:8px">Not: ${esc(f.note)}</p>`:''}
+  <label class="legal-check"><input type="checkbox" id="ppeSignAccept"><span><strong>6331 Sayılı İSG Kanunu · KKD Teslim ve Kullanım Beyanı</strong>${esc(f.legalText||KKD_LEGAL_TEXT)}</span></label>
+  ${sigPadHtml('ppeSignCanvas',false,'Teslim Alan Operatör İmzası')}
+  ${isOp?'':field(`Operatör Onay PIN’i (${esc(f.operator)})`,'<input id="ppeSignOpPin" type="password" inputmode="numeric" maxlength="8" placeholder="••••">',state.mode==='demo'?'Demo operatör PIN’leri: 1111 (Bakım Operatörü), 1155 (Engin), 1166 (Murat), 1177 (Ayşe)':'Operatör adına ekranınızdan imza alırken operatörün PIN’i zorunludur.')}
+  <div class="rule-note ok"><b>Stok ve Kayıt</b><span>İmzalayıp onayladığınızda KKD stoktan otomatik düşülür ve yazdırılabilir yasal tutanak arşivlenir.</span></div>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="ppe-sign-submit" data-form-no="${esc(f.formNo)}">${ic('pen','ic-sm')} İmzala ve Onayla</button>`);
+ setTimeout(()=>{activeSigPad=initSigPad($('#ppeSignCanvas'));},40);
+}
+function ppeDocumentHtml(f){
+ const signed=f.status==='İMZALANDI';
+ return`<div class="ppe-doc">
+  <div class="ppe-doc-head">
+   <div><h4>KİŞİSEL KORUYUCU DONANIM (KKD) TESLİM VE ZİMMET TUTANAĞI</h4><p>6331 Sayılı İş Sağlığı ve Güvenliği Kanunu · KKD Yönetmeliği</p></div>
+   <div class="ppe-doc-no"><b>${esc(f.formNo)}</b><small>${signed?'İMZALI BELGE':'İMZA BEKLİYOR'}</small></div>
+  </div>
+  <div class="ppe-doc-meta">
+   <div><span>Teslim Alan (Operatör)</span><b>${esc(f.operator)}</b></div>
+   <div><span>Düzenleme Tarihi</span><b>${fmt(f.date)}</b></div>
+   <div><span>Teslim Eden Yetkili</span><b>${esc(f.issuer||'—')}</b></div>
+   <div><span>İmza / Onay Tarihi</span><b>${signed&&f.signedAt?fmt(f.signedAt):'Henüz imzalanmadı'}</b></div>
+   <div><span>Toplam Ekipman</span><b>${f.items.length} kalem · ${num(f.totalQty)} adet</b></div>
+   <div><span>Açıklama / Not</span><b>${esc(f.note||'—')}</b></div>
+  </div>
+  <table class="ppe-doc-table">
+   <thead><tr><th style="width:42px">#</th><th>Parça Kodu</th><th>KKD / Ekipman Adı</th><th class="num-col">Miktar</th><th>Çıkış Ref.</th></tr></thead>
+   <tbody>${f.items.map((it,i)=>`<tr><td>${i+1}</td><td class="mono">${esc(it.code||'—')}</td><td><b>${esc(it.name)}</b></td><td class="num-col"><b>${num(it.qty)} ${esc(it.unit||'AD')}</b></td><td class="mono">${esc(it.exitId||'—')}</td></tr>`).join('')}</tbody>
+  </table>
+  <div class="ppe-doc-legal"><b>YASAL BEYAN VE KULLANIM TAAHHÜTNAMESİ</b>${esc(f.legalText||KKD_LEGAL_TEXT)}</div>
+  <div class="ppe-doc-sigs">
+   <div class="ppe-doc-sigbox">
+    <div><small>Teslim Eden (İSG / Depo)</small><b>${esc(f.issuer||'—')}</b></div>
+    <div class="ppe-sig-preview"><span style="font-size:12px;color:#475569">Sistem üzerinden düzenlendi</span></div>
+    <div class="ppe-doc-sigmeta">Tarih: ${fmt(f.date)}</div>
+   </div>
+   <div class="ppe-doc-sigbox">
+    <div><small>Teslim Alan (Operatör)</small><b>${esc(f.operator)}</b></div>
+    <div class="ppe-sig-preview">${signed&&f.signature?renderSigSvg(f.signature):'<span class="ppe-sig-pending-txt">Operatör imzası bekleniyor</span>'}</div>
+    <div class="ppe-doc-sigmeta">${signed?`Dijital İmza & PIN Doğrulandı · ${fmt(f.signedAt)}`:'Durum: İMZA BEKLİYOR'}</div>
+   </div>
+  </div>
+ </div>`;
+}
+function ppeDocumentModal(formNo){
+ const f=(state.data?.ppeForms||[]).find(x=>x.formNo===formNo);
+ if(!f)return toast('KKD zimmet formu bulunamadı.','error');
+ modal('KKD Teslim ve Zimmet Tutanağı · '+f.formNo,ppeDocumentHtml(f),`<button class="btn ghost" data-close>Kapat</button>${f.status==='İMZA BEKLİYOR'?`<button class="btn ghost" data-ppe-sign="${esc(f.formNo)}">${ic('pen','ic-sm')} İmzala</button>`:''}<button class="btn primary" data-ppe-print="${esc(f.formNo)}">${ic('print','ic-sm')} A4 Yazdır / PDF</button>`);
+}
+function openPpePrintFrame(html,fileTitle=''){
+ let root=$('#ppePrintRoot');
+ if(!root){root=document.createElement('div');root.id='ppePrintRoot';document.body.appendChild(root);}
+ const prevTitle=document.title;
+ if(fileTitle)document.title=fileTitle;
+ root.innerHTML=html;
+ document.body.classList.add('print-ppe-form');
+ let cleaned=false;
+ const cleanup=()=>{
+  if(cleaned)return; cleaned=true;
+  document.body.classList.remove('print-ppe-form');
+  document.title=prevTitle;
+  window.removeEventListener('afterprint',cleanup);
+ };
+ window.addEventListener('afterprint',cleanup);
+ setTimeout(()=>{window.print();setTimeout(cleanup,600);},80);
+}
+function printPpeDocument(formNo){
+ const f=(state.data?.ppeForms||[]).find(x=>x.formNo===formNo);
+ if(!f)return toast('KKD zimmet formu bulunamadı.','error');
+ openPpePrintFrame(`<div class="ppe-doc-page">${ppeDocumentHtml(f)}</div>`,`KKD_Zimmet_${f.formNo}`);
+}
+function normalizePpeData(res,range='30d'){
+ const hasDetailed=Array.isArray(res?.cards)&&res.cards.every(c=>Array.isArray(c.records)&&Array.isArray(c.summary))&&(res.range===range||state.mode==='demo');
+ if(hasDetailed)return{...res,range:res.range||range,rangeLabel:res.rangeLabel||PPE_RANGE_LABELS[range]||'Son 30 Gün',fallback:false};
+ const fallback=buildPpeFromMovements(state.data?.movements||[],state.data?.lists?.operators||[],range,res?.cards||null);
+ return{...fallback,fallback:true};
+}
+async function loadPpeAnalysis(range=state.ppeRange||'30d',force=false){
+ if(!force&&state.ppe&&state.ppe._range===range)return state.ppe;
+ const res=await api('ppeAnalysis',{range});
+ state.ppe={...normalizePpeData(res,range),_range:range};
+ return state.ppe;
+}
+function resolveOperatorUsageCard(operatorName){
+ const cards=state.ppe?.cards||[];
+ const found=cards.find(x=>norm(x.name)===norm(operatorName));
+ if(found)return found;
+ const built=buildPpeFromMovements(state.data?.movements||[],[operatorName],state.ppeRange||'30d');
+ return built.cards[0]||{name:operatorName,count:0,total:0,items:[],last:'',summary:[],records:[]};
+}
+function ppeUsageSummaryText(card){
+ if(card?.summary?.length)return card.summary.map(s=>`${s.name} (${num(s.qty)} ${s.unit||'AD'})`).join(' · ');
+ return (card?.items||[]).join(' · ')||'—';
+}
+function ppeUsageDocHtml(card,rangeLabel='Son 30 Gün'){
+ const todayStr=fmt(new Date().toISOString());
+ const records=card.records||[];
+ const summary=card.summary||[];
+ const issuerName=state.user?.role==='OP'?'İSG / Depo Yetkilisi':(state.user?.name||'İSG / Depo Yetkilisi');
+ const rowsHtml=records.length
+  ? records.map((r,i)=>`<tr><td>${i+1}</td><td class="num">${fmt(r.date)}</td><td class="mono">${esc(r.code||'—')}</td><td><b>${esc(r.name)}</b></td><td class="num-col"><b>${num(r.qty)} ${esc(r.unit||'AD')}</b></td><td class="wet-cell"></td></tr>`).join('')
+  : (card.items?.length
+    ? card.items.map((name,i)=>`<tr><td>${i+1}</td><td class="num">${card.last?fmt(card.last):'—'}</td><td class="mono">—</td><td><b>${esc(name)}</b></td><td class="num-col">—</td><td class="wet-cell"></td></tr>`).join('')
+    : `<tr><td colspan="6" style="text-align:center;color:#64748b;padding:16px">Seçili dönemde kayıtlı KKD teslim hareketi bulunmamaktadır.</td></tr>`);
+ return`<div class="ppe-doc-page"><div class="ppe-doc">
+  <div class="ppe-doc-head">
+   <div><h4>KİŞİSEL KORUYUCU DONANIM (KKD) KULLANIM VE TESLİM TUTANAĞI</h4><p>6331 Sayılı İş Sağlığı ve Güvenliği Kanunu · Kişisel Koruyucu Donanım Yönetmeliği</p></div>
+   <div class="ppe-doc-no"><b>${esc(rangeLabel)}</b><small>Belge Tarihi: ${todayStr}</small></div>
+  </div>
+  <div class="ppe-doc-meta">
+   <div><span>Teslim Alan (Operatör)</span><b>${esc(card.name)}</b></div>
+   <div><span>Rapor Dönemi</span><b>${esc(rangeLabel)}</b></div>
+   <div><span>Toplam Teslim İşlemi</span><b>${card.count} işlem · ${summary.length||card.items?.length||0} çeşit</b></div>
+   <div><span>Toplam KKD Miktarı</span><b>${num(card.total)} adet / çift</b></div>
+   <div><span>Düzenleyen Yetkili</span><b>${esc(issuerName)}</b></div>
+   <div><span>Son Teslim Tarihi</span><b>${card.last?fmt(card.last):'—'}</b></div>
+  </div>
+  ${summary.length?`<div class="ppe-doc-summary"><b>Dönem KKD Özeti:</b>${esc(ppeUsageSummaryText(card))}</div>`:''}
+  <table class="ppe-doc-table">
+   <thead><tr><th style="width:36px">#</th><th style="width:126px">Teslim Tarihi</th><th style="width:110px">Parça Kodu</th><th>KKD / Ekipman Adı</th><th class="num-col" style="width:92px">Miktar</th><th class="wet-cell">Operatör İmza</th></tr></thead>
+   <tbody>${rowsHtml}</tbody>
+  </table>
+  <div class="ppe-doc-legal"><b>6331 SAYILI İSG KANUNU · YASAL BEYAN VE KULLANIM TAAHHÜTNAMESİ</b>${esc(KKD_LEGAL_TEXT)}</div>
+  <div class="ppe-doc-sigs">
+   <div class="ppe-doc-sigbox">
+    <div><small>Teslim Eden (İSG / Depo Yetkilisi)</small><b>${esc(issuerName)}</b></div>
+    <div class="ppe-sig-preview wet-space">Islak İmza</div>
+    <div class="ppe-doc-sigmeta">Tarih: ...... / ...... / 20......</div>
+   </div>
+   <div class="ppe-doc-sigbox">
+    <div><small>Teslim Alan (Operatör)</small><b>${esc(card.name)}</b></div>
+    <div class="ppe-sig-preview wet-space">Ad Soyad &amp; Islak İmza</div>
+    <div class="ppe-doc-sigmeta">Tarih: ...... / ...... / 20......</div>
+   </div>
+  </div>
+ </div></div>`;
+}
+function ppeOperatorReportModal(operatorName){
+ const card=resolveOperatorUsageCard(operatorName);
+ const rangeLabel=state.ppe?.rangeLabel||PPE_RANGE_LABELS[state.ppeRange]||'Son 30 Gün';
+ modal(`KKD Kullanım ve İmza Tutanağı · ${card.name}`,`<div class="notice" style="margin-bottom:14px"><b>PDF / Yazdırma:</b> Aşağıdaki tutanağı <b>PDF Kaydet / A4 Yazdır</b> butonuyla PDF olarak indirebilir veya yazıcıdan çıktı alıp <b>${esc(card.name)}</b> personeline ıslak imza attırabilirsiniz.</div>${ppeUsageDocHtml(card,rangeLabel)}`,`<button class="btn ghost" data-close>Kapat</button><button class="btn primary" data-ppe-usage-print="${esc(card.name)}">${ic('print','ic-sm')} PDF Kaydet / A4 Yazdır</button>`);
+}
+function printPpeUsagePdf(operatorNames=[]){
+ const names=Array.isArray(operatorNames)?operatorNames:[operatorNames];
+ const cards=names.filter(Boolean).map(n=>resolveOperatorUsageCard(n));
+ if(!cards.length)return toast('Yazdırılacak KKD kullanım kaydı bulunamadı.','error');
+ const rangeLabel=state.ppe?.rangeLabel||PPE_RANGE_LABELS[state.ppeRange]||'Son 30 Gün';
+ const html=cards.map(c=>ppeUsageDocHtml(c,rangeLabel)).join('');
+ const safeDate=new Date().toISOString().slice(0,10);
+ const title=cards.length===1?`KKD_Kullanim_Tutanagi_${cards[0].name.replace(/\s+/g,'_')}_${safeDate}`:`KKD_Tum_Operatorler_Tutanak_${safeDate}`;
+ openPpePrintFrame(html,title);
+}
+async function renderPpe(){
+ const isOp=state.user.role==='OP', forms=state.data?.ppeForms||[];
+ const pendingForms=forms.filter(x=>x.status==='İMZA BEKLİYOR');
+ const signedForms=forms.filter(x=>x.status==='İMZALANDI');
+ const totalSignedQty=signedForms.reduce((s,x)=>s+(Number(x.totalQty)||0),0);
+ const oldGas=state.mode!=='demo'&&state.data?.apiVersion!=='V8.7-KKD';
+ if(isOp){
+  const selfCard=buildPpeFromMovements(state.data?.movements||[],[state.user.name],'all').cards[0]||{name:state.user.name,count:0,total:0,summary:[],records:[]};
+  $('#content').innerHTML=`
+   ${oldGas?`<div class="notice">Canlı <b>Kod.gs</b> henüz <b>V8.7-KKD</b> sürümüne güncellenmemiş. Yöneticiniz güncel kodu dağıttığında imzalı KKD formlarınız burada görünür.</div>`:''}
+   <section class="ppe-summary">
+    ${kpi('İmza Bekleyen',pendingForms.length,'Onayınızı bekleyen KKD teslimi','clock',pendingForms.length?'orange':'green')}
+    ${kpi('İmzalanan Formlar',signedForms.length,'Yasal zimmet kaydı tamamlanan','fileCheck','green')}
+    ${kpi('Teslim Alınan KKD',num(selfCard.total||totalSignedQty),'Kayıtlı toplam ekipman adedi','shield','blue')}
+   </section>
+   <section class="panel">
+    <div class="panel-head"><div><h2>İmza Bekleyen KKD Formlarım</h2><p>6331 sayılı İSG Kanunu kapsamında teslim alıp kullanacağınızı onaylayın ve imzalayın</p></div><span class="badge ${pendingForms.length?'warning':'success'}">${pendingForms.length} bekliyor</span></div>
+    ${pendingForms.length?`<div class="ppe-pending-grid">${pendingForms.map(f=>`<article class="ppe-pending-card"><div class="ppe-pending-head"><div><b class="mono">${esc(f.formNo)}</b><small>${fmt(f.date)} · Teslim Eden: ${esc(f.issuer||'—')}</small></div><span class="badge warning">İmza Bekliyor</span></div><div class="ppe-pending-items">${f.items.map(it=>`<div><span>${esc(it.name)}</span><strong>${num(it.qty)} ${esc(it.unit||'AD')}</strong></div>`).join('')}</div>${f.note?`<small style="color:var(--muted)">Not: ${esc(f.note)}</small>`:''}<div class="ppe-pending-foot"><small>İmzalayınca stoktan düşülür</small><button class="btn primary sm" data-ppe-sign="${esc(f.formNo)}">${ic('pen','ic-sm')} İncele ve İmzala</button></div></article>`).join('')}</div>`:'<div class="empty good">İmzanızı bekleyen KKD zimmet formu bulunmuyor.</div>'}
+   </section>
+   <section class="panel table-panel">
+    <div class="panel-head"><div><h2>İmzalanan KKD Zimmet Formlarım</h2><p>Geçmişte teslim alıp imzaladığınız tüm KKD tutanakları</p></div><span class="meta-inline">${signedForms.length} belge</span></div>
+    <div class="table-scroll"><table class="data-table"><thead><tr><th>Form No</th><th>Teslim Tarihi</th><th>KKD Ekipmanları</th><th>Teslim Eden</th><th>İmza Tarihi</th><th>Durum</th><th class="num-col">Tutanak</th></tr></thead><tbody>${signedForms.length?signedForms.map(f=>`<tr><td class="mono"><b>${esc(f.formNo)}</b></td><td class="num">${fmt(f.date)}</td><td><b>${esc(ppeItemsSummary(f.items))}</b>${f.note?`<small>${esc(f.note)}</small>`:''}</td><td>${esc(f.issuer||'—')}</td><td class="num">${fmt(f.signedAt)}</td><td><span class="badge success">İmzalandı</span></td><td class="num-col"><div class="ppe-row-actions"><button class="btn ghost sm" data-ppe-doc="${esc(f.formNo)}">${ic('fileCheck','ic-sm')} Tutanak</button></div></td></tr>`).join(''):'<tr><td colspan="7"><div class="empty">Henüz imzalanmış KKD zimmet formunuz bulunmuyor.</div></td></tr>'}</tbody></table></div>
+   </section>`;
+  return;
+ }
+
+ const tab=state.ppeTab||'analysis';
+ const tabBar=`<section class="toolbar filters">
+  <div class="seg">
+   <button class="${tab==='analysis'?'active':''}" data-ppe-tab="analysis">KKD Kullanım Raporu &amp; PDF İmza</button>
+   <button class="${tab==='forms'?'active':''}" data-ppe-tab="forms">Dijital Zimmet Formları (${forms.length})</button>
+  </div>
+  ${tab==='forms'?`<div class="seg">
+   <button class="${state.ppeFilter.status==='TUMU'?'active':''}" data-ppe-status="TUMU">Tümü</button>
+   <button class="${state.ppeFilter.status==='İMZA BEKLİYOR'?'active':''}" data-ppe-status="İMZA BEKLİYOR">İmza Bekliyor (${pendingForms.length})</button>
+   <button class="${state.ppeFilter.status==='İMZALANDI'?'active':''}" data-ppe-status="İMZALANDI">İmzalandı (${signedForms.length})</button>
+  </div><div class="search">${ic('search','ic-sm')}<input id="ppeSearch" placeholder="Form no, operatör veya KKD ara..." value="${esc(state.ppeFilter.query||'')}"></div>`:''}
+ </section>`;
+
+ if(tab==='forms'){
+  const q=norm(state.ppeFilter.query||'');
+  const filtered=forms.filter(f=>(state.ppeFilter.status==='TUMU'||f.status===state.ppeFilter.status)&&(!q||norm([f.formNo,f.operator,f.issuer,f.note,ppeItemsSummary(f.items)].join(' ')).includes(q)));
+  $('#content').innerHTML=`
+   ${oldGas?`<div class="approval-warning" style="margin-bottom:16px"><b>${ic('alert','ic-sm')}</b><p><b>Google Apps Script (Kod.gs) henüz V8.7-KKD sürümüne güncellenmemiş!</b> İmzalı KKD Zimmet kayıtlarının <b>KKD_ZIMMET</b> sayfasına yazılması için <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs</b>’yi kopyalayıp <b>Dağıt → Dağıtımları yönet → Kalem → Yeni sürüm → Dağıt</b> yapın.</p></div>`:''}
+   ${tabBar}
+   <section class="kpi-grid">
+    ${kpi('Toplam Zimmet Formu',forms.length,'6331 kapsamlı tüm KKD formları','fileCheck','blue')}
+    ${kpi('İmza Bekleyen',pendingForms.length,'Operatör onayı bekleyen teslim','clock',pendingForms.length?'orange':'green')}
+    ${kpi('İmzalanmış Form',signedForms.length,'Dijital imzalı yasal tutanak','checkCircle','green')}
+    ${kpi('Teslim Edilen KKD',num(totalSignedQty),'İmzalı teslim toplam adedi','shield','orange')}
+   </section>
+   <section class="panel table-panel print-area">
+    <div class="panel-head"><div><h2>Dijital İmzalı KKD Zimmet Kayıtları</h2><p>Operatörlerce ekran üzerinden imzalanmış yasal KKD tutanakları ve imza bekleyen teslimler</p></div><span class="meta-inline">${filtered.length} form</span></div>
+    <div class="table-scroll"><table class="data-table"><thead><tr><th>Form No</th><th>Tarih</th><th>Operatör</th><th>Teslim Edilen KKD’ler</th><th>Teslim Eden</th><th>Durum</th><th class="num-col">İşlemler</th></tr></thead><tbody>${filtered.length?filtered.map(f=>`<tr>
+     <td class="mono"><b>${esc(f.formNo)}</b></td>
+     <td class="num">${fmt(f.date)}</td>
+     <td><b>${esc(f.operator)}</b></td>
+     <td><b>${esc(ppeItemsSummary(f.items))}</b>${f.note?`<small>${esc(f.note)}</small>`:''}</td>
+     <td>${esc(f.issuer||'—')}</td>
+     <td><span class="badge ${f.status==='İMZALANDI'?'success':'warning'}">${esc(f.status)}</span>${f.signedAt?`<small class="num">${fmt(f.signedAt)}</small>`:''}</td>
+     <td class="num-col"><div class="ppe-row-actions">${f.status==='İMZA BEKLİYOR'?`<button class="btn primary sm" data-ppe-sign="${esc(f.formNo)}">${ic('pen','ic-sm')} İmza Al</button>`:''}<button class="btn ghost sm" data-ppe-doc="${esc(f.formNo)}">${ic('fileCheck','ic-sm')} Tutanak</button></div></td>
+    </tr>`).join(''):'<tr><td colspan="7"><div class="empty">Kriterlere uyan KKD zimmet formu bulunamadı. Yeni form oluşturmak için sağ üstteki <b>KKD Teslim Formu</b> butonunu kullanın.</div></td></tr>'}</tbody></table></div>
+   </section>`;
+  return;
+ }
+
+ const range=state.ppeRange||'30d';
+ const p=await loadPpeAnalysis(range);
+ const uq=norm(state.ppeUsageQuery||'');
+ const visibleCards=(p.cards||[]).filter(x=>!uq||norm([x.name,ppeUsageSummaryText(x)].join(' ')).includes(uq));
+ const usedCards=(p.cards||[]).filter(x=>x.count>0);
+ $('#content').innerHTML=`
+  ${tabBar}
+  ${p.fallback?`<div class="notice" style="margin-bottom:14px">Detaylı KKD dökümü mevcut hareketlerden oluşturuldu. Tüm geçmiş dönemler (<b>Bu Yıl / Tüm Zamanlar</b>) için <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs</b>’yi dağıtabilirsiniz.</div>`:''}
+  <section class="toolbar filters">
+   <div class="seg">
+    ${[['30d','Son 30 Gün'],['month','Bu Ay'],['3m','Son 3 Ay'],['year','Bu Yıl'],['all','Tüm Zamanlar']].map(([k,lbl])=>`<button class="${range===k?'active':''}" data-ppe="${k}">${lbl}</button>`).join('')}
+   </div>
+   <div class="search">${ic('search','ic-sm')}<input id="ppeUsageSearch" placeholder="Operatör veya KKD ekipmanı ara..." value="${esc(state.ppeUsageQuery||'')}"></div>
+   <span class="meta-inline">${esc(p.rangeLabel||PPE_RANGE_LABELS[range])} · ${usedCards.length} operatör PDF hazır</span>
+  </section>
+  <section class="ppe-summary">${kpi('Aktif Operatör',p.cards.length,'VERİ sayfası ve KKD kayıtları','users','blue')}${kpi('KKD Kullanan',usedCards.length,`${esc(p.rangeLabel||PPE_RANGE_LABELS[range])} içinde teslim alan`,'checkCircle','green')}${kpi('KKD Almayan',p.none.length,'Seçili dönemde İSG çıkışı yok','alert',p.none.length?'red':'green')}</section>
+  <section class="panel print-area">
+   <div class="panel-head">
+    <div><h2>Operatör Bazlı KKD Kullanım Raporu &amp; PDF İmza Formları</h2><p>Her operatörün teslim aldığı tüm KKD’leri çıkarın, A4 PDF çıktısı alıp operatöre ıslak imza attırın</p></div>
+    ${usedCards.length?`<button class="btn primary sm" data-action="ppe-print-all-usage">${ic('print','ic-sm')} Tüm Operatörleri PDF Yazdır (${usedCards.length} Sayfa)</button>`:''}
+   </div>
+   <div class="table-scroll"><table class="data-table"><thead><tr><th>Operatör</th><th class="num-col">Teslim</th><th class="num-col">Toplam Miktar</th><th>Kullanılan KKD Ekipmanları</th><th>Son Teslim</th><th>Durum</th><th class="num-col">PDF / İmza Formu</th></tr></thead><tbody>${visibleCards.length?visibleCards.map(x=>`<tr>
+    <td><b>${esc(x.name)}</b></td>
+    <td class="big num-col">${x.count}</td>
+    <td class="big num-col">${num(x.total)}</td>
+    <td>${esc(ppeUsageSummaryText(x))}</td>
+    <td class="num">${x.last?fmt(x.last):'—'}</td>
+    <td><span class="badge ${x.count?'success':'danger'}">${x.count?'Kullandı':'Hareket Yok'}</span></td>
+    <td class="num-col"><div class="ppe-row-actions">${x.count?`<button class="btn primary sm" data-ppe-usage-doc="${esc(x.name)}">${ic('fileCheck','ic-sm')} PDF / İmza Formu</button><button class="btn ghost sm" data-ppe-usage-print="${esc(x.name)}" title="Doğrudan A4 Yazdır / PDF">${ic('print','ic-sm')}</button>`:`<button class="btn ghost sm" data-ppe-give="${esc(x.name)}">${ic('pen','ic-sm')} KKD Ver</button>`}</div></td>
+   </tr>`).join(''):'<tr><td colspan="7"><div class="empty">Arama kriterine uyan operatör bulunamadı.</div></td></tr>'}</tbody></table></div>
+  </section>
+  <section class="panel"><div class="panel-head"><div><h2>Seçili Dönemde KKD Çekmeyen Personel</h2><p>${esc(p.rangeLabel||PPE_RANGE_LABELS[range])} içinde İSG çıkış kaydı bulunmayan aktif operatörler</p></div><span class="badge ${p.none.length?'danger':'success'}">${p.none.length} kişi</span></div><div class="alert-cards">${p.none.length?p.none.map(x=>`<article><div class="alert-card-main"><span>${ic('alert','ic-sm')}</span><div><b>${esc(x.name)}</b><p>Seçili dönemde KKD hareketi yok</p></div></div><button class="btn ghost sm" data-ppe-give="${esc(x.name)}">${ic('pen','ic-sm')} KKD Ver</button></article>`).join(''):'<div class="empty good">Tüm aktif personelin seçili dönemde KKD hareketi mevcut.</div>'}</div></section>`;
+}
 async function renderAnalysis(){if(!state.analysis)state.analysis=await api('movementAnalysis',{range:'year',depot:'Tümü'});const rows=state.analysis.rows||[];$('#content').innerHTML=`<section class="toolbar filters"><div class="field-inline"><span>Dönem</span><select id="anaRange"><option value="30d">Son 30 Gün</option><option value="3m">Son 3 Ay</option><option value="year" selected>Bu Yıl</option><option value="all">Tüm Zamanlar</option></select></div><div class="field-inline"><span>Depo</span><select id="anaDepot"><option>Tümü</option><option value="MEKANIK">Mekanik</option><option value="ISG">İSG</option></select></div><div class="field-inline"><span>Sıralama</span><select id="anaSort"><option value="frequency">İşlem Sıklığı</option><option value="total">Toplam Miktar</option></select></div></section><section class="analysis-grid"><article class="panel"><div class="panel-head"><div><h2>En Çok Hareket Görenler</h2><p>Kronik arıza ve yoğun tüketim göstergesi</p></div></div><div id="analysisBars">${analysisBars(rows,'frequency')}</div></article><article class="panel"><div class="panel-head"><div><h2>ABC Tüketim Sınıfları</h2><p>Kümülatif toplam tüketim payına göre</p></div></div><div class="abc-summary">${['A','B','C'].map(c=>`<div class="abc ${c}"><b>${c}</b><span>${rows.filter(x=>x.abc===c).length} ürün</span><small>${c==='A'?'İlk %80':c==='B'?'Sonraki %15':'Son %5'}</small></div>`).join('')}</div><div class="suggestions"><h3>Akıllı stok önerileri</h3>${rows.filter(x=>x.suggestion).slice(0,4).map(x=>`<button data-analysis-item="${x.itemId}"><span>${ic('trend','ic-sm')}</span><div><b>${esc(x.name)}</b><small>Tüketim hızı ${num(x.velocity)} / ay · Min ${num(x.min)}</small></div><em>Min. Stok Artırılmalı</em></button>`).join('')||'<div class="empty">Mevcut dönem için ek stok önerisi yok.</div>'}</div></article></section><section class="panel"><div class="panel-head"><div><h2>Detaylı tüketim tablosu</h2><p>Makine bazlı dağılımı görmek için herhangi bir satıra tıklayın</p></div><span class="meta-inline">${rows.length} kalem</span></div><div class="table-scroll"><table class="data-table"><thead><tr><th>ABC</th><th>Malzeme</th><th>Depo</th><th class="num-col">İşlem Sıklığı</th><th class="num-col">Toplam Miktar</th><th class="num-col">Aylık Hız</th><th class="num-col">Stok / Min</th><th>Öneri</th></tr></thead><tbody>${rows.map(x=>`<tr data-analysis-item="${x.itemId}"><td><span class="abc-dot ${x.abc}">${x.abc}</span></td><td><b>${esc(x.name)}</b><small class="mono">${esc(x.code)}</small></td><td><span class="depot ${x.depot.toLowerCase()}">${x.depot==='ISG'?'İSG':'Mekanik'}</span></td><td class="big num-col">${x.frequency}</td><td class="big num-col">${num(x.total)}</td><td class="num num-col">${num(x.velocity)}</td><td class="num num-col">${num(x.stock)} / ${num(x.min)}</td><td>${x.suggestion?'<span class="badge warning">Artır</span>':'—'}</td></tr>`).join('')}</tbody></table></div></section>`;}
 function analysisBars(rows,sort){rows=[...rows].sort((a,b)=>b[sort]-a[sort]).slice(0,8);const max=Math.max(1,...rows.map(x=>x[sort]));return`<div class="bar-list">${rows.length?rows.map((x,i)=>`<button data-analysis-item="${x.itemId}"><em>${String(i+1).padStart(2,'0')}</em><div><span><b>${esc(x.name)}</b><small class="mono">${esc(x.code)}</small></span><strong>${num(x[sort])}${sort==='frequency'?' işlem':''}</strong><i style="width:${x[sort]/max*100}%"></i></div></button>`).join(''):'<div class="empty">Bu dönemde hareket kaydı bulunamadı.</div>'}</div>`;}
 function analysisDetail(itemId){const x=state.analysis.rows.find(i=>i.itemId===itemId);if(!x)return;const total=Object.values(x.machines).reduce((a,b)=>a+b,0);modal('Makine Tüketim Dağılımı',`<div class="item-summary"><span class="choice-icon">${ic('chart')}</span><div><b>${esc(x.name)}</b><small><span class="mono">${esc(x.code)}</span> · ${x.frequency} farklı işlem</small></div><strong>${num(x.total)}</strong></div><div class="machine-dist">${Object.entries(x.machines).sort((a,b)=>b[1]-a[1]).map(([m,q])=>`<div><span><b>${esc(m)}</b><small>${num(q)} adet / litre</small></span><div><i style="width:${q/total*100}%"></i></div><strong>%${Math.round(q/total*100)}</strong></div>`).join('')}</div>${x.suggestion?'<div class="smart-note"><b>Min. Stok Artırılmalı</b><p>Bu ürünün aylık tüketim hızı mevcut sipariş noktasının üzerinde seyrediyor.</p></div>':''}`,'<button class="btn primary" data-close>Tamam</button>');}
@@ -2083,7 +2831,7 @@ function exportCostsCsv(){
 function renderLabels(){const mech=state.data.stock.filter(x=>x.depot==='MEKANIK'),isg=state.data.stock.filter(x=>x.depot==='ISG');$('#content').innerHTML=`<section class="label-hero"><div><span class="meta-inline" style="color:var(--orange)">Sabit Dolap Kodu</span><h2>İSG-DOLAP</h2><p>Tüm İSG ekipmanlarını tek ekranda açan sabit QR etiketi. Dolap kapağına yapıştırmanız yeterlidir.</p><div class="button-row" style="margin-top:12px"><button class="btn primary" data-action="print-cabinet">${ic('print','ic-sm')} İSG Dolap Etiketini Yazdır</button><button class="btn ghost" data-action="open-qr-terminal">${ic('qr','ic-sm')} Bağımsız QR Terminali</button><button class="btn ghost" data-action="download-qr-terminal">${ic('download','ic-sm')} QR HTML İndir</button></div></div><div class="label-preview cabinet-label">${qrSvg('ISG-DOLAP')}<b>İSG DOLABI</b><small>QR okut · PIN gir · KKD seç</small></div></section><section class="panel"><div class="panel-head"><div><h2>Mekanik parça etiketleri</h2><p>Yazdırmak istediğiniz raf etiketlerini işaretleyin</p></div><div class="button-row"><button class="btn ghost" data-action="labels-toggle-all">Tümünü Seç</button><button class="btn primary" data-action="print-selected">${ic('print','ic-sm')} Seçilenleri Yazdır</button></div></div><div class="label-select">${mech.map(x=>`<label><input type="checkbox" value="${x.id}"><span class="qr-thumb">${qrSvg(x.id)}</span><div><b>${esc(x.name)}</b><small class="mono">${esc(x.code)} · Raf ${esc(x.shelf)}</small></div><em>${num(x.stock)} ${esc(x.unit)}</em></label>`).join('')}</div></section>${state.user.role==='YONETICI'||state.user.role==='ISG_ADMIN'?`<section class="panel"><div class="panel-head"><div><h2>İSG kartları</h2><p>Tek tek etiket yerine sabit dolap QR etiketi önerilir</p></div><span class="meta-inline">${isg.length} ekipman</span></div><div class="product-strip">${isg.map(x=>`<button class="isg-item" data-item="${x.id}"><span>${ic('shield','ic-sm')}</span><div><b>${esc(x.name)}</b><small>${num(x.stock)} ${esc(x.unit)}</small></div></button>`).join('')}</div></section>`:''}`;}
 function printLabels(items,title='MEKANİK DEPO QR ETİKETLERİ'){const win=window.open('','_blank');if(!win)return toast('Yazdırma penceresi engellendi.','error');win.document.write(`<!doctype html><meta charset="utf-8"><title>${esc(title)}</title><style>body{font-family:Arial;margin:20px}.sheet{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.l{border:2px solid #111;border-radius:10px;padding:10px;display:grid;grid-template-columns:100px 1fr;align-items:center;break-inside:avoid}.l svg{width:90px}.l b{display:block;font-size:15px}.l strong{font-size:12px}.l small{display:block;margin-top:5px}@media print{body{margin:0}.l{page-break-inside:avoid}}</style><h2>${esc(title)}</h2><div class="sheet">${items.map(x=>`<div class="l">${qrSvg(x.id||x.code||'ISG-DOLAP')}<div><b>${esc(x.name||'İSG DOLABI')}</b><strong>${esc(x.id||x.code||'ISG-DOLAP')}</strong><small>${esc(x.code&&x.id?x.code:'')}</small><small>${esc(x.shelf||'Tek Sabit QR')}</small></div></div>`).join('')}</div>`);win.document.close();setTimeout(()=>win.print(),300);}
 
-function renderConnection(){const code=$('#gasCode').textContent.trim();const gasOk=state.mode==='demo'||state.data?.apiVersion==='V8.7-ONAY2';$('#content').innerHTML=`<section class="connection-grid"><article class="panel"><div class="panel-head"><div><h2>Bağlantı Modu</h2><p>GitHub Pages yayınında Doğrudan GAS (/exec), yerel sunucuda /api/gas önerilir</p></div><span class="connection ${state.mode}"><i></i>${state.mode.toUpperCase()}</span></div><div class="mode-cards">${[['proxy','Güvenli /api/gas','GAS adresi ve proxy anahtarı sunucuda gizli kalır; V8 kayıt akışı etkindir.'],['direct','Tek HTML / Doğrudan','GitHub Pages veya tek HTML için Apps Script ALLOW_DIRECT=true ile kullanın.'],['demo','Demo / Yerel','Gerçek tabloya yazmaz; tüm ekranlar test edilir.']].map(([m,t,d])=>`<label class="${state.mode===m?'selected':''}"><input type="radio" name="mode" value="${m}" ${state.mode===m?'checked':''}><span><b>${t}</b><small>${d}</small></span></label>`).join('')}</div>${field('Apps Script /exec adresi',`<input id="directUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan mod dışında tarayıcıya açılmaz.')}<div class="button-row"><button class="btn ghost" data-action="test-connection">Bağlantıyı Test Et</button><button class="btn primary" data-action="save-connection">Ayarları Kaydet</button></div></article><article class="panel"><div class="panel-head"><div><h2>Bağımsız Tek HTML Dosyaları</h2><p>Tam yönetim paneli ve sahaya özel bağımsız QR çıkış terminali</p></div><span class="ic" style="color:var(--orange)">${ic('download','ic-lg')}</span></div><div class="download-card"><b>1. Ana Yönetim Paneli (Tek HTML)</b><p>CSS, JavaScript ve QR üreticisi tek dosyada. Demo veya canlı Google Sheets bağlantısı ile çalışır.</p><button class="btn primary large" data-action="download-html">${ic('download','ic-sm')} Ana Panel HTML İndir</button></div><div class="download-card" style="margin-top:12px"><b>2. Bağımsız Depo QR Terminali (Tek HTML)</b><p>Depodaki QR kodu okutulduğunda önce OP şifresini sorar, eşleşen parçayı açar; Depo Onayı Gerekli ise Depocu onayı ister, değilse doğrudan stoktan düşer.</p><div class="button-row"><button class="btn primary" data-action="download-qr-terminal">${ic('download','ic-sm')} QR Terminali İndir</button><button class="btn ghost" data-action="open-qr-terminal">${ic('qr','ic-sm')} Terminali Dene</button></div></div><div class="security-list"><p><span>${ic('check','ic-sm')}</span> Rol ve depo kapsamı hem arayüzde hem Kod.gs’de doğrulanır</p><p><span>${ic('check','ic-sm')}</span> PIN yerine imzalı, süreli oturum belirteci kullanılır</p><p><span>${ic('check','ic-sm')}</span> Bağımsız QR terminali <span class="mono">./qr-terminal.html</span> ve <span class="mono">?qr=KOD</span> destekler</p></div></article></section><section class="panel code-panel"><div class="panel-head"><div><h2>Google Apps Script · Kod.gs ${gasOk?'<span class="badge success">Güncel (V8.7-ONAY2)</span>':'<span class="badge danger">Eski Sürüm Bağlı — Güncelleme Gerekli</span>'}</h2><p>Kodu kopyalayıp Apps Script’te kaydettikten sonra <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> yapın (mevcut /exec adresiniz değişmez).</p></div><button class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kodu Kopyala</button></div><pre><code>${esc(code)}</code></pre></section>`;}
+function renderConnection(){const code=$('#gasCode').textContent.trim();const gasOk=state.mode==='demo'||state.data?.apiVersion==='V8.7-KKD';$('#content').innerHTML=`<section class="connection-grid"><article class="panel"><div class="panel-head"><div><h2>Bağlantı Modu</h2><p>GitHub Pages yayınında Doğrudan GAS (/exec), yerel sunucuda /api/gas önerilir</p></div><span class="connection ${state.mode}"><i></i>${state.mode.toUpperCase()}</span></div><div class="mode-cards">${[['proxy','Güvenli /api/gas','GAS adresi ve proxy anahtarı sunucuda gizli kalır; V8 kayıt akışı etkindir.'],['direct','Tek HTML / Doğrudan','GitHub Pages veya tek HTML için Apps Script ALLOW_DIRECT=true ile kullanın.'],['demo','Demo / Yerel','Gerçek tabloya yazmaz; tüm ekranlar test edilir.']].map(([m,t,d])=>`<label class="${state.mode===m?'selected':''}"><input type="radio" name="mode" value="${m}" ${state.mode===m?'checked':''}><span><b>${t}</b><small>${d}</small></span></label>`).join('')}</div>${field('Apps Script /exec adresi',`<input id="directUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan mod dışında tarayıcıya açılmaz.')}<div class="button-row"><button class="btn ghost" data-action="test-connection">Bağlantıyı Test Et</button><button class="btn primary" data-action="save-connection">Ayarları Kaydet</button></div></article><article class="panel"><div class="panel-head"><div><h2>Bağımsız Tek HTML Dosyaları</h2><p>Tam yönetim paneli ve sahaya özel bağımsız QR çıkış terminali</p></div><span class="ic" style="color:var(--orange)">${ic('download','ic-lg')}</span></div><div class="download-card"><b>1. Ana Yönetim Paneli (Tek HTML)</b><p>CSS, JavaScript ve QR üreticisi tek dosyada. Demo veya canlı Google Sheets bağlantısı ile çalışır.</p><button class="btn primary large" data-action="download-html">${ic('download','ic-sm')} Ana Panel HTML İndir</button></div><div class="download-card" style="margin-top:12px"><b>2. Bağımsız Depo QR Terminali (Tek HTML)</b><p>Depodaki QR kodu okutulduğunda önce OP şifresini sorar, eşleşen parçayı açar; Depo Onayı Gerekli ise Depocu onayı ister, değilse doğrudan stoktan düşer.</p><div class="button-row"><button class="btn primary" data-action="download-qr-terminal">${ic('download','ic-sm')} QR Terminali İndir</button><button class="btn ghost" data-action="open-qr-terminal">${ic('qr','ic-sm')} Terminali Dene</button></div></div><div class="security-list"><p><span>${ic('check','ic-sm')}</span> Rol ve depo kapsamı hem arayüzde hem Kod.gs’de doğrulanır</p><p><span>${ic('check','ic-sm')}</span> PIN yerine imzalı, süreli oturum belirteci kullanılır</p><p><span>${ic('check','ic-sm')}</span> Bağımsız QR terminali <span class="mono">./qr-terminal.html</span> ve <span class="mono">?qr=KOD</span> destekler</p></div></article></section><section class="panel code-panel"><div class="panel-head"><div><h2>Google Apps Script · Kod.gs ${gasOk?'<span class="badge success">Güncel (V8.7-KKD)</span>':'<span class="badge danger">Eski Sürüm Bağlı — Güncelleme Gerekli</span>'}</h2><p>Kodu kopyalayıp Apps Script’te kaydettikten sonra <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> yapın (mevcut /exec adresiniz değişmez).</p></div><button class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kodu Kopyala</button></div><pre><code>${esc(code)}</code></pre></section>`;}
 
 let cameraStream=null,cameraTimer=null;
 async function openScanner(){modal('QR Kodunu Okut',`<div class="camera"><video id="cameraVideo" playsinline muted></video><div class="camera-frame"></div></div><p class="camera-help">Kamera izni verin ve kodu çerçeveye hizalayın. Desteklenmiyorsa kodu elle girin.</p>${field('Manuel kod','<input id="scanManual" placeholder="RUL-6205 veya ISG-DOLAP">')}`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="scan-manual-go">Devam Et</button>`);try{cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});const v=$('#cameraVideo');v.srcObject=cameraStream;await v.play();if('BarcodeDetector'in window){const det=new BarcodeDetector({formats:['qr_code']});cameraTimer=setInterval(async()=>{try{const codes=await det.detect(v);if(codes[0]?.rawValue){handleQr(codes[0].rawValue);}}catch{}},500);}}catch(e){toast('Kamera açılamadı; kodu elle girebilirsiniz.','error');}}
@@ -2095,12 +2843,59 @@ function qrSvg(text){const m=qrMatrix(text),q=4,n=m.length;let p='';for(let y=0;
 
 async function refreshData(){await bootstrap();renderNav();await showPage(state.page,false);}
 function logout(){state.user=null;state.session='';state.data=null;stopCamera();document.body.classList.remove('logged');renderLogin();}
-function renderLogin(){document.body.innerHTML=`<div id="login" class="login"><section class="login-art"><div class="art-grid"></div><div class="login-brand"><span class="brand-mark">M</span><div><b>Mekanik + İSG Depo</b><small>Depo 2027 · V8.7</small></div></div><div class="login-copy"><span class="login-kicker">Akıllı Stok · Güvenli QR Çıkış</span><h1>İki depo.<br>Tek kontrol merkezi.</h1><p>Rol bazlı yetki yönetimi, hızlı QR çıkışı, planlı bakım reçeteleri ve tüketim analizleri tek sistemde.</p></div><div class="login-stats"><div><b>4</b><span>Yetki Rolü</span></div><div><b>2</b><span>Bağımsız Depo</span></div><div><b>1</b><span>Güvenli Sistem</span></div></div></section><section class="login-form"><form id="loginForm"><span class="kicker">Güvenli Giriş</span><h2>PIN ile devam edin</h2><p>${state.mode==='demo'?'Şu an <b>Demo</b> modundasınız. Kendi tablonuzdaki PIN ile girmek için aşağıdan Bağlantı Ayarı’nı kaydedin.':'PIN’iniz VERİ sayfasındaki rol ve depo yetkinizi belirler.'}</p>${field('4-8 haneli PIN',`<div class="pin-wrap"><input name="pin" type="password" inputmode="numeric" maxlength="8" autocomplete="current-password" placeholder="••••"><button type="button" data-action="toggle-pin" aria-label="PIN göster">${ic('eye')}</button></div>`)}<button class="btn primary large wide" type="submit">Güvenli Giriş →</button><button class="btn ghost large wide" type="button" data-action="open-qr-terminal" style="margin-top:10px">${ic('qr','ic-sm')} Bağımsız QR Çıkış Terminali</button><div class="login-mode"><i class="${state.mode}"></i>${state.mode==='demo'?'Demo verisi etkin':state.mode==='direct'?'Canlı bağlantı: Doğrudan GAS':'Canlı bağlantı: Güvenli /api/gas'}</div>${state.mode==='demo'?'<details open><summary>Demo PIN’leri (tıkla ve doldur)</summary><div class="demo-pins"><button type="button" data-fill-pin="1111"><span>Operatör</span><b>1111</b></button><button type="button" data-fill-pin="2222"><span>Mekanik</span><b>2222</b></button><button type="button" data-fill-pin="3333"><span>İSG</span><b>3333</b></button><button type="button" data-fill-pin="4444"><span>Yönetici</span><b>4444</b></button></div></details>':''}<details class="login-conn"><summary>Bağlantı Ayarı (Canlı Google Sheets / Demo)</summary><div class="login-conn-body">${field('Bağlantı Modu',`<select id="loginMode"><option value="demo" ${state.mode==='demo'?'selected':''}>Demo / Yerel Test</option><option value="direct" ${state.mode==='direct'?'selected':''}>Doğrudan Google Apps Script (/exec)</option><option value="proxy" ${state.mode==='proxy'?'selected':''}>Güvenli /api/gas Sunucusu</option></select>`)}${field('Apps Script /exec Adresi',`<input id="loginDirectUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan modda Apps Script Web App /exec adresini yapıştırın.')}<div class="button-row"><button type="button" class="btn ghost" data-action="login-test-conn">Test Et</button><button type="button" class="btn primary" data-action="login-save-conn">Kaydet</button></div></div></details></form><footer>Mekanik + İSG Depo 2027 · V8.7</footer></section></div><div id="toasts"></div><div id="modalRoot" hidden></div><div class="loader"><span></span></div>`;$('#loginForm').addEventListener('submit',login);}
-async function login(e){e.preventDefault();const pin=String(new FormData(e.currentTarget).get('pin')||'').replace(/\s+/g,'').trim();if(!pin)return toast('Lütfen PIN girin.','error');setBusy(true);try{const r=await api('auth',{pin});state.user=r.user;state.session=r.session;await bootstrap();state.page=defaultPage();document.body.classList.add('logged');document.body.innerHTML='<div id="app"></div><div id="toasts"></div><div id="modalRoot" hidden></div><div class="loader"><span></span></div>';renderShell();if(state.pendingQr){const code=state.pendingQr;state.pendingQr='';setTimeout(()=>handleQr(code),120);}}catch(err){toast(err.message,'error');}finally{setBusy(false);}}
+function renderLogin(){document.body.innerHTML=`<div id="login" class="login"><section class="login-art"><div class="art-grid"></div><div class="login-brand"><span class="brand-mark">M</span><div><b>Mekanik + İSG Depo</b><small>Depo 2027 · V8.7</small></div></div><div class="login-copy"><span class="login-kicker">Akıllı Stok · Güvenli QR Çıkış</span><h1>İki depo.<br>Tek kontrol merkezi.</h1><p>Rol bazlı yetki yönetimi, hızlı QR çıkışı, planlı bakım reçeteleri ve tüketim analizleri tek sistemde.</p></div><div class="login-stats"><div><b>4</b><span>Yetki Rolü</span></div><div><b>2</b><span>Bağımsız Depo</span></div><div><b>1</b><span>Güvenli Sistem</span></div></div></section><section class="login-form"><form id="loginForm"><span class="kicker">Güvenli Giriş</span><h2>PIN ile devam edin</h2><p>${state.mode==='demo'?'Şu an <b>Demo</b> modundasınız. Kendi tablonuzdaki PIN ile girmek için aşağıdan Bağlantı Ayarı’nı kaydedin.':'PIN’iniz VERİ sayfasındaki rol ve depo yetkinizi belirler.'}</p>${field('4-8 haneli PIN',`<div class="pin-wrap"><input name="pin" type="password" inputmode="numeric" maxlength="8" autocomplete="current-password" placeholder="••••"><button type="button" data-action="toggle-pin" aria-label="PIN göster">${ic('eye')}</button></div>`)}<button class="btn primary large wide" type="submit">Güvenli Giriş →</button><button class="btn ghost large wide" type="button" data-action="open-qr-terminal" style="margin-top:10px">${ic('qr','ic-sm')} Bağımsız QR Çıkış Terminali</button><div class="login-mode"><i class="${state.mode}"></i>${state.mode==='demo'?'Demo verisi etkin':state.mode==='direct'?'Canlı bağlantı: Doğrudan GAS':'Canlı bağlantı: Güvenli /api/gas'}</div>${state.mode==='demo'?'<details open><summary>Demo PIN’leri (tıkla ve doldur)</summary><div class="demo-pins"><button type="button" data-fill-pin="1111"><span>Operatör</span><b>1111</b></button><button type="button" data-fill-pin="2222"><span>Mekanik</span><b>2222</b></button><button type="button" data-fill-pin="3333"><span>İSG</span><b>3333</b></button><button type="button" data-fill-pin="4444"><span>Yönetici</span><b>4444</b></button></div></details>':''}<details class="login-conn"><summary>Bağlantı Ayarı (Canlı Google Sheets / Demo)</summary><div class="login-conn-body">${field('Bağlantı Modu',`<select id="loginMode"><option value="demo" ${state.mode==='demo'?'selected':''}>Demo / Yerel Test</option><option value="direct" ${state.mode==='direct'?'selected':''}>Doğrudan Google Apps Script (/exec)</option><option value="proxy" ${state.mode==='proxy'?'selected':''}>Güvenli /api/gas Sunucusu</option></select>`)}${field('Apps Script /exec Adresi',`<input id="loginDirectUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan modda Apps Script Web App /exec adresini yapıştırın.')}<div class="button-row"><button type="button" class="btn ghost" data-action="login-test-conn">Test Et</button><button type="button" class="btn primary" data-action="login-save-conn">Kaydet</button></div></div></details></form><footer>Mekanik + İSG Depo 2027 · V8.7</footer></section></div><div id="toasts"></div><div id="modalRoot" hidden></div><div id="ppePrintRoot"></div><div class="loader"><span></span></div>`;$('#loginForm').addEventListener('submit',login);}
+async function login(e){e.preventDefault();const pin=String(new FormData(e.currentTarget).get('pin')||'').replace(/\s+/g,'').trim();if(!pin)return toast('Lütfen PIN girin.','error');setBusy(true);try{const r=await api('auth',{pin});state.user=r.user;state.session=r.session;await bootstrap();state.page=defaultPage();document.body.classList.add('logged');document.body.innerHTML='<div id="app"></div><div id="toasts"></div><div id="modalRoot" hidden></div><div id="ppePrintRoot"></div><div class="loader"><span></span></div>';renderShell();if(state.pendingQr){const code=state.pendingQr;state.pendingQr='';setTimeout(()=>handleQr(code),120);}}catch(err){toast(err.message,'error');}finally{setBusy(false);}}
 
 async function actionHandler(e){const page=e.target.closest('[data-page]')?.dataset.page;if(page)return showPage(page);if(e.target.closest('[data-close]'))return closeModal();const a=e.target.closest('[data-action]')?.dataset.action;if(a){
   if(a==='logout')return logout();if(a==='menu')return $('.sidebar').classList.toggle('open');if(a==='refresh'){setBusy(true);try{await refreshData();toast('Veriler yenilendi.');}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}
   if(a==='new-item')return newItemModal();if(a==='scan')return openScanner();if(a==='manual-qr')return modal('QR Kodunu Elle Gir',field('Kod','<input id="manualQr" placeholder="RUL-6205 veya ISG-DOLAP">'),'<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="manual-go">Devam Et</button>');if(a==='manual-go')return handleQr($('#manualQr').value);if(a==='scan-manual-go')return handleQr($('#scanManual').value);if(a==='cabinet')return cabinetModal();
+  if(a==='sig-clear'){activeSigPad?.clear();return;}
+  if(a==='ppe-create')return ppeCreateModal();
+  if(a==='ppe-self-usage-doc'){state.ppeRange='all';return ppeOperatorReportModal(state.user.name);}
+  if(a==='ppe-print-all-usage'){
+   setBusy(true);
+   try{
+    const p=await loadPpeAnalysis(state.ppeRange||'30d');
+    const names=(p.cards||[]).filter(x=>x.count>0).map(x=>x.name);
+    if(!names.length)return toast('Seçili dönemde KKD kullanan operatör bulunamadı.','error');
+    printPpeUsagePdf(names);
+   }catch(x){toast(x.message,'error');}finally{setBusy(false);}
+   return;
+  }
+  if(a==='ppe-line-add'){return $('#ppeCreateLines')?.insertAdjacentHTML('beforeend',ppeLineRow());}
+  if(a==='ppe-remove-line'){const rows=$$('#ppeCreateLines .ppe-line-row');if(rows.length<=1)return toast('En az bir KKD satırı bulunmalıdır.','error');return e.target.closest('.ppe-line-row')?.remove();}
+  if(a==='ppe-create-save'){
+   const f=$('#ppeCreateForm');if(!f||!f.reportValidity())return;
+   const fd=new FormData(f), ids=fd.getAll('ppeItemId'), qs=fd.getAll('ppeQty');
+   const items=ids.map((id,i)=>({itemId:id,qty:Number(qs[i])})).filter(x=>x.itemId&&x.qty>0);
+   if(!items.length)return toast('En az bir KKD ekipmanı seçin.','error');
+   const signNow=fd.get('ppeSignMode')==='now';
+   const p={operator:String(fd.get('operator')||'').trim(),note:String(fd.get('note')||'').trim(),items,signNow};
+   if(signNow){
+    if(!$('#ppeCreateAccept')?.checked)return toast('6331 sayılı İSG Kanunu beyanını onaylayın.','error');
+    if(!activeSigPad||activeSigPad.isEmpty())return toast('Lütfen operatör imzasını çizin.','error');
+    const opPin=String($('#ppeCreateOpPin')?.value||'').replace(/\s+/g,'').trim();
+    if(!opPin)return toast('Operatör PIN doğrulaması gereklidir.','error');
+    p.accepted=true;p.signature=activeSigPad.exportSvgPath();p.operatorPin=opPin;
+   }
+   setBusy(true);
+   try{const r=await api('ppeFormCreate',p);closeModal();state.ppeTab='forms';await refreshData();toast(signNow?`İmzalı KKD zimmeti tamamlandı (${r.formNo}).`:`KKD zimmet formu oluşturuldu (${r.formNo}); operatör imzası bekleniyor.`);if(signNow&&r.formNo)ppeDocumentModal(r.formNo);}catch(x){toast(x.message,'error');}finally{setBusy(false);}
+   return;
+  }
+  if(a==='ppe-sign-submit'){
+   const formNo=e.target.closest('[data-form-no]')?.dataset.formNo;if(!formNo)return;
+   if(!$('#ppeSignAccept')?.checked)return toast('Lütfen 6331 sayılı İSG Kanunu teslim ve kullanım beyanını onaylayın.','error');
+   if(!activeSigPad||activeSigPad.isEmpty())return toast('Lütfen imza alanına imzanızı çizin.','error');
+   const p={formNo,accepted:true,signature:activeSigPad.exportSvgPath()};
+   if(state.user.role!=='OP'){
+    const opPin=String($('#ppeSignOpPin')?.value||'').replace(/\s+/g,'').trim();
+    if(!opPin)return toast('Operatör PIN’ini girin.','error');
+    p.operatorPin=opPin;
+   }
+   setBusy(true);
+   try{await api('ppeFormSign',p);closeModal();await refreshData();toast(`KKD zimmet formu (${formNo}) imzalandı ve stoktan düşüldü.`);ppeDocumentModal(formNo);}catch(x){toast(x.message,'error');}finally{setBusy(false);}
+   return;
+  }
   if(a==='submit-checkout')return submitCheckout();if(a==='gate-confirm'){const p=JSON.parse($('#modalRoot').dataset.checkout||'{}');return submitCheckout({...p,managerPin:$('#managerPin')?.value});}if(a==='gate-pool'){const p=JSON.parse($('#modalRoot').dataset.checkout||'{}');return submitCheckout({...p,sendApproval:true});}if(a==='cabinet-submit'){const id=$('[name=cabItem]:checked')?.value,qty=$('#cabQty')?.value||1,item=state.data.stock.find(x=>x.id===id);closeModal();checkoutModal(item);$('[name=qty]').value=qty;return;}
   if(a==='stock-in'||a==='stock-count'){const id=e.target.closest('[data-id]').dataset.id,item=state.data.stock.find(x=>x.id===id),count=a==='stock-count';modal(count?'Stok Sayımı':'Malzeme Girişi',`<div class="item-summary"><div><b>${esc(item.name)}</b><small class="mono">${esc(item.code)}</small></div><strong>${num(item.stock)} ${esc(item.unit)}</strong></div>${field(count?'Fiili stok':'Giriş miktarı',`<input id="stockValue" type="number" min="0" step="0.01" value="${count?item.stock:1}">`)}${count?'':field('Birim Fiyat (₺)',`<input id="stockPrice" type="number" min="0" step="0.01" value="${item.unitPrice||''}" placeholder="0,00">`,'Boş bırakılırsa karttaki mevcut birim fiyat kullanılır.')}`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-stock-op="${count?'stockCount':'stockIn'}" data-id="${id}">Kaydet</button>`);return;}
   if(a==='item-save'){const f=$('#itemForm');if(!f.reportValidity())return;const usage=selectedRegistrationUsage(),machines=selectedRegistrationMachines();if(!usage.length)return toast('En az bir kullanım şekli seçin.','error');if(usage.includes('Tekli Makine')&&usage.includes('Çoklu Makine'))return toast('Tekli ve Çoklu Makine birlikte seçilemez.','error');if(registrationNeedsMachine(usage)&&!machines.length)return toast('Makine/Makineler alanından seçim yapın.','error');if(usage.includes('Tekli Makine')&&machines.length!==1)return toast('Tekli Makine için yalnız bir makine seçin.','error');if(usage.includes('Çoklu Makine')&&machines.length<2)return toast('Çoklu Makine için en az iki makine seçin.','error');const p=Object.fromEntries(new FormData(f)),depotApproval=p.depotApproval==='Gerekli';delete p.depotApproval;if(depotApproval)usage.push('Depo Onayı Gerekli');p.usage=[...new Set(usage)].join(' | ');p.machines=machines;p.machine=machines.join(' | ');p.initial=Number(p.initial);p.min=Number(p.min);p.unitPrice=Number(p.unitPrice);setBusy(true);try{const r=await api('itemCreate',p);closeModal();await refreshData();const item=state.data.stock.find(x=>x.id===r.id);if(r.existing){toast('Aynı parça kodu bulundu; mevcut stoğa giriş eklendi.');if(item)itemDetail(item);}else if(item){modal('Kayıt Tamamlandı',`<div class="created-qr">${qrSvg(item.id)}<div><h3>${esc(item.id)}</h3><p><b>${esc(item.name)}</b></p><p><span class="mono">${esc(item.code)}</span> · ${num(item.stock)} ${esc(item.unit)}</p><p>Yeni stok kartı, ilk giriş hareketi ve QR hazır.</p></div></div>`,`<button class="btn ghost" data-close>Kapat</button><button class="btn primary" data-action="label-one" data-id="${esc(item.id)}">QR Etiketini Yazdır</button>`);toast('Yeni stok kartı ve QR oluşturuldu.');}}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}if(a==='item-edit'){const item=state.data.stock.find(x=>x.id===e.target.closest('[data-id]').dataset.id);return editItemModal(item);}if(a==='item-update-save'){const f=$('#editItemForm');if(!f.reportValidity())return;const usage=$$('[name="editUsageOption"]:checked',f).map(x=>x.value);if(!usage.length)return toast('En az bir depo şekli seçin.','error');const p=Object.fromEntries(new FormData(f)),depotApproval=p.depotApproval==='Gerekli';delete p.editUsageOption;delete p.depotApproval;if(depotApproval)usage.push('Depo Onayı Gerekli');p.usage=[...new Set(usage)].join(' | ');p.min=Number(p.min);if(!f.elements.machine||f.elements.machine.disabled)p.machine='';setBusy(true);try{await api('itemUpdate',p);closeModal();await refreshData();toast('Stok kartı güncellendi.');}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}
@@ -2110,14 +2905,22 @@ async function actionHandler(e){const page=e.target.closest('[data-page]')?.data
   if(a==='copy-gas'){navigator.clipboard.writeText($('#gasCode').textContent).then(()=>toast('Kod.gs panoya kopyalandı.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));return;}if(a==='download-html'){const url=URL.createObjectURL(new Blob([ORIGINAL_HTML],{type:'text/html;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='Mekanik_Depo_V8.7_Tek_HTML.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);return;}if(a==='open-qr-terminal'){if(window.innerWidth<=768){location.href='./qr-terminal.html';return;}modal('Bağımsız Depo QR Terminali',`<div style="border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#0F172A;max-width:430px;margin:0 auto"><iframe src="./qr-terminal.html" allow="camera" title="Bağımsız Depo QR Terminali" style="width:100%;height:min(76vh,700px);border:0;display:block"></iframe></div>`,`<button class="btn ghost" data-action="download-qr-terminal">${ic('download','ic-sm')} Bağımsız HTML İndir</button><a class="btn ghost" href="./qr-terminal.html" target="_blank" rel="noopener">Yeni Sekmede Aç</a><button class="btn primary" data-close>Kapat</button>`);return;}if(a==='download-qr-terminal'){setBusy(true);try{let res=await fetch('./qr-terminal.html');if(!res.ok)res=await fetch('./public/qr-terminal.html');if(!res.ok)throw Error('QR Terminal dosyası okunamadı.');const html=(await res.text()).replace(/<script[^>]*src="\/@vite\/client"[^>]*><\/script>\s*/gi,''),url=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download='Depo_QR_Terminali.html';link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);toast('Bağımsız QR Terminali (Depo_QR_Terminali.html) indirildi.');}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}if(a==='save-connection'){state.mode=$('[name=mode]:checked').value;state.directUrl=$('#directUrl').value.trim();localStorage.setItem('depo.mode',state.mode);localStorage.setItem('depo.directUrl',state.directUrl);toast('Bağlantı ayarı kaydedildi; yeniden giriş yapın.');return;}if(a==='test-connection'){const old=state.directUrl,oldMode=state.mode;state.mode=$('[name=mode]:checked')?.value||state.mode;state.directUrl=$('#directUrl').value.trim();setBusy(true);try{await api('health');toast('Bağlantı yanıt verdi.');}catch(x){toast(x.message,'error');}finally{state.directUrl=old;state.mode=oldMode;setBusy(false);}return;}if(a==='login-save-conn'){const mode=$('#loginMode')?.value||'demo',url=($('#loginDirectUrl')?.value||'').trim();if(mode==='direct'&&!url)return toast('Doğrudan mod için Apps Script /exec adresi girin.','error');state.mode=mode;state.directUrl=url;localStorage.setItem('depo.mode',state.mode);localStorage.setItem('depo.directUrl',state.directUrl);renderLogin();toast('Bağlantı ayarı kaydedildi ('+(mode==='demo'?'Demo':mode==='direct'?'Doğrudan GAS':'/api/gas')+').');return;}if(a==='login-test-conn'){const oldMode=state.mode,oldUrl=state.directUrl;state.mode=$('#loginMode')?.value||state.mode;state.directUrl=($('#loginDirectUrl')?.value||'').trim();setBusy(true);try{await api('health');toast('Bağlantı başarılı.');}catch(x){toast(x.message,'error');}finally{state.mode=oldMode;state.directUrl=oldUrl;setBusy(false);}return;}
  }
   const fillPin=e.target.closest('[data-fill-pin]');if(fillPin){const inp=$('#loginForm [name="pin"]');if(inp){inp.value=fillPin.dataset.fillPin;inp.focus();}return;}
+  const ppeTab=e.target.closest('[data-ppe-tab]');if(ppeTab){state.ppeTab=ppeTab.dataset.ppeTab;return renderPpe();}
+  const ppeSt=e.target.closest('[data-ppe-status]');if(ppeSt){state.ppeFilter.status=ppeSt.dataset.ppeStatus;return renderPpe();}
+  const ppeSign=e.target.closest('[data-ppe-sign]');if(ppeSign)return ppeSignModal(ppeSign.dataset.ppeSign);
+  const ppeDoc=e.target.closest('[data-ppe-doc]');if(ppeDoc)return ppeDocumentModal(ppeDoc.dataset.ppeDoc);
+  const ppePrint=e.target.closest('[data-ppe-print]');if(ppePrint)return printPpeDocument(ppePrint.dataset.ppePrint);
+  const ppeUsageDoc=e.target.closest('[data-ppe-usage-doc]');if(ppeUsageDoc)return ppeOperatorReportModal(ppeUsageDoc.dataset.ppeUsageDoc);
+  const ppeUsagePrint=e.target.closest('[data-ppe-usage-print]');if(ppeUsagePrint)return printPpeUsagePdf(ppeUsagePrint.dataset.ppeUsagePrint);
+  const ppeGive=e.target.closest('[data-ppe-give]');if(ppeGive)return ppeCreateModal(ppeGive.dataset.ppeGive);
   const recipeMachine=e.target.closest('[data-recipe-machine]');if(recipeMachine){const machine=recipeMachine.dataset.recipeMachine,select=$('#recipeMachine'),period=$('#recipePeriod')?.value||'TÜMÜ';if(!select)return;select.value=machine;syncRecipeMachineSelection(machine);$('#recipePanel').innerHTML=recipeTable(machine,period,recipeRows(machine,period));return;}
   const gate=e.target.closest('[data-gate]');if(gate){$$('[data-gate]').forEach(x=>x.classList.toggle('active',x===gate));const pool=gate.dataset.gate==='pool';$('#gateBody').innerHTML=pool?'<div class="notice">Talep yönetici ekranındaki Onay Bekleyenler listesine gönderilir. Onaylandığı anda stoktan düşer.</div>':field('Yönetici Onay PIN’i','<input id="managerPin" type="password" inputmode="numeric" maxlength="8" placeholder="••••">','Demo yönetici PIN: 4444');const b=$('#modalRoot footer .btn.primary');b.dataset.action=pool?'gate-pool':'gate-confirm';b.textContent=pool?'Onay Havuzuna Gönder':'PIN ile Onayla';return;}
  const itemEl=e.target.closest('[data-item]');if(itemEl){const item=state.data.stock.find(x=>x.id===itemEl.dataset.item);if(item)return itemDetail(item);}const co=e.target.closest('[data-checkout]');if(co){const item=state.data.stock.find(x=>x.id===co.dataset.checkout);if(item)return checkoutModal(item);}const ap=e.target.closest('[data-approval]');if(ap){setBusy(true);try{await api('approvalDecide',{id:ap.dataset.id,decision:ap.dataset.approval});await refreshData();toast('Talep '+(ap.dataset.approval==='ONAYLA'?'onaylandı ve stoktan düşüldü.':'reddedildi.'));}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}const ai=e.target.closest('[data-analysis-item]');if(ai)return analysisDetail(ai.dataset.analysisItem);const cg=e.target.closest('[data-cost-group]');if(cg){state.costFilter.group=cg.dataset.costGroup;return renderCosts();}const ck=e.target.closest('[data-cost-key]');if(ck)return costDetailModal(ck.dataset.costKind,ck.dataset.costKey);const q=e.target.closest('[data-qty]');if(q){const i=$('[name=qty]');i.value=Math.max(.01,Number(i.value)+Number(q.dataset.qty));}
 }
-async function changeHandler(e){if(e.target.name==='usageOption'){if(e.target.checked&&e.target.value==='Tekli Makine')$('[name="usageOption"][value="Çoklu Makine"]').checked=false;if(e.target.checked&&e.target.value==='Çoklu Makine')$('[name="usageOption"][value="Tekli Makine"]').checked=false;return syncItemForm();}if(e.target.name==='machineOption'){if(selectedRegistrationUsage().includes('Tekli Makine')&&e.target.checked)$$('[name="machineOption"]').forEach(x=>{if(x!==e.target)x.checked=false;});return syncItemForm();}if(e.target.id==='stockStatus'){state.stockFilter.status=e.target.value;return renderStock();}if(e.target.matches('[data-filter-depot]')){state.stockFilter.depot=e.target.dataset.filterDepot;return renderStock();}if(e.target.id==='recipeMachine'||e.target.id==='recipePeriod'){const m=$('#recipeMachine').value,p=$('#recipePeriod').value;syncRecipeMachineSelection(m);$('#recipePanel').innerHTML=recipeTable(m,p,recipeRows(m,p));return;}if(e.target.matches('[data-ppe]')){$$('[data-ppe]').forEach(x=>x.classList.toggle('active',x===e.target));setBusy(true);try{state.ppe=await api('ppeAnalysis',{range:e.target.dataset.ppe});await renderPpe();$$(`[data-ppe="${e.target.dataset.ppe}"]`).forEach(x=>x.classList.add('active'));}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}if(['anaRange','anaDepot'].includes(e.target.id)){setBusy(true);try{state.analysis=await api('movementAnalysis',{range:$('#anaRange').value,depot:$('#anaDepot').value});await renderAnalysis();}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}if(e.target.id==='anaSort')$('#analysisBars').innerHTML=analysisBars(state.analysis.rows,e.target.value);if(['costRange','costDepot'].includes(e.target.id)){state.costFilter.range=$('#costRange')?.value||state.costFilter.range;if($('#costDepot'))state.costFilter.depot=$('#costDepot').value;setBusy(true);try{await loadCostAnalysis(true);await renderCosts();}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}if(e.target.id==='costSort'){state.costFilter.sort=e.target.value;return renderCosts();}}
+async function changeHandler(e){if(e.target.name==='ppeSignMode'){const now=e.target.value==='now',box=$('#ppeSignNowBox'),btn=$('#ppeCreateSubmitBtn');if(box)box.hidden=!now;if(btn)btn.textContent=now?'İmzala ve Teslim Et':'Onaya Gönder';if(now)setTimeout(()=>{activeSigPad=initSigPad($('#ppeCreateSigCanvas'));},40);else activeSigPad=null;return;}if(e.target.name==='usageOption'){if(e.target.checked&&e.target.value==='Tekli Makine')$('[name="usageOption"][value="Çoklu Makine"]').checked=false;if(e.target.checked&&e.target.value==='Çoklu Makine')$('[name="usageOption"][value="Tekli Makine"]').checked=false;return syncItemForm();}if(e.target.name==='machineOption'){if(selectedRegistrationUsage().includes('Tekli Makine')&&e.target.checked)$$('[name="machineOption"]').forEach(x=>{if(x!==e.target)x.checked=false;});return syncItemForm();}if(e.target.id==='stockStatus'){state.stockFilter.status=e.target.value;return renderStock();}if(e.target.matches('[data-filter-depot]')){state.stockFilter.depot=e.target.dataset.filterDepot;return renderStock();}if(e.target.id==='recipeMachine'||e.target.id==='recipePeriod'){const m=$('#recipeMachine').value,p=$('#recipePeriod').value;syncRecipeMachineSelection(m);$('#recipePanel').innerHTML=recipeTable(m,p,recipeRows(m,p));return;}if(e.target.matches('[data-ppe]')){const nextRange=e.target.dataset.ppe||'30d';state.ppeRange=nextRange;setBusy(true);try{await loadPpeAnalysis(nextRange,true);await renderPpe();}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}if(['anaRange','anaDepot'].includes(e.target.id)){setBusy(true);try{state.analysis=await api('movementAnalysis',{range:$('#anaRange').value,depot:$('#anaDepot').value});await renderAnalysis();}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}if(e.target.id==='anaSort')$('#analysisBars').innerHTML=analysisBars(state.analysis.rows,e.target.value);if(['costRange','costDepot'].includes(e.target.id)){state.costFilter.range=$('#costRange')?.value||state.costFilter.range;if($('#costDepot'))state.costFilter.depot=$('#costDepot').value;setBusy(true);try{await loadCostAnalysis(true);await renderCosts();}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}if(e.target.id==='costSort'){state.costFilter.sort=e.target.value;return renderCosts();}}
 async function clickStockOp(e){const b=e.target.closest('[data-stock-op]');if(!b)return;setBusy(true);try{const payload={itemId:b.dataset.id,[b.dataset.stockOp==='stockIn'?'qty':'actual']:Number($('#stockValue').value)};if(b.dataset.stockOp==='stockIn'&&$('#stockPrice'))payload.unitPrice=Number($('#stockPrice').value)||0;await api(b.dataset.stockOp,payload);closeModal();await refreshData();toast('Stok işlemi kaydedildi.');}catch(x){toast(x.message,'error');}finally{setBusy(false);}}
 function keepInputFocus(id,fn){const el=$('#'+id),pos=el?.selectionStart;fn();const next=$('#'+id);if(next){next.focus();if(typeof pos==='number')next.setSelectionRange(pos,pos);}}
-function inputHandler(e){if(e.target.id==='itemInitial'||e.target.id==='itemUnitPrice')updateRegistrationTotal();if(e.target.id==='itemMachineSearch')filterRegistrationMachines(e.target.value);if(e.target.id==='stockSearch'){state.stockFilter.query=e.target.value;clearTimeout(inputHandler.t);inputHandler.t=setTimeout(()=>keepInputFocus('stockSearch',renderStock),160);}if(e.target.id==='movSearch'){state.movQuery=e.target.value;clearTimeout(inputHandler.mt);inputHandler.mt=setTimeout(()=>keepInputFocus('movSearch',renderMovements),160);}if(e.target.id==='costSearch'){state.costFilter.query=e.target.value;clearTimeout(inputHandler.ct);inputHandler.ct=setTimeout(()=>keepInputFocus('costSearch',renderCosts),160);}}
+function inputHandler(e){if(e.target.id==='itemInitial'||e.target.id==='itemUnitPrice')updateRegistrationTotal();if(e.target.id==='itemMachineSearch')filterRegistrationMachines(e.target.value);if(e.target.id==='stockSearch'){state.stockFilter.query=e.target.value;clearTimeout(inputHandler.t);inputHandler.t=setTimeout(()=>keepInputFocus('stockSearch',renderStock),160);}if(e.target.id==='movSearch'){state.movQuery=e.target.value;clearTimeout(inputHandler.mt);inputHandler.mt=setTimeout(()=>keepInputFocus('movSearch',renderMovements),160);}if(e.target.id==='ppeSearch'){state.ppeFilter.query=e.target.value;clearTimeout(inputHandler.pt);inputHandler.pt=setTimeout(()=>keepInputFocus('ppeSearch',renderPpe),160);}if(e.target.id==='ppeUsageSearch'){state.ppeUsageQuery=e.target.value;clearTimeout(inputHandler.put);inputHandler.put=setTimeout(()=>keepInputFocus('ppeUsageSearch',renderPpe),160);}if(e.target.id==='costSearch'){state.costFilter.query=e.target.value;clearTimeout(inputHandler.ct);inputHandler.ct=setTimeout(()=>keepInputFocus('costSearch',renderCosts),160);}}
 
 document.addEventListener('click',e=>{actionHandler(e);clickStockOp(e);const d=e.target.closest('[data-filter-depot],[data-ppe]');if(d)changeHandler({target:d});if(e.target.closest('[data-action="toggle-pin"]')){const i=$('[name=pin]');i.type=i.type==='password'?'text':'password';}});
 document.addEventListener('change',changeHandler);document.addEventListener('input',inputHandler);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modalRoot')?.hidden)closeModal();});
