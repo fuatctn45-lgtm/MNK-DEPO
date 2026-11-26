@@ -8,8 +8,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Depo QR">
-<title>Depo QR Terminali · Mekanik + İSG Depo V8.7</title>
-<meta name="description" content="Android ve iPhone tam uyumlu bağımsız depo QR okuma, operatör PIN doğrulama ve depocu onaylı malzeme çıkış terminali.">
+<meta name="application-name" content="Depo QR">
+<title>Depo QR Okuyucu · Mekanik + İSG Depo</title>
+<meta name="description" content="Android ve iPhone’da uygulama gibi çalışan depo QR okuyucu, operatör PIN doğrulama ve hızlı malzeme çıkış terminali.">
+<link rel="manifest" href="./qr-manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -73,7 +77,7 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
 .topbar{
   position:sticky;top:0;z-index:30;width:100%;
   background:#0F172A;color:#F8FAFC;
-  padding:calc(8px + var(--safe-top)) 12px 8px;
+  padding:calc(7px + var(--safe-top)) 12px 7px;
   border-bottom:1px solid rgba(255,255,255,.08);
 }
 .topbar-in{
@@ -89,6 +93,15 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
 .brand-txt{min-width:0;flex:1}
 .brand b{display:block;font-size:14.5px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .brand small{display:block;font-size:11px;color:#94A3B8;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-right{display:flex;align-items:center;gap:6px;flex:none}
+.install-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  height:34px;padding:0 10px;border-radius:9px;
+  border:0;background:var(--orange);color:#fff;
+  font-size:12px;font-weight:800;flex:none;white-space:nowrap;
+}
+.install-pill:active{transform:scale(.96);background:var(--orange-hover)}
+.install-pill[hidden]{display:none}
 .conn-btn{
   display:inline-flex;align-items:center;gap:6px;
   height:34px;padding:0 10px;border-radius:9px;
@@ -101,12 +114,131 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
 .dot.direct{background:#22C55E}
 .dot.proxy{background:#38BDF8}
 
+/* Offline Banner */
+.offline-bar{
+  width:100%;background:#B45309;color:#fff;
+  padding:7px 12px;font-size:12.5px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  text-align:center;
+}
+.offline-bar[hidden]{display:none}
+
 /* Main Content Area */
 .wrap{
   flex:1;width:100%;max-width:480px;margin:0 auto;min-width:0;
-  padding:10px 10px calc(16px + var(--safe-bot));
+  padding:10px 10px calc(76px + var(--safe-bot));
   display:flex;flex-direction:column;gap:10px;
 }
+
+/* Native Bottom Navigation Bar */
+.bottom-nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:35;
+  background:rgba(255,255,255,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-top:1px solid var(--border);
+  padding:4px 8px calc(4px + var(--safe-bot));
+}
+.bottom-nav-in{
+  max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;
+}
+.bnav-btn{
+  min-height:48px;border:0;background:transparent;border-radius:12px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  color:var(--muted);font-size:11px;font-weight:700;position:relative;padding:4px 2px;
+  transition:color .12s,background .12s;
+}
+.bnav-btn.active{color:var(--orange);background:var(--orange-soft)}
+.bnav-btn:active{transform:scale(.96)}
+.bnav-badge{
+  position:absolute;top:4px;right:calc(50% - 22px);
+  min-width:17px;height:17px;padding:0 4px;border-radius:99px;
+  background:var(--ink);color:#fff;font-size:10px;font-weight:800;
+  display:grid;place-items:center;font-variant-numeric:tabular-nums;
+}
+.bnav-btn.active .bnav-badge{background:var(--orange)}
+
+/* Install Promo Card */
+.install-card{
+  background:#0F172A;color:#F8FAFC;border:1px solid #1E293B;border-radius:var(--radius);
+  padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.install-card-main{display:flex;align-items:center;gap:11px;min-width:0}
+.install-card-ic{
+  width:40px;height:40px;border-radius:11px;flex:none;
+  background:var(--orange);color:#fff;display:grid;place-items:center;
+}
+.install-card-main > div{min-width:0}
+.install-card b{display:block;font-size:13.5px;font-weight:800;line-height:1.25}
+.install-card small{display:block;font-size:12px;color:#94A3B8;margin-top:2px}
+.install-card-actions{display:flex;align-items:center;gap:6px;flex:none}
+
+/* Manual QR Row */
+.scan-foot-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.scan-foot-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  height:46px;padding:0 10px;border-radius:12px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);
+  color:#F8FAFC;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap;
+}
+.scan-foot-btn:active{background:rgba(255,255,255,.16)}
+.scan-foot-btn input{display:none}
+.manual-qr-form{display:flex;gap:8px;margin-top:2px}
+.manual-qr-form input{
+  flex:1;min-width:0;height:46px;padding:0 12px;border-radius:11px;
+  border:1px solid rgba(255,255,255,.22);background:rgba(2,6,23,.7);
+  color:#fff;font-family:var(--mono);font-size:15px;font-weight:600;outline:none;
+}
+.manual-qr-form input::placeholder{color:#64748B;font-family:var(--font);font-weight:500}
+.manual-qr-form input:focus{border-color:var(--orange)}
+.manual-qr-form button{
+  height:46px;padding:0 16px;border-radius:11px;border:0;
+  background:var(--orange);color:#fff;font-size:14px;font-weight:800;flex:none;
+}
+
+/* History & Settings */
+.hist-list{display:flex;flex-direction:column}
+.hist-row{
+  padding:12px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+}
+.hist-row:last-child{border-bottom:0}
+.hist-row > div:first-child{min-width:0;flex:1}
+.hist-row b{display:block;font-size:14.5px;color:var(--ink);line-height:1.25}
+.hist-row small{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+.hist-right{text-align:right;flex:none}
+.hist-right strong{display:block;font-size:15px;font-weight:800;color:var(--ink)}
+.hist-status{font-size:11.5px;font-weight:700;margin-top:2px;display:block}
+.hist-status.deducted{color:var(--green)}
+.hist-status.pending{color:var(--amber)}
+.hist-status.rejected{color:var(--red)}
+.empty-box{text-align:center;padding:34px 18px;color:var(--muted)}
+.empty-box b{display:block;font-size:15px;color:var(--ink);margin-top:10px}
+.empty-box p{margin:4px 0 14px;font-size:13px}
+
+.pref-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 0;border-bottom:1px solid var(--border);
+}
+.pref-row:last-child{border-bottom:0;padding-bottom:0}
+.pref-row b{display:block;font-size:14px;color:var(--ink)}
+.pref-row small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.switch{
+  width:48px;height:28px;border-radius:99px;border:0;padding:3px;flex:none;
+  background:#CBD5E1;display:flex;align-items:center;transition:background .15s;
+}
+.switch.on{background:var(--orange);justify-content:flex-end}
+.switch i{width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.25);display:block}
+
+.guide-steps{display:flex;flex-direction:column;gap:10px;margin:12px 0 16px}
+.guide-step{
+  display:flex;align-items:flex-start;gap:11px;padding:11px 12px;
+  border-radius:12px;background:var(--surface-2);border:1px solid var(--border);
+  font-size:13.5px;line-height:1.45;color:var(--ink-2);
+}
+.guide-step i{
+  width:24px;height:24px;border-radius:8px;background:var(--orange);color:#fff;
+  font-style:normal;font-size:12.5px;font-weight:800;display:grid;place-items:center;flex:none;
+}
+.guide-step b{color:var(--ink)}
 
 /* Compact 3-Step Indicator */
 .steps{
@@ -510,17 +642,18 @@ select.input{
 
 /* Toasts */
 .toasts{
-  position:fixed;left:50%;bottom:calc(16px + var(--safe-bot));transform:translateX(-50%);z-index:60;
+  position:fixed;left:50%;bottom:calc(72px + var(--safe-bot));transform:translateX(-50%);z-index:60;
   width:calc(100% - 24px);max-width:456px;display:flex;flex-direction:column;gap:8px;pointer-events:none;
 }
 .toast{
-  display:flex;align-items:center;gap:10px;padding:13px 15px;border-radius:12px;
+  display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;
   background:#0F172A;color:#fff;font-size:14px;font-weight:600;
+  border:1px solid rgba(255,255,255,.12);
   box-shadow:0 12px 30px rgba(15,23,42,.3);pointer-events:auto;
 }
-.toast.ok{border-left:4px solid var(--green)}
-.toast.err{border-left:4px solid var(--red)}
-.toast.warn{border-left:4px solid var(--amber)}
+.toast.ok .ic{color:#4ADE80}
+.toast.err .ic{color:#F87171}
+.toast.warn .ic{color:#FBBF24}
 
 /* Busy Bar */
 .busy-bar{position:fixed;top:0;left:0;right:0;height:3px;z-index:70;overflow:hidden;display:none}
@@ -551,16 +684,26 @@ body.busy .busy-bar{display:block}
       <div class="brand">
         <span class="brand-mark">QR</span>
         <div class="brand-txt">
-          <b>Depo QR Terminali</b>
-          <small>Mekanik + İSG Depo V8.7</small>
+          <b>Depo QR Okuyucu</b>
+          <small id="appModeSub">Mekanik + İSG Depo</small>
         </div>
       </div>
-      <button class="conn-btn" type="button" data-action="open-conn" id="connBtn">
-        <i class="dot demo" id="connDot"></i>
-        <span id="connLabel">Demo</span>
-      </button>
+      <div class="top-right">
+        <button class="install-pill" type="button" data-action="install-pwa" id="installTopBtn" hidden>
+          <span class="ic ic-sm"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+          <span>Kur</span>
+        </button>
+        <button class="conn-btn" type="button" data-action="open-settings" id="connBtn">
+          <i class="dot demo" id="connDot"></i>
+          <span id="connLabel">Demo</span>
+        </button>
+      </div>
     </div>
   </header>
+  <div class="offline-bar" id="offlineBar" hidden>
+    <span class="ic ic-sm"><svg viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg></span>
+    <span>Çevrimdışı — Stok çıkışı için internet bağlantısı gerekli</span>
+  </div>
 
   <main class="wrap">
     <div class="steps" id="stepper">
@@ -570,38 +713,37 @@ body.busy .busy-bar{display:block}
     </div>
     <div id="view"></div>
   </main>
+
+  <nav class="bottom-nav" aria-label="Alt Menü">
+    <div class="bottom-nav-in">
+      <button class="bnav-btn active" type="button" data-nav="scan">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg></span>
+        <span>QR Okut</span>
+      </button>
+      <button class="bnav-btn" type="button" data-nav="history">
+        <span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+        <span>Son İşlemler</span>
+        <span class="bnav-badge" id="histBadge" hidden>0</span>
+      </button>
+      <button class="bnav-btn" type="button" data-nav="settings">
+        <span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+        <span>Ayarlar</span>
+      </button>
+    </div>
+  </nav>
 </div>
 
 <canvas id="decodeCanvas" hidden></canvas>
 
-<div class="modal-back" id="connModal" hidden>
-  <section class="modal" role="dialog" aria-modal="true" aria-label="Bağlantı Ayarı">
+<div class="modal-back" id="installModal" hidden>
+  <section class="modal" role="dialog" aria-modal="true" aria-label="Telefona Uygulama Olarak Kur">
     <div class="modal-head">
-      <h3>Bağlantı Ayarı</h3>
-      <button class="icon-btn" type="button" data-action="close-conn" aria-label="Kapat">
+      <h3>Telefona Uygulama Olarak Kur</h3>
+      <button class="icon-btn" type="button" data-action="close-install" aria-label="Kapat">
         <span class="ic ic-sm"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
       </button>
     </div>
-    <div class="modal-body">
-      <label class="field">
-        <span>Bağlantı Modu</span>
-        <select class="input" id="connMode">
-          <option value="demo">Demo / Yerel Test</option>
-          <option value="direct">Doğrudan Google Apps Script (/exec)</option>
-          <option value="proxy">Güvenli /api/gas Sunucusu</option>
-        </select>
-      </label>
-      <label class="field">
-        <span>Apps Script /exec Adresi</span>
-        <input class="input" id="connUrl" placeholder="https://script.google.com/macros/s/.../exec">
-        <small>Doğrudan modda Apps Script Web App /exec adresini girin. Ana uygulama ile aynı ayarı paylaşır.</small>
-      </label>
-      <div class="btn-row">
-        <button class="btn ghost" type="button" data-action="test-conn">Test Et</button>
-        <button class="btn primary" type="button" data-action="save-conn">Kaydet</button>
-      </div>
-      <a class="btn ghost wide" href="./index.html" style="margin-top:10px">Ana Yönetim Paneline Dön</a>
-    </div>
+    <div class="modal-body" id="installModalBody"></div>
   </section>
 </div>
 
@@ -618,9 +760,27 @@ const norm = s => String(s ?? '').trim().toLocaleUpperCase('tr-TR')
 const num = v => new Intl.NumberFormat('tr-TR',{maximumFractionDigits:2}).format(Number(v)||0);
 const uid = p => p + '-' + Math.random().toString(36).slice(2,8).toUpperCase();
 const nowStr = () => new Date().toLocaleString('tr-TR');
-const vibrate = ms => { try { if (navigator.vibrate) navigator.vibrate(ms); } catch {} };
+const PREFS_KEY = 'depo.qr.prefs';
+const HIST_KEY = 'depo.qr.history';
+function loadPrefs() {
+  try { return {sound:true, vibrate:true, wakeLock:true, ...JSON.parse(localStorage.getItem(PREFS_KEY)||'{}')}; }
+  catch { return {sound:true, vibrate:true, wakeLock:true}; }
+}
+function savePrefs(p) { try { localStorage.setItem(PREFS_KEY, JSON.stringify(p)); } catch {} }
+function loadHistory() {
+  try { const a = JSON.parse(localStorage.getItem(HIST_KEY)||'[]'); return Array.isArray(a) ? a : []; }
+  catch { return []; }
+}
+function pushHistory(entry) {
+  const list = [entry, ...loadHistory()].slice(0, 30);
+  try { localStorage.setItem(HIST_KEY, JSON.stringify(list)); } catch {}
+  state.history = list;
+  updateNavUI();
+}
+const vibrate = ms => { try { if (state.prefs.vibrate && navigator.vibrate) navigator.vibrate(ms); } catch {} };
 
 function beepScan() {
+  if (!state.prefs.sound) return;
   try {
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return;
@@ -644,7 +804,10 @@ const SVG = {
   camera: '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
   flash: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
   eye: '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>',
-  x: '<path d="M18 6 6 18M6 6l12 12"/>'
+  x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  keyboard: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/>',
+  phone: '<rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12.01" y2="18"/>'
 };
 const ic = (name, cls='') => `<span class="ic ${cls}" aria-hidden="true"><svg viewBox="0 0 24 24">${SVG[name]||''}</svg></span>`;
 
@@ -690,9 +853,16 @@ function readInitialQr() {
   return '';
 }
 
+const isStandalone = () =>
+  window.matchMedia('(display-mode: standalone)').matches ||
+  window.navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent || '');
+const inIframe = () => { try { return window.self !== window.top; } catch { return true; } };
+
 const state = {
   mode: localStorage.getItem('depo.mode') || 'demo',
   directUrl: localStorage.getItem('depo.directUrl') || '',
+  tab: 'scan',
   step: 'scan',
   scannedQr: readInitialQr(),
   user: null,
@@ -707,9 +877,17 @@ const state = {
   camError: '',
   torchSupported: false,
   torchOn: false,
-  showPin: false
+  showPin: false,
+  showManualQr: false,
+  prefs: loadPrefs(),
+  history: loadHistory(),
+  isInstalled: isStandalone(),
+  installDismissed: sessionStorage.getItem('depo.qr.installDismissed') === '1',
+  online: typeof navigator !== 'undefined' ? navigator.onLine : true
 };
 
+let deferredInstallPrompt = null;
+let wakeLockSentinel = null;
 let cameraStream = null;
 let scanRaf = null;
 let scanningBusy = false;
@@ -718,6 +896,97 @@ let lastScanAt = 0;
 
 if ('BarcodeDetector' in window) {
   try { nativeDetector = new BarcodeDetector({formats:['qr_code']}); } catch {}
+}
+
+async function acquireWakeLock() {
+  if (!state.prefs.wakeLock || !('wakeLock' in navigator) || wakeLockSentinel) return;
+  try { wakeLockSentinel = await navigator.wakeLock.request('screen'); wakeLockSentinel.addEventListener('release', () => { wakeLockSentinel = null; }); } catch {}
+}
+function releaseWakeLock() {
+  if (!wakeLockSentinel) return;
+  try { wakeLockSentinel.release(); } catch {}
+  wakeLockSentinel = null;
+}
+
+// PWA Service Worker & Install Lifecycle
+if ('serviceWorker' in navigator && /^https?:$/i.test(location.protocol)) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./qr-sw.js').catch(() => {});
+  });
+}
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  updateInstallUI();
+});
+window.addEventListener('appinstalled', () => {
+  state.isInstalled = true;
+  deferredInstallPrompt = null;
+  $('#installModal').hidden = true;
+  updateInstallUI();
+  toast('Depo QR uygulaması ana ekranınıza kuruldu!');
+  if (state.tab === 'settings' || state.tab === 'scan') render();
+});
+window.addEventListener('online', () => { state.online = true; updateOnlineUI(); toast('İnternet bağlantısı geri geldi.'); });
+window.addEventListener('offline', () => { state.online = false; updateOnlineUI(); });
+
+function updateOnlineUI() {
+  const bar = $('#offlineBar');
+  if (bar) bar.hidden = state.online;
+}
+function updateInstallUI() {
+  const btn = $('#installTopBtn');
+  if (btn) btn.hidden = state.isInstalled;
+  const sub = $('#appModeSub');
+  if (sub) sub.textContent = state.isInstalled ? 'Uygulama Modu · V8.7' : 'Mekanik + İSG Depo';
+}
+function updateNavUI() {
+  $$('.bnav-btn').forEach(b => b.classList.toggle('active', b.dataset.nav === state.tab));
+  const badge = $('#histBadge');
+  if (badge) {
+    badge.textContent = String(state.history.length);
+    badge.hidden = state.history.length === 0;
+  }
+}
+
+async function triggerInstallPwa() {
+  if (state.isInstalled) return toast('Uygulama telefonunuza zaten kurulu.');
+  if (deferredInstallPrompt) {
+    try {
+      await deferredInstallPrompt.prompt();
+      const {outcome} = await deferredInstallPrompt.userChoice;
+      if (outcome === 'accepted') {
+        state.isInstalled = true;
+        deferredInstallPrompt = null;
+        updateInstallUI();
+      }
+      return;
+    } catch {}
+  }
+  const body = $('#installModalBody');
+  const fullUrl = new URL('./qr-terminal.html', location.href).href;
+  if (isIOS()) {
+    body.innerHTML = `
+      <p style="margin:0;font-size:13.5px;color:var(--ink-2)">iPhone veya iPad’de <b>Depo QR</b>’ı tam ekran uygulama gibi ana ekrana eklemek için:</p>
+      <div class="guide-steps">
+        <div class="guide-step"><i>1</i><div>Bu sayfayı <b>Safari</b> tarayıcısında açın ve alt çubuktaki <b>Paylaş (↑)</b> simgesine dokunun.</div></div>
+        <div class="guide-step"><i>2</i><div>Açılan menüyü aşağı kaydırıp <b>Ana Ekrana Ekle</b> seçeneğine dokunun.</div></div>
+        <div class="guide-step"><i>3</i><div>Sağ üstten <b>Ekle</b>’ye basın. Ana ekrandaki <b>Depo QR</b> simgesine bastığınızda uygulama gibi açılır.</div></div>
+      </div>
+      ${inIframe() ? `<a class="btn primary wide" href="${esc(fullUrl)}" target="_blank" rel="noopener" style="margin-bottom:8px">Safari’de Tam Ekran Aç</a>` : ''}
+      <button class="btn ghost wide" type="button" data-action="close-install">Anladım</button>`;
+  } else {
+    body.innerHTML = `
+      <p style="margin:0;font-size:13.5px;color:var(--ink-2)">Android telefonunuzda <b>Depo QR</b>’ı program gibi ana ekrana kurmak için:</p>
+      <div class="guide-steps">
+        <div class="guide-step"><i>1</i><div>Bu sayfayı <b>Chrome</b> tarayıcısında açın${inIframe() ? ' (aşağıdaki butona basıp yeni sekmede açın)' : ''}.</div></div>
+        <div class="guide-step"><i>2</i><div>Sağ üstteki <b>⋮ (Üç Nokta)</b> menüsüne dokunun.</div></div>
+        <div class="guide-step"><i>3</i><div><b>Uygulamayı yükle</b> veya <b>Ana ekrana ekle</b> seçeneğine basıp onaylayın.</div></div>
+      </div>
+      ${inIframe() ? `<a class="btn primary wide" href="${esc(fullUrl)}" target="_blank" rel="noopener" style="margin-bottom:8px">Chrome’da Tam Ekran Aç</a>` : ''}
+      <button class="btn ghost wide" type="button" data-action="close-install">Tamam</button>`;
+  }
+  $('#installModal').hidden = false;
 }
 
 function needsDepotApproval(item) {
@@ -743,9 +1012,11 @@ function toast(msg, type = 'ok') {
 }
 function updateConnBadge() {
   $('#connDot').className = 'dot ' + state.mode;
-  $('#connLabel').textContent = state.mode === 'demo' ? 'Demo' : state.mode === 'direct' ? 'Canlı GAS' : '/api/gas';
+  $('#connLabel').textContent = state.mode === 'demo' ? 'Demo' : state.mode === 'direct' ? 'Canlı' : 'Sunucu';
 }
 function updateStepper() {
+  const st = $('#stepper');
+  if (st) st.hidden = state.tab !== 'scan';
   const stepNum = state.step === 'scan' ? 1 : state.step === 'pin' ? 2 : 3;
   $$('#stepper .step').forEach(el => {
     const n = Number(el.dataset.step);
@@ -828,6 +1099,7 @@ function stopCamera() {
   state.camActive = false;
   state.torchOn = false;
   state.torchSupported = false;
+  releaseWakeLock();
   if (cameraStream) {
     cameraStream.getTracks().forEach(t => t.stop());
     cameraStream = null;
@@ -937,6 +1209,7 @@ async function startCamera(silent = false) {
     video.setAttribute('webkit-playsinline', 'true');
     video.muted = true;
     await video.play();
+    acquireWakeLock();
     scheduleScanLoop(video);
   } catch (err) {
     stopCamera();
@@ -1024,6 +1297,7 @@ function selectQrCode(code) {
 
 function resetToScan() {
   stopCamera();
+  state.tab = 'scan';
   state.scannedQr = '';
   state.user = null;
   state.session = '';
@@ -1032,6 +1306,7 @@ function resetToScan() {
   state.pendingCheckout = null;
   state.receipt = null;
   state.showPin = false;
+  state.showManualQr = false;
   state.step = 'scan';
   if (location.search) {
     try { history.replaceState(null, '', location.pathname); } catch {}
@@ -1063,13 +1338,25 @@ function resolveScannedItem() {
 // Render Views
 function render() {
   updateConnBadge();
+  updateInstallUI();
+  updateOnlineUI();
+  updateNavUI();
   updateStepper();
   const root = $('#view');
+  if (state.tab === 'history') {
+    stopCamera();
+    root.innerHTML = renderHistory();
+    return;
+  }
+  if (state.tab === 'settings') {
+    stopCamera();
+    root.innerHTML = renderSettings();
+    return;
+  }
   if (state.step === 'scan') {
     root.innerHTML = renderScan();
     renderCamStage();
-    // Auto-start rear camera on phones/browsers
-    setTimeout(() => { if (state.step === 'scan' && !state.camActive && !state.camError) startCamera(true); }, 120);
+    setTimeout(() => { if (state.tab === 'scan' && state.step === 'scan' && !state.camActive && !state.camError) startCamera(true); }, 120);
   }
   else if (state.step === 'pin') root.innerHTML = renderPin();
   else if (state.step === 'part') root.innerHTML = renderPart();
@@ -1104,17 +1391,43 @@ function renderCamStage() {
 }
 
 function renderScan() {
+  const showInstallBanner = !state.isInstalled && !state.installDismissed;
   return `
+  ${showInstallBanner ? `
+  <section class="install-card">
+    <div class="install-card-main">
+      <span class="install-card-ic">${ic('phone')}</span>
+      <div>
+        <b>Telefona Uygulama Olarak Kur</b>
+        <small>Ana ekrandan tam ekran ve tek dokunuşla açılır</small>
+      </div>
+    </div>
+    <div class="install-card-actions">
+      <button class="btn primary sm" type="button" data-action="install-pwa" style="min-height:38px;padding:0 12px;font-size:13px">Kur</button>
+      <button class="icon-btn" type="button" data-action="dismiss-install" aria-label="Kapat" style="width:34px;height:34px;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16);color:#CBD5E1">${ic('x','ic-sm')}</button>
+    </div>
+  </section>` : ''}
+
   <section class="scan-card">
     <div class="cam-stage" id="camStage"></div>
     <div class="scan-foot">
       <div class="scan-foot-msg">
-        <span><b>Adım 1:</b> QR kodu çerçeveye tutun, ardından OP şifrenizi girin.</span>
+        <span><b>Adım 1:</b> QR kodu çerçeveye tutun, ardından OP PIN girin.</span>
       </div>
-      <label class="photo-scan-label">
-        ${ic('camera','ic-sm')} Kamera ile QR Fotoğrafı Çek
-        <input type="file" id="qrPhotoInput" accept="image/*" capture="environment">
-      </label>
+      <div class="scan-foot-btns">
+        <label class="scan-foot-btn">
+          ${ic('camera','ic-sm')} Fotoğraftan Oku
+          <input type="file" id="qrPhotoInput" accept="image/*" capture="environment">
+        </label>
+        <button class="scan-foot-btn" type="button" data-action="toggle-manual-qr">
+          ${ic('keyboard','ic-sm')} Kodu Elle Gir
+        </button>
+      </div>
+      ${state.showManualQr ? `
+      <form class="manual-qr-form" id="manualQrForm">
+        <input id="manualQrInput" placeholder="RUL-6205, MEK-0001 veya ISG-DOLAP" autocomplete="off" autocapitalize="characters" required>
+        <button type="submit">Git</button>
+      </form>` : ''}
     </div>
   </section>
 
@@ -1136,6 +1449,110 @@ function renderScan() {
       </button>
     </div>
   </details>` : ''}`;
+}
+
+function renderHistory() {
+  const list = state.history || [];
+  return `
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2>Son QR İşlemleri</h2>
+        <p>Bu telefonda yapılan son malzeme çıkışları (${list.length})</p>
+      </div>
+      ${list.length ? `<button class="link-btn" type="button" data-action="clear-history">Temizle</button>` : ''}
+    </div>
+    ${list.length ? `<div class="hist-list">${list.map(h => `
+      <div class="hist-row">
+        <div>
+          <b>${esc(h.itemName)}</b>
+          <small><span class="mono">${esc(h.itemCode)}</span> · ${esc(h.operator)} · ${esc(h.machine)}</small>
+          <small class="mono">${esc(h.time)}${h.refId ? ' · ' + esc(h.refId) : ''}</small>
+        </div>
+        <div class="hist-right">
+          <strong class="num">${num(h.qty)} ${esc(h.unit)}</strong>
+          <span class="hist-status ${esc(h.status)}">${h.status === 'deducted' ? 'Düşüldü' : h.status === 'pending' ? 'Onay Bekliyor' : 'İptal'}</span>
+        </div>
+      </div>`).join('')}</div>` : `
+      <div class="empty-box">
+        <span style="color:var(--muted)">${ic('clock','ic-lg')}</span>
+        <b>Henüz QR çıkışı yapılmadı</b>
+        <p>QR okutup malzeme çıkışı yaptığınızda makbuzlar burada listelenir.</p>
+        <button class="btn primary sm" type="button" data-nav="scan">${ic('scan','ic-sm')} QR Okutmaya Başla</button>
+      </div>`}
+  </section>`;
+}
+
+function renderSettings() {
+  return `
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2>Telefon Uygulaması (PWA)</h2>
+        <p>${state.isInstalled ? 'Depo QR cihazınızda uygulama modunda çalışıyor' : 'Ana ekrana ekleyip normal telefon programı gibi kullanın'}</p>
+      </div>
+      <span class="tag ${state.isInstalled ? 'green' : 'blue'}">${state.isInstalled ? 'Kurulu' : 'Kurulabilir'}</span>
+    </div>
+    <div class="card-body">
+      ${state.isInstalled
+        ? `<div class="callout green" style="margin-bottom:0">${ic('check','ic-sm')}<div><b>Uygulama Kurulu</b>Depo QR ana ekranınızdan tam ekran uygulama olarak çalışıyor.</div></div>`
+        : `<button class="btn primary wide" type="button" data-action="install-pwa">${ic('download','ic-sm')} Ana Ekrana Uygulama Olarak Kur</button>`}
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2>Bağlantı Ayarı</h2>
+        <p>Canlı Google Sheets veya Demo bağlantı modu</p>
+      </div>
+      <span class="tag ${state.mode === 'demo' ? 'amber' : 'green'}">${state.mode === 'demo' ? 'Demo' : state.mode === 'direct' ? 'Canlı GAS' : '/api/gas'}</span>
+    </div>
+    <div class="card-body">
+      <label class="field">
+        <span>Bağlantı Modu</span>
+        <select class="input" id="connMode">
+          <option value="demo" ${state.mode === 'demo' ? 'selected' : ''}>Demo / Yerel Test</option>
+          <option value="direct" ${state.mode === 'direct' ? 'selected' : ''}>Doğrudan Google Apps Script (/exec)</option>
+          <option value="proxy" ${state.mode === 'proxy' ? 'selected' : ''}>Güvenli /api/gas Sunucusu</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Apps Script /exec Adresi</span>
+        <input class="input" id="connUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">
+        <small>Ana yönetim paneliyle aynı ayarı paylaşır.</small>
+      </label>
+      <div class="btn-row">
+        <button class="btn ghost" type="button" data-action="test-conn">Test Et</button>
+        <button class="btn primary" type="button" data-action="save-conn">Kaydet</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2>Tarayıcı Tercihleri</h2>
+        <p>Depo sahası kullanım kolaylığı</p>
+      </div>
+    </div>
+    <div class="card-body" style="padding-top:4px;padding-bottom:10px">
+      <div class="pref-row">
+        <div><b>Okuma Bip Sesi</b><small>QR okunduğunda kısa onay sesi çal</small></div>
+        <button class="switch ${state.prefs.sound ? 'on' : ''}" type="button" data-pref="sound" aria-label="Bip Sesi"><i></i></button>
+      </div>
+      <div class="pref-row">
+        <div><b>Titreşim Geri Bildirimi</b><small>Okuma ve tuş basımında hafif titreşim</small></div>
+        <button class="switch ${state.prefs.vibrate ? 'on' : ''}" type="button" data-pref="vibrate" aria-label="Titreşim"><i></i></button>
+      </div>
+      <div class="pref-row">
+        <div><b>Kamera Açıkken Ekranı Uyanık Tut</b><small>Depoda QR okuturken ekranın kararmasını önler</small></div>
+        <button class="switch ${state.prefs.wakeLock ? 'on' : ''}" type="button" data-pref="wakeLock" aria-label="Ekranı Uyanık Tut"><i></i></button>
+      </div>
+    </div>
+  </section>
+
+  <a class="btn ghost wide" href="./index.html">Ana Yönetim Paneline Dön</a>`;
 }
 
 function renderPin() {
@@ -1540,6 +1957,7 @@ async function executeCheckout({item, qty, machine, extra = {}}) {
     }
 
     vibrate(60);
+    pushHistory(state.receipt);
     if (r.autoLogout !== false) {
       state.user = null;
       state.session = '';
@@ -1571,7 +1989,8 @@ document.addEventListener('change', e => {
 
 // Physical keyboard support for PIN screens without opening mobile soft keyboard
 document.addEventListener('keydown', e => {
-  if (!$('#connModal').hidden) return;
+  if (!$('#installModal').hidden) return;
+  if (state.tab !== 'scan') return;
   const inp = state.step === 'pin' ? $('#opPinInput') : (state.step === 'approval' && state.approvalTab === 'pin' ? $('#depotPinInput') : null);
   if (!inp) return;
   if (/^\d$/.test(e.key)) {
@@ -1587,6 +2006,27 @@ document.addEventListener('keydown', e => {
 });
 
 document.addEventListener('click', async e => {
+  const navBtn = e.target.closest('[data-nav]');
+  if (navBtn) {
+    vibrate(10);
+    const target = navBtn.dataset.nav;
+    if (target === 'scan' && state.tab === 'scan' && state.step !== 'scan') return resetToScan();
+    state.tab = target;
+    render();
+    return;
+  }
+
+  const prefBtn = e.target.closest('[data-pref]');
+  if (prefBtn) {
+    const k = prefBtn.dataset.pref;
+    state.prefs[k] = !state.prefs[k];
+    savePrefs(state.prefs);
+    vibrate(12);
+    if (k === 'wakeLock' && !state.prefs.wakeLock) releaseWakeLock();
+    render();
+    return;
+  }
+
   const qrBtn = e.target.closest('[data-qr]');
   if (qrBtn) { vibrate(25); return selectQrCode(qrBtn.dataset.qr); }
 
@@ -1631,6 +2071,28 @@ document.addEventListener('click', async e => {
   const act = e.target.closest('[data-action]')?.dataset.action;
   if (!act) return;
 
+  if (act === 'install-pwa') return triggerInstallPwa();
+  if (act === 'close-install') { $('#installModal').hidden = true; return; }
+  if (act === 'dismiss-install') {
+    state.installDismissed = true;
+    try { sessionStorage.setItem('depo.qr.installDismissed', '1'); } catch {}
+    render();
+    return;
+  }
+  if (act === 'toggle-manual-qr') {
+    state.showManualQr = !state.showManualQr;
+    render();
+    if (state.showManualQr) setTimeout(() => $('#manualQrInput')?.focus(), 40);
+    return;
+  }
+  if (act === 'clear-history') {
+    state.history = [];
+    try { localStorage.removeItem(HIST_KEY); } catch {}
+    toast('Son işlemler temizlendi.');
+    render();
+    return;
+  }
+  if (act === 'open-settings') { state.tab = 'settings'; render(); return; }
   if (act === 'start-cam') return startCamera(false);
   if (act === 'toggle-torch') return toggleTorch();
   if (act === 'reset-scan') return resetToScan();
@@ -1659,6 +2121,7 @@ document.addEventListener('click', async e => {
       approvalLabel: 'Depocu İptal Etti',
       time: nowStr()
     };
+    pushHistory(state.receipt);
     state.user = null;
     state.session = '';
     state.pendingCheckout = null;
@@ -1673,17 +2136,10 @@ document.addEventListener('click', async e => {
     return executeCheckout({item: pc.item, qty: pc.qty, machine: pc.machine, extra: {sendApproval: true}});
   }
 
-  if (act === 'open-conn') {
-    $('#connMode').value = state.mode;
-    $('#connUrl').value = state.directUrl;
-    $('#connModal').hidden = false;
-    return;
-  }
-  if (act === 'close-conn') { $('#connModal').hidden = true; return; }
   if (act === 'test-conn') {
     const oldMode = state.mode, oldUrl = state.directUrl;
-    state.mode = $('#connMode').value;
-    state.directUrl = $('#connUrl').value.trim();
+    state.mode = $('#connMode')?.value || state.mode;
+    state.directUrl = ($('#connUrl')?.value || '').trim();
     setBusy(true);
     try { await api('health'); toast('Bağlantı başarılı.'); }
     catch (err) { toast(err.message, 'err'); }
@@ -1691,14 +2147,13 @@ document.addEventListener('click', async e => {
     return;
   }
   if (act === 'save-conn') {
-    const mode = $('#connMode').value;
-    const url = $('#connUrl').value.trim();
+    const mode = $('#connMode')?.value || 'demo';
+    const url = ($('#connUrl')?.value || '').trim();
     if (mode === 'direct' && !url) return toast('Doğrudan mod için /exec adresi girin.', 'err');
     state.mode = mode;
     state.directUrl = url;
     localStorage.setItem('depo.mode', mode);
     localStorage.setItem('depo.directUrl', url);
-    $('#connModal').hidden = true;
     updateConnBadge();
     toast('Bağlantı ayarı kaydedildi.');
     resetToScan();
@@ -1709,6 +2164,12 @@ document.addEventListener('click', async e => {
 document.addEventListener('submit', async e => {
   e.preventDefault();
   const id = e.target.id;
+  if (id === 'manualQrForm') {
+    const code = String($('#manualQrInput')?.value || '').trim();
+    if (!code) return toast('Lütfen parça veya dolap kodunu girin.', 'err');
+    vibrate(40); beepScan();
+    return selectQrCode(code);
+  }
   if (id === 'opPinForm') return submitOpPin($('#opPinInput')?.value);
   if (id === 'partCheckoutForm') {
     const fd = new FormData(e.target);
@@ -1729,13 +2190,13 @@ document.addEventListener('submit', async e => {
   }
 });
 
-$('#connModal').addEventListener('click', e => {
-  if (e.target === $('#connModal')) $('#connModal').hidden = true;
+$('#installModal').addEventListener('click', e => {
+  if (e.target === $('#installModal')) $('#installModal').hidden = true;
 });
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) stopCamera();
-  else if (state.step === 'scan' && !state.camActive) startCamera(true);
+  else if (state.tab === 'scan' && state.step === 'scan' && !state.camActive) startCamera(true);
 });
 
 if (state.scannedQr) state.step = 'pin';
