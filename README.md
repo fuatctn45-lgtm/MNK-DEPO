@@ -7,7 +7,7 @@ Mekanik ve İSG depoları için rol bazlı stok yönetimi, onay havuzu, planlı 
 | Dosya | Açıklama |
 | --- | --- |
 | `index.html` | Ana yönetim paneli (tek HTML · Demo, Doğrudan GAS veya `/api/gas` destekli) |
-| `public/qr-terminal.html` | Bağımsız depo QR çıkış terminali (`qr-terminal.html` olarak yayınlanır) |
+| `qr-terminal.html` | Bağımsız depo QR çıkış terminali (kök dizinde, doğrudan ve `dist/` içinde çalışır) |
 | `.github/workflows/deploy.yml` | `main` dalına her gönderimde GitHub Pages'e otomatik yayınlama |
 
 ### Bağımsız QR Çıkış Terminali Akışı (`qr-terminal.html`)

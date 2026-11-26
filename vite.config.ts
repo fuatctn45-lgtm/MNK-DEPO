@@ -26,6 +26,13 @@ export default defineConfig(() => {
           if (fs.existsSync(distDir) && fs.existsSync(srcAssets)) {
             fs.cpSync(srcAssets, distAssets, {recursive: true, force: true});
           }
+          for (const extraFile of ['qr-terminal.html', '.nojekyll']) {
+            const srcFile = path.resolve(__dirname, extraFile);
+            const distFile = path.resolve(distDir, extraFile);
+            if (fs.existsSync(distDir) && fs.existsSync(srcFile)) {
+              fs.copyFileSync(srcFile, distFile);
+            }
+          }
         },
       },
     ],
