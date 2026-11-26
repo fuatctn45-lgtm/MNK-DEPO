@@ -1,8 +1,8 @@
 {
   "id": "./qr-terminal.html",
-  "name": "Depo QR Okuyucu",
-  "short_name": "Depo QR",
-  "description": "Mekanik ve İSG deposu için kamera QR okuyucu, operatör PIN doğrulama ve hızlı malzeme çıkış uygulaması.",
+  "name": "Operatör QR Okuyucu",
+  "short_name": "Operatör QR",
+  "description": "Operatörler için ana sisteme girmeden doğrudan açılan hızlı QR malzeme çıkış uygulaması.",
   "lang": "tr",
   "start_url": "./qr-terminal.html",
   "scope": "./",

@@ -7,10 +7,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Depo QR">
-<meta name="application-name" content="Depo QR">
-<title>Depo QR Okuyucu · Mekanik + İSG Depo</title>
-<meta name="description" content="Android ve iPhone’da uygulama gibi çalışan depo QR okuyucu, operatör PIN doğrulama ve hızlı malzeme çıkış terminali.">
+<meta name="apple-mobile-web-app-title" content="Operatör QR">
+<meta name="application-name" content="Operatör QR">
+<title>Operatör QR Okuyucu</title>
+<meta name="description" content="Operatörler için ana sisteme girmeden doğrudan açılan hızlı QR malzeme çıkış uygulaması.">
 <link rel="manifest" href="./qr-manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="./pwa-192x192.png">
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
@@ -656,13 +656,45 @@ select.input{
 .toast.err .ic{color:#F87171}
 .toast.warn .ic{color:#FBBF24}
 
-/* Busy Bar */
-.busy-bar{position:fixed;top:0;left:0;right:0;height:3px;z-index:70;overflow:hidden;display:none}
+/* Top Saving Status Bar */
+.busy-bar{position:fixed;top:0;left:0;right:0;height:3px;z-index:75;overflow:hidden;display:none}
 body.busy .busy-bar{display:block}
 .busy-bar::after{
   content:'';display:block;width:40%;height:100%;background:var(--orange);
   animation:loading 1s ease-in-out infinite;
 }
+.save-bar{
+  position:sticky;top:calc(56px + var(--safe-top));z-index:48;
+  background:#0F172A;color:#fff;overflow:hidden;
+  border-bottom:1px solid rgba(255,255,255,.1);
+  box-shadow:0 8px 20px rgba(15,23,42,.22);
+  transition:background .2s ease;
+}
+.save-bar[hidden]{display:none!important}
+.save-bar-in{
+  max-width:480px;margin:0 auto;padding:9px 14px;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  font-size:13px;font-weight:700;letter-spacing:-.01em;
+}
+.save-bar .sb-spin{
+  width:14px;height:14px;border-radius:50%;flex-shrink:0;
+  border:2px solid rgba(255,255,255,.28);border-top-color:#FB923C;
+  animation:sbSpin .65s linear infinite;
+}
+.save-bar .sb-track{
+  height:3px;width:100%;background:rgba(255,255,255,.12);position:relative;overflow:hidden;
+}
+.save-bar .sb-track::after{
+  content:'';position:absolute;inset:0;width:42%;background:linear-gradient(90deg,#EA580C,#FDBA74,#EA580C);
+  animation:loading 1.05s ease-in-out infinite;
+}
+.save-bar.done{background:#15803D}
+.save-bar.done .sb-spin{display:none}
+.save-bar.done .sb-track::after{width:100%;animation:none;background:#86EFAC}
+.save-bar.err{background:#B91C1C;cursor:pointer}
+.save-bar.err .sb-spin{display:none}
+.save-bar.err .sb-track::after{width:100%;animation:none;background:#FCA5A5}
+@keyframes sbSpin{to{transform:rotate(360deg)}}
 @keyframes loading{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
 
 @media (max-height:740px){
@@ -685,8 +717,8 @@ body.busy .busy-bar{display:block}
       <div class="brand">
         <span class="brand-mark">QR</span>
         <div class="brand-txt">
-          <b>Depo QR Okuyucu</b>
-          <small id="appModeSub">Mekanik + İSG Depo</small>
+          <b>Operatör QR</b>
+          <small id="appModeSub">Hızlı Malzeme Çıkışı</small>
         </div>
       </div>
       <div class="top-right">
@@ -701,6 +733,14 @@ body.busy .busy-bar{display:block}
       </div>
     </div>
   </header>
+  <div class="save-bar" id="saveBar" role="status" aria-live="polite" hidden>
+    <div class="save-bar-in">
+      <span class="sb-spin" aria-hidden="true"></span>
+      <span id="saveBarIcon" hidden></span>
+      <span id="saveBarText">Kayıt ediliyor...</span>
+    </div>
+    <div class="sb-track"></div>
+  </div>
   <div class="offline-bar" id="offlineBar" hidden>
     <span class="ic ic-sm"><svg viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg></span>
     <span>Çevrimdışı — Stok çıkışı için internet bağlantısı gerekli</span>
@@ -763,6 +803,7 @@ const uid = p => p + '-' + Math.random().toString(36).slice(2,8).toUpperCase();
 const nowStr = () => new Date().toLocaleString('tr-TR');
 const PREFS_KEY = 'depo.qr.prefs';
 const HIST_KEY = 'depo.qr.history';
+const STOCK_CACHE_KEY = 'depo.qr.stockCache';
 function loadPrefs() {
   try { return {sound:true, vibrate:true, wakeLock:true, ...JSON.parse(localStorage.getItem(PREFS_KEY)||'{}')}; }
   catch { return {sound:true, vibrate:true, wakeLock:true}; }
@@ -772,11 +813,49 @@ function loadHistory() {
   try { const a = JSON.parse(localStorage.getItem(HIST_KEY)||'[]'); return Array.isArray(a) ? a : []; }
   catch { return []; }
 }
-function pushHistory(entry) {
-  const list = [entry, ...loadHistory()].slice(0, 30);
+function saveHistory(list) {
   try { localStorage.setItem(HIST_KEY, JSON.stringify(list)); } catch {}
   state.history = list;
   updateNavUI();
+}
+function pushHistory(entry) {
+  saveHistory([entry, ...loadHistory()].slice(0, 30));
+}
+function updateHistoryEntry(localId, patch) {
+  const list = loadHistory().map(x => x._localId === localId ? {...x, ...patch} : x);
+  saveHistory(list);
+}
+function removeHistoryEntry(localId) {
+  saveHistory(loadHistory().filter(x => x._localId !== localId));
+}
+function cacheKeySig() { return state.mode + '|' + (state.directUrl || ''); }
+function loadStockCache() {
+  try {
+    const c = JSON.parse(localStorage.getItem(STOCK_CACHE_KEY) || 'null');
+    if (!c || c.sig !== cacheKeySig() || !Array.isArray(c.stock)) return null;
+    if (Date.now() - (c.ts || 0) > 30 * 60 * 1000) return null;
+    return c;
+  } catch { return null; }
+}
+function saveStockCache(stock, machines) {
+  try {
+    localStorage.setItem(STOCK_CACHE_KEY, JSON.stringify({
+      sig: cacheKeySig(),
+      ts: Date.now(),
+      stock: stock || [],
+      machines: machines || []
+    }));
+  } catch {}
+}
+function patchCachedStock(itemId, deltaOrRemaining, isAbsolute = false) {
+  const apply = arr => {
+    if (!Array.isArray(arr)) return;
+    const it = arr.find(x => x.id === itemId);
+    if (it) it.stock = Math.max(0, isAbsolute ? Number(deltaOrRemaining) : (Number(it.stock) || 0) + Number(deltaOrRemaining));
+  };
+  apply(state.stock);
+  const c = loadStockCache();
+  if (c) { apply(c.stock); saveStockCache(c.stock, c.machines); }
 }
 const vibrate = ms => { try { if (state.prefs.vibrate && navigator.vibrate) navigator.vibrate(ms); } catch {} };
 
@@ -853,6 +932,31 @@ function readInitialQr() {
   }
   return '';
 }
+
+let autoConfiguredNow = false;
+(function applyUrlBootstrapConfig() {
+  try {
+    const qs = new URLSearchParams(location.search);
+    const gas = String(qs.get('gas') || '').trim();
+    const modeParam = String(qs.get('mode') || '').trim().toLowerCase();
+    let changed = false;
+    if (gas && /^https:\/\/script\.google\.com\//i.test(gas)) {
+      localStorage.setItem('depo.mode', 'direct');
+      localStorage.setItem('depo.directUrl', gas);
+      changed = true;
+    } else if (modeParam === 'proxy' || modeParam === 'demo') {
+      localStorage.setItem('depo.mode', modeParam);
+      changed = true;
+    }
+    if (changed) {
+      autoConfiguredNow = true;
+      qs.delete('gas');
+      qs.delete('mode');
+      const next = location.pathname + (qs.toString() ? '?' + qs.toString() : '') + (location.hash || '');
+      try { history.replaceState(null, '', next); } catch {}
+    }
+  } catch {}
+})();
 
 const isStandalone = () =>
   window.matchMedia('(display-mode: standalone)').matches ||
@@ -1002,6 +1106,38 @@ function isConsumable(item) {
   return !item.machine || /SARF|ORTAK/.test(norm(item.type + ' ' + item.usage));
 }
 function setBusy(v) { document.body.classList.toggle('busy', v); }
+let savePending = 0, saveHideTimer = null, lastSaveLabel = 'Kayıt ediliyor...';
+function showSaveBar(mode, text) {
+  const bar = $('#saveBar'), txt = $('#saveBarText'), icon = $('#saveBarIcon');
+  if (!bar || !txt) return;
+  clearTimeout(saveHideTimer);
+  bar.classList.remove('done', 'err');
+  if (mode === 'done') bar.classList.add('done');
+  if (mode === 'err') bar.classList.add('err');
+  txt.textContent = text;
+  if (icon) {
+    if (mode === 'done') { icon.innerHTML = ic('check', 'ic-sm'); icon.hidden = false; }
+    else if (mode === 'err') { icon.innerHTML = ic('alert', 'ic-sm'); icon.hidden = false; }
+    else { icon.innerHTML = ''; icon.hidden = true; }
+  }
+  bar.hidden = false;
+  if (mode === 'done') saveHideTimer = setTimeout(() => { if (savePending === 0) bar.hidden = true; }, 2200);
+  if (mode === 'err') saveHideTimer = setTimeout(() => { if (savePending === 0) bar.hidden = true; }, 5500);
+}
+function beginSave(label = 'Kayıt ediliyor...') {
+  savePending++;
+  lastSaveLabel = label;
+  const text = savePending > 1 ? `Kayıt ediliyor (${savePending} işlem)...` : label;
+  showSaveBar('saving', text);
+}
+function endSave(ok = true, msg = 'Kaydedildi') {
+  savePending = Math.max(0, savePending - 1);
+  if (savePending > 0) {
+    showSaveBar('saving', savePending > 1 ? `Kayıt ediliyor (${savePending} işlem)...` : lastSaveLabel);
+  } else {
+    showSaveBar(ok ? 'done' : 'err', msg);
+  }
+}
 function toast(msg, type = 'ok') {
   const el = document.createElement('div');
   el.className = 'toast ' + type;
@@ -1025,18 +1161,28 @@ function updateStepper() {
 }
 
 // API Client
-async function api(action, payload = {}) {
+async function api(action, payload = {}, sessionOverride = null) {
   if (state.mode === 'demo') return demoApi(action, payload);
   const endpoint = state.mode === 'direct' ? state.directUrl : '/api/gas';
-  if (!endpoint) throw new Error('Apps Script /exec adresi tanımlı değil. Sağ üstten Bağlantı Ayarı’nı açın.');
+  if (!endpoint) throw new Error('Apps Script /exec adresi tanımlı değil. Ayarlar sekmesinden bağlantıyı kaydedin.');
   const res = await fetch(endpoint, {
     method: 'POST',
     headers: {'Content-Type': state.mode === 'direct' ? 'text/plain;charset=utf-8' : 'application/json'},
-    body: JSON.stringify({action, payload, session: state.session})
+    body: JSON.stringify({action, payload, session: sessionOverride !== null ? sessionOverride : state.session})
   });
   const out = await res.json().catch(() => ({ok:false, error:'Sunucu geçerli JSON döndürmedi.'}));
   if (!res.ok || !out.ok) throw new Error(out.error || ('HTTP ' + res.status));
   return out.data;
+}
+function warmupGas() {
+  if (state.mode === 'demo') return;
+  const endpoint = state.mode === 'direct' ? state.directUrl : '/api/gas';
+  if (!endpoint) return;
+  fetch(endpoint, {
+    method: 'POST',
+    headers: {'Content-Type': state.mode === 'direct' ? 'text/plain;charset=utf-8' : 'application/json'},
+    body: JSON.stringify({action: 'health', payload: {}, session: ''})
+  }).catch(() => {});
 }
 
 async function demoApi(action, p = {}) {
@@ -1483,48 +1629,20 @@ function renderHistory() {
 }
 
 function renderSettings() {
+  const needsSetup = state.mode === 'demo' && !state.directUrl;
   return `
   <section class="card">
     <div class="card-head">
       <div>
-        <h2>Telefon Uygulaması (PWA)</h2>
-        <p>${state.isInstalled ? 'Depo QR cihazınızda uygulama modunda çalışıyor' : 'Ana ekrana ekleyip normal telefon programı gibi kullanın'}</p>
+        <h2>Operatör QR Uygulaması</h2>
+        <p>${state.isInstalled ? 'Telefonda tam ekran uygulama modunda çalışıyor' : 'Ana ekrana kurup sisteme girmeden doğrudan açın'}</p>
       </div>
       <span class="tag ${state.isInstalled ? 'green' : 'blue'}">${state.isInstalled ? 'Kurulu' : 'Kurulabilir'}</span>
     </div>
     <div class="card-body">
       ${state.isInstalled
-        ? `<div class="callout green" style="margin-bottom:0">${ic('check','ic-sm')}<div><b>Uygulama Kurulu</b>Depo QR ana ekranınızdan tam ekran uygulama olarak çalışıyor.</div></div>`
+        ? `<div class="callout green" style="margin-bottom:0">${ic('check','ic-sm')}<div><b>Uygulama Kurulu</b>Operatör QR ana ekranınızdan doğrudan kamera ile açılır.</div></div>`
         : `<button class="btn primary wide" type="button" data-action="install-pwa">${ic('download','ic-sm')} Ana Ekrana Uygulama Olarak Kur</button>`}
-    </div>
-  </section>
-
-  <section class="card">
-    <div class="card-head">
-      <div>
-        <h2>Bağlantı Ayarı</h2>
-        <p>Canlı Google Sheets veya Demo bağlantı modu</p>
-      </div>
-      <span class="tag ${state.mode === 'demo' ? 'amber' : 'green'}">${state.mode === 'demo' ? 'Demo' : state.mode === 'direct' ? 'Canlı GAS' : '/api/gas'}</span>
-    </div>
-    <div class="card-body">
-      <label class="field">
-        <span>Bağlantı Modu</span>
-        <select class="input" id="connMode">
-          <option value="demo" ${state.mode === 'demo' ? 'selected' : ''}>Demo / Yerel Test</option>
-          <option value="direct" ${state.mode === 'direct' ? 'selected' : ''}>Doğrudan Google Apps Script (/exec)</option>
-          <option value="proxy" ${state.mode === 'proxy' ? 'selected' : ''}>Güvenli /api/gas Sunucusu</option>
-        </select>
-      </label>
-      <label class="field">
-        <span>Apps Script /exec Adresi</span>
-        <input class="input" id="connUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">
-        <small>Ana yönetim paneliyle aynı ayarı paylaşır.</small>
-      </label>
-      <div class="btn-row">
-        <button class="btn ghost" type="button" data-action="test-conn">Test Et</button>
-        <button class="btn primary" type="button" data-action="save-conn">Kaydet</button>
-      </div>
     </div>
   </section>
 
@@ -1551,7 +1669,34 @@ function renderSettings() {
     </div>
   </section>
 
-  <a class="btn ghost wide" href="./index.html">Ana Yönetim Paneline Dön</a>`;
+  <details class="card" ${needsSetup ? 'open' : ''} style="overflow:hidden">
+    <summary class="card-head" style="cursor:pointer;list-style:none">
+      <div>
+        <h2>Yönetici Bağlantı Ayarı</h2>
+        <p>${state.mode === 'demo' ? 'Şu an Demo modunda (kurulum için dokunun)' : 'Canlı Google Sheets bağlantısı aktif'}</p>
+      </div>
+      <span class="tag ${state.mode === 'demo' ? 'amber' : 'green'}">${state.mode === 'demo' ? 'Demo' : state.mode === 'direct' ? 'Canlı' : '/api/gas'}</span>
+    </summary>
+    <div class="card-body">
+      <label class="field">
+        <span>Bağlantı Modu</span>
+        <select class="input" id="connMode">
+          <option value="demo" ${state.mode === 'demo' ? 'selected' : ''}>Demo / Yerel Test</option>
+          <option value="direct" ${state.mode === 'direct' ? 'selected' : ''}>Doğrudan Google Apps Script (/exec)</option>
+          <option value="proxy" ${state.mode === 'proxy' ? 'selected' : ''}>Güvenli /api/gas Sunucusu</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Apps Script /exec Adresi</span>
+        <input class="input" id="connUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">
+        <small>Yönetici panelinden paylaşılan kurulum linki ile otomatik dolar.</small>
+      </label>
+      <div class="btn-row">
+        <button class="btn ghost" type="button" data-action="test-conn">Test Et</button>
+        <button class="btn primary" type="button" data-action="save-conn">Kaydet</button>
+      </div>
+    </div>
+  </details>`;
 }
 
 function renderPin() {
@@ -1842,26 +1987,71 @@ function renderNotFound() {
 }
 
 // Actions
+function stockVisibleForRole(list, role) {
+  if (!Array.isArray(list)) return [];
+  if (role === 'YONETICI' || role === 'OP') return list;
+  if (role === 'MEK_ADMIN') return list.filter(x => x.depot === 'MEKANIK');
+  if (role === 'ISG_ADMIN') return list.filter(x => x.depot === 'ISG');
+  return list;
+}
+function hasQrInStock(list, qr) {
+  const q = norm(qr);
+  if (!q) return false;
+  if (q === 'ISG_DOLAP' || q === 'ISGDOLAP') return list.some(x => x.depot === 'ISG');
+  return list.some(x => norm(x.id) === q || norm(x.code) === q);
+}
+
 async function submitOpPin(pinRaw) {
   const pin = String(pinRaw || '').replace(/\s+/g, '').trim();
   if (!pin) return toast('Lütfen operatör PIN’inizi tuşlayın.', 'err');
-  setBusy(true);
+  beginSave('PIN doğrulanıyor...');
   try {
     const auth = await api('auth', {pin});
     state.user = auth.user;
     state.session = auth.session;
-    const boot = await api('bootstrap');
+    const reqSession = auth.session;
+    const cached = loadStockCache();
+    const cachedVisible = cached ? stockVisibleForRole(cached.stock, auth.user.role) : [];
+
+    if (cached && cachedVisible.length && hasQrInStock(cachedVisible, state.scannedQr)) {
+      state.stock = cachedVisible;
+      state.machines = cached.machines?.length ? cached.machines : DEMO.machines;
+      endSave(true, 'Doğrulandı · Stok hazır');
+      vibrate(35);
+      resolveScannedItem();
+      // Silently refresh live stock in background so quantities stay current
+      api('bootstrap', {}, reqSession).then(boot => {
+        if (!boot?.stock) return;
+        saveStockCache(boot.stock, boot.lists?.machines || state.machines);
+        if (state.session === reqSession) {
+          state.stock = boot.stock;
+          state.machines = boot.lists?.machines || state.machines;
+          if (state.step === 'part' && state.item) {
+            const fresh = boot.stock.find(x => x.id === state.item.id);
+            if (fresh && fresh.stock !== state.item.stock) {
+              state.item = fresh;
+              render();
+            }
+          }
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    showSaveBar('saving', 'Stok bilgisi alınıyor...');
+    const boot = await api('bootstrap', {}, reqSession);
     state.stock = boot.stock || [];
     state.machines = boot.lists?.machines || DEMO.machines;
+    saveStockCache(state.stock, state.machines);
+    endSave(true, 'Stok bilgisi alındı');
     vibrate(35);
     resolveScannedItem();
   } catch (err) {
+    endSave(false, err.message);
     vibrate([40, 40, 40]);
     toast(err.message, 'err');
     const inp = $('#opPinInput');
     if (inp) { inp.value = ''; $('#opPinBox')?.classList.remove('filled'); }
-  } finally {
-    setBusy(false);
   }
 }
 
@@ -1889,20 +2079,115 @@ async function initiatePartCheckout(item, qty, machine) {
 }
 
 async function executeCheckout({item, qty, machine, extra = {}}) {
-  setBusy(true);
-  try {
-    const payload = {
-      itemId: item.id,
+  const reqSession = state.session;
+  const opName = state.user?.name || '';
+  const opUser = state.user ? {...state.user} : null;
+  const payload = {
+    itemId: item.id,
+    qty,
+    machine,
+    source: 'QR_TERMINAL',
+    qrTerminal: true,
+    promptDepotApproval: true,
+    ...extra
+  };
+
+  // Safe for instant optimistic receipt + background save bar:
+  // (1) sendApproval to pool, OR (2) direct checkout of ISG / consumable that cannot trigger Kural A or PIN mismatch
+  const canOptimistic =
+    !!extra.sendApproval ||
+    (!extra.depotApproverPin && !extra.managerPin && (item.depot === 'ISG' || isConsumable(item)) && (!needsDepotApproval(item) || isUserDepotApprover(opUser, item.depot)));
+
+  if (canOptimistic) {
+    const localId = uid('LOC');
+    const prevStock = Number(item.stock) || 0;
+    const estRemaining = extra.sendApproval ? prevStock : Math.max(0, prevStock - qty);
+    if (!extra.sendApproval) patchCachedStock(item.id, estRemaining, true);
+
+    const optimisticReceipt = extra.sendApproval ? {
+      _localId: localId,
+      status: 'pending',
+      title: 'Depocu Onayına Gönderiliyor',
+      subtitle: 'Talep sisteme kaydediliyor...',
+      refId: 'Kaydediliyor...',
+      itemName: item.name,
+      itemCode: item.code,
       qty,
+      unit: item.unit,
+      remaining: prevStock,
       machine,
-      source: 'QR_TERMINAL',
-      qrTerminal: true,
-      promptDepotApproval: true,
-      ...extra
+      operator: opName,
+      approvalLabel: 'Depocu Onayı Bekliyor',
+      time: nowStr()
+    } : {
+      _localId: localId,
+      status: 'deducted',
+      title: 'Stoktan Düşüldü',
+      subtitle: 'Kayıt Google Sheets’e aktarılıyor...',
+      refId: 'Kaydediliyor...',
+      itemName: item.name,
+      itemCode: item.code,
+      qty,
+      unit: item.unit,
+      remaining: estRemaining,
+      machine,
+      operator: opName,
+      approvalLabel: isUserDepotApprover(opUser, item.depot) && needsDepotApproval(item) ? 'Yetkili Onaylı (' + opName + ')' : 'Direkt Çıkış',
+      time: nowStr()
     };
-    const r = await api('checkout', payload);
+
+    vibrate(55);
+    pushHistory(optimisticReceipt);
+    state.receipt = optimisticReceipt;
+    state.user = null;
+    state.session = '';
+    state.pendingCheckout = null;
+    state.step = 'receipt';
+    render();
+
+    beginSave(extra.sendApproval ? 'Onay talebi kaydediliyor...' : `${item.name} çıkışı kaydediliyor...`);
+    api('checkout', payload, reqSession).then(r => {
+      if (r.depotApprovalRequired || r.approvalRequired) {
+        if (!extra.sendApproval) patchCachedStock(item.id, prevStock, true);
+        removeHistoryEntry(localId);
+        endSave(false, r.message || 'Ek onay gerekli.');
+        toast(r.message || 'Ek onay gerekli.', 'warn');
+        return;
+      }
+      const finalRemaining = r.remaining !== undefined ? r.remaining : estRemaining;
+      if (!r.pending) patchCachedStock(item.id, finalRemaining, true);
+      const patch = r.pending ? {
+        title: 'Depocu Onayına Gönderildi',
+        subtitle: 'Depocu onayladığında stoktan düşülecektir.',
+        refId: r.id || ''
+      } : {
+        subtitle: 'Parça başarıyla stoktan düşüldü.',
+        refId: r.id || '',
+        remaining: finalRemaining
+      };
+      updateHistoryEntry(localId, patch);
+      if (state.receipt && state.receipt._localId === localId) {
+        Object.assign(state.receipt, patch);
+        if (state.tab === 'scan' && state.step === 'receipt') render();
+      }
+      endSave(true, extra.sendApproval ? 'Onay talebi kaydedildi ✓' : `Çıkış kaydedildi (${num(qty)} ${item.unit}) ✓`);
+    }).catch(err => {
+      if (!extra.sendApproval) patchCachedStock(item.id, prevStock, true);
+      removeHistoryEntry(localId);
+      endSave(false, 'Kayıt başarısız: ' + err.message);
+      vibrate([50, 40, 50]);
+      toast('Kayıt hatası: ' + err.message, 'err');
+    });
+    return;
+  }
+
+  // Synchronous verification path (Kural A machine part or PIN approval) — uses non-blocking top saving bar
+  beginSave(extra.depotApproverPin || extra.managerPin ? 'Onay doğrulanıyor ve kaydediliyor...' : 'Çıkış kaydediliyor...');
+  try {
+    const r = await api('checkout', payload, reqSession);
 
     if (r.depotApprovalRequired || r.approvalRequired) {
+      endSave(false, 'Onay gerekli');
       state.pendingCheckout = {
         item, qty, machine,
         requiresManagerFallback: !r.depotApprovalRequired && !!r.approvalRequired,
@@ -1915,7 +2200,6 @@ async function executeCheckout({item, qty, machine, extra = {}}) {
       return;
     }
 
-    const opName = state.user?.name || '';
     if (r.pending) {
       state.receipt = {
         status: 'pending',
@@ -1933,9 +2217,11 @@ async function executeCheckout({item, qty, machine, extra = {}}) {
         time: nowStr()
       };
     } else {
+      const finalRem = r.remaining !== undefined ? r.remaining : Math.max(0, item.stock - qty);
+      patchCachedStock(item.id, finalRem, true);
       const apprLabel = r.depotApproved && r.approver
         ? 'Depocu Onaylı (' + r.approver + ')'
-        : isUserDepotApprover(state.user, item.depot) && needsDepotApproval(item)
+        : isUserDepotApprover(opUser, item.depot) && needsDepotApproval(item)
           ? 'Yetkili Onaylı (' + opName + ')'
           : 'Direkt Çıkış';
       state.receipt = {
@@ -1947,7 +2233,7 @@ async function executeCheckout({item, qty, machine, extra = {}}) {
         itemCode: item.code,
         qty,
         unit: item.unit,
-        remaining: r.remaining !== undefined ? r.remaining : Math.max(0, item.stock - qty),
+        remaining: finalRem,
         machine,
         operator: opName,
         approvalLabel: apprLabel,
@@ -1955,6 +2241,7 @@ async function executeCheckout({item, qty, machine, extra = {}}) {
       };
     }
 
+    endSave(true, r.pending ? 'Onay talebi kaydedildi ✓' : `Çıkış kaydedildi (${num(qty)} ${item.unit}) ✓`);
     vibrate(60);
     pushHistory(state.receipt);
     if (r.autoLogout !== false) {
@@ -1965,10 +2252,9 @@ async function executeCheckout({item, qty, machine, extra = {}}) {
     state.step = 'receipt';
     render();
   } catch (err) {
+    endSave(false, err.message);
     vibrate([40, 40, 40]);
     toast(err.message, 'err');
-  } finally {
-    setBusy(false);
   }
 }
 
@@ -2192,12 +2478,17 @@ document.addEventListener('submit', async e => {
 $('#installModal').addEventListener('click', e => {
   if (e.target === $('#installModal')) $('#installModal').hidden = true;
 });
+$('#saveBar').addEventListener('click', () => {
+  if ($('#saveBar').classList.contains('err')) $('#saveBar').hidden = true;
+});
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) stopCamera();
   else if (state.tab === 'scan' && state.step === 'scan' && !state.camActive) startCamera(true);
 });
 
+warmupGas();
+if (autoConfiguredNow) toast('Canlı depo bağlantısı otomatik kuruldu. Üstten "Kur" diyerek ana ekrana ekleyin.');
 if (state.scannedQr) state.step = 'pin';
 render();
 })();
