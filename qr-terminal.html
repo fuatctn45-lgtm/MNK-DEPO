@@ -172,28 +172,6 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
 .install-card small{display:block;font-size:12px;color:#94A3B8;margin-top:2px}
 .install-card-actions{display:flex;align-items:center;gap:6px;flex:none}
 
-/* Manual QR Row */
-.scan-foot-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.scan-foot-btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:7px;
-  height:46px;padding:0 10px;border-radius:12px;
-  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);
-  color:#F8FAFC;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap;
-}
-.scan-foot-btn:active{background:rgba(255,255,255,.16)}
-.scan-foot-btn input{display:none}
-.manual-qr-form{display:flex;gap:8px;margin-top:2px}
-.manual-qr-form input{
-  flex:1;min-width:0;height:46px;padding:0 12px;border-radius:11px;
-  border:1px solid rgba(255,255,255,.22);background:rgba(2,6,23,.7);
-  color:#fff;font-family:var(--mono);font-size:15px;font-weight:600;outline:none;
-}
-.manual-qr-form input::placeholder{color:#64748B;font-family:var(--font);font-weight:500}
-.manual-qr-form input:focus{border-color:var(--orange)}
-.manual-qr-form button{
-  height:46px;padding:0 16px;border-radius:11px;border:0;
-  background:var(--orange);color:#fff;font-size:14px;font-weight:800;flex:none;
-}
 
 /* History & Settings */
 .hist-list{display:flex;flex-direction:column}
@@ -355,14 +333,6 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
   font-size:13px;color:#CBD5E1;
 }
 .scan-foot-msg b{color:#fff}
-.photo-scan-label{
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  width:100%;height:48px;border-radius:12px;
-  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);
-  color:#F8FAFC;font-size:14.5px;font-weight:700;cursor:pointer;
-}
-.photo-scan-label:active{background:rgba(255,255,255,.15)}
-.photo-scan-label input{display:none}
 
 /* Scanned QR Banner */
 .qr-banner{
@@ -886,7 +856,6 @@ const SVG = {
   eye: '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>',
   x: '<path d="M18 6 6 18M6 6l12 12"/>',
   download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
-  keyboard: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/>',
   phone: '<rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12.01" y2="18"/>'
 };
 const ic = (name, cls='') => `<span class="ic ${cls}" aria-hidden="true"><svg viewBox="0 0 24 24">${SVG[name]||''}</svg></span>`;
@@ -983,7 +952,6 @@ const state = {
   torchSupported: false,
   torchOn: false,
   showPin: false,
-  showManualQr: false,
   prefs: loadPrefs(),
   history: loadHistory(),
   isInstalled: isStandalone(),
@@ -1027,7 +995,7 @@ window.addEventListener('appinstalled', () => {
   deferredInstallPrompt = null;
   $('#installModal').hidden = true;
   updateInstallUI();
-  toast('Depo QR uygulaması ana ekranınıza kuruldu!');
+  toast('Operatör QR uygulaması ana ekranınıza kuruldu!');
   if (state.tab === 'settings' || state.tab === 'scan') render();
 });
 window.addEventListener('online', () => { state.online = true; updateOnlineUI(); toast('İnternet bağlantısı geri geldi.'); });
@@ -1070,17 +1038,17 @@ async function triggerInstallPwa() {
   const fullUrl = new URL('./qr-terminal.html', location.href).href;
   if (isIOS()) {
     body.innerHTML = `
-      <p style="margin:0;font-size:13.5px;color:var(--ink-2)">iPhone veya iPad’de <b>Depo QR</b>’ı tam ekran uygulama gibi ana ekrana eklemek için:</p>
+      <p style="margin:0;font-size:13.5px;color:var(--ink-2)">iPhone veya iPad’de <b>Operatör QR</b>’ı tam ekran uygulama gibi ana ekrana eklemek için:</p>
       <div class="guide-steps">
         <div class="guide-step"><i>1</i><div>Bu sayfayı <b>Safari</b> tarayıcısında açın ve alt çubuktaki <b>Paylaş (↑)</b> simgesine dokunun.</div></div>
         <div class="guide-step"><i>2</i><div>Açılan menüyü aşağı kaydırıp <b>Ana Ekrana Ekle</b> seçeneğine dokunun.</div></div>
-        <div class="guide-step"><i>3</i><div>Sağ üstten <b>Ekle</b>’ye basın. Ana ekrandaki <b>Depo QR</b> simgesine bastığınızda uygulama gibi açılır.</div></div>
+        <div class="guide-step"><i>3</i><div>Sağ üstten <b>Ekle</b>’ye basın. Ana ekrandaki <b>Operatör QR</b> simgesine bastığınızda uygulama gibi açılır.</div></div>
       </div>
       ${inIframe() ? `<a class="btn primary wide" href="${esc(fullUrl)}" target="_blank" rel="noopener" style="margin-bottom:8px">Safari’de Tam Ekran Aç</a>` : ''}
       <button class="btn ghost wide" type="button" data-action="close-install">Anladım</button>`;
   } else {
     body.innerHTML = `
-      <p style="margin:0;font-size:13.5px;color:var(--ink-2)">Android telefonunuzda <b>Depo QR</b>’ı program gibi ana ekrana kurmak için:</p>
+      <p style="margin:0;font-size:13.5px;color:var(--ink-2)">Android telefonunuzda <b>Operatör QR</b>’ı program gibi ana ekrana kurmak için:</p>
       <div class="guide-steps">
         <div class="guide-step"><i>1</i><div>Bu sayfayı <b>Chrome</b> tarayıcısında açın${inIframe() ? ' (aşağıdaki butona basıp yeni sekmede açın)' : ''}.</div></div>
         <div class="guide-step"><i>2</i><div>Sağ üstteki <b>⋮ (Üç Nokta)</b> menüsüne dokunun.</div></div>
@@ -1251,20 +1219,6 @@ function stopCamera() {
   }
 }
 
-async function decodeCanvasFrame(canvas, ctx) {
-  if (nativeDetector) {
-    try {
-      const codes = await nativeDetector.detect(canvas);
-      if (codes && codes[0]?.rawValue) return codes[0].rawValue;
-    } catch {}
-  }
-  if (typeof window.jsQR === 'function') {
-    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const res = window.jsQR(img.data, img.width, img.height, {inversionAttempts: 'dontInvert'});
-    if (res && res.data) return res.data;
-  }
-  return '';
-}
 
 function scheduleScanLoop(video) {
   const canvas = $('#decodeCanvas');
@@ -1319,7 +1273,7 @@ async function startCamera(silent = false) {
   if (!stage) return;
 
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    state.camError = 'Canlı kamera bu tarayıcıda desteklenmiyor. Aşağıdan "Kamera ile QR Fotoğrafı Çek" butonunu kullanın.';
+    state.camError = 'Canlı kamera bu tarayıcıda açılamadı. Uygulamayı telefonunuzda Chrome veya Safari ile açın.';
     renderCamStage();
     return;
   }
@@ -1359,8 +1313,8 @@ async function startCamera(silent = false) {
   } catch (err) {
     stopCamera();
     state.camError = err?.name === 'NotAllowedError'
-      ? 'Kamera izni verilmedi. Tarayıcıdan kamera izni verip tekrar deneyin veya aşağıdan fotoğraf çekerek okutun.'
-      : 'Kamera açılamadı. Aşağıdan "Kamerayı Başlat" veya "QR Fotoğrafı Çek" ile devam edin.';
+      ? 'Kamera izni verilmedi. Tarayıcı ayarlarından kamera iznini açıp "Kamerayı Başlat" butonuna dokunun.'
+      : 'Kamera açılamadı. Başka bir uygulama kamerayı kullanmıyorsa "Kamerayı Başlat" butonuna tekrar dokunun.';
     renderCamStage();
     if (!silent) toast('Kamera başlatılamadı; izinleri kontrol edin.', 'warn');
   }
@@ -1381,37 +1335,6 @@ async function toggleTorch() {
   }
 }
 
-async function decodeImageFile(file) {
-  if (!file) return;
-  setBusy(true);
-  try {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
-    const canvas = $('#decodeCanvas');
-    const ctx = canvas.getContext('2d', {willReadFrequently: true});
-    const maxDim = 1280;
-    const scale = Math.min(1, maxDim / Math.max(img.naturalWidth || img.width, img.naturalHeight || img.height));
-    canvas.width = Math.max(1, Math.round((img.naturalWidth || img.width) * scale));
-    canvas.height = Math.max(1, Math.round((img.naturalHeight || img.height) * scale));
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    URL.revokeObjectURL(url);
-
-    const raw = await decodeCanvasFrame(canvas, ctx);
-    const code = extractCodeFromQr(raw);
-    if (!code) {
-      toast('Fotoğrafta QR kodu okunamadı. Kodu net ve yakın çekin.', 'err');
-      return;
-    }
-    vibrate(70);
-    beepScan();
-    selectQrCode(code);
-  } catch {
-    toast('Görüntü işlenemedi. Tekrar deneyin.', 'err');
-  } finally {
-    setBusy(false);
-  }
-}
 
 function extractCodeFromQr(raw) {
   const s = String(raw || '').trim();
@@ -1451,7 +1374,6 @@ function resetToScan() {
   state.pendingCheckout = null;
   state.receipt = null;
   state.showPin = false;
-  state.showManualQr = false;
   state.step = 'scan';
   if (location.search) {
     try { history.replaceState(null, '', location.pathname); } catch {}
@@ -1557,22 +1479,8 @@ function renderScan() {
     <div class="cam-stage" id="camStage"></div>
     <div class="scan-foot">
       <div class="scan-foot-msg">
-        <span><b>Adım 1:</b> QR kodu çerçeveye tutun, ardından OP PIN girin.</span>
+        <span><b>Adım 1:</b> Depodaki raf veya İSG dolabı QR etiketini kameraya tutun, ardından OP PIN girin.</span>
       </div>
-      <div class="scan-foot-btns">
-        <label class="scan-foot-btn">
-          ${ic('camera','ic-sm')} Fotoğraftan Oku
-          <input type="file" id="qrPhotoInput" accept="image/*" capture="environment">
-        </label>
-        <button class="scan-foot-btn" type="button" data-action="toggle-manual-qr">
-          ${ic('keyboard','ic-sm')} Kodu Elle Gir
-        </button>
-      </div>
-      ${state.showManualQr ? `
-      <form class="manual-qr-form" id="manualQrForm">
-        <input id="manualQrInput" placeholder="RUL-6205, MEK-0001 veya ISG-DOLAP" autocomplete="off" autocapitalize="characters" required>
-        <button type="submit">Git</button>
-      </form>` : ''}
     </div>
   </section>
 
@@ -2265,12 +2173,6 @@ function updatePinInput(inp, nextVal) {
 }
 
 // Events
-document.addEventListener('change', e => {
-  if (e.target.id === 'qrPhotoInput' && e.target.files?.[0]) {
-    decodeImageFile(e.target.files[0]);
-    e.target.value = '';
-  }
-});
 
 // Physical keyboard support for PIN screens without opening mobile soft keyboard
 document.addEventListener('keydown', e => {
@@ -2364,12 +2266,6 @@ document.addEventListener('click', async e => {
     render();
     return;
   }
-  if (act === 'toggle-manual-qr') {
-    state.showManualQr = !state.showManualQr;
-    render();
-    if (state.showManualQr) setTimeout(() => $('#manualQrInput')?.focus(), 40);
-    return;
-  }
   if (act === 'clear-history') {
     state.history = [];
     try { localStorage.removeItem(HIST_KEY); } catch {}
@@ -2449,12 +2345,6 @@ document.addEventListener('click', async e => {
 document.addEventListener('submit', async e => {
   e.preventDefault();
   const id = e.target.id;
-  if (id === 'manualQrForm') {
-    const code = String($('#manualQrInput')?.value || '').trim();
-    if (!code) return toast('Lütfen parça veya dolap kodunu girin.', 'err');
-    vibrate(40); beepScan();
-    return selectQrCode(code);
-  }
   if (id === 'opPinForm') return submitOpPin($('#opPinInput')?.value);
   if (id === 'partCheckoutForm') {
     const fd = new FormData(e.target);
