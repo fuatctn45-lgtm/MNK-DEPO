@@ -66,34 +66,34 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
 
 /* Mobile App Shell */
 .app-shell{
-  min-height:100dvh;display:flex;flex-direction:column;width:100%;
+  min-height:100dvh;display:flex;flex-direction:column;width:100%;max-width:100vw;overflow-x:hidden;
 }
 
 /* Sticky Top Header */
 .topbar{
-  position:sticky;top:0;z-index:30;
+  position:sticky;top:0;z-index:30;width:100%;
   background:#0F172A;color:#F8FAFC;
-  padding:calc(10px + var(--safe-top)) 14px 10px;
+  padding:calc(8px + var(--safe-top)) 12px 8px;
   border-bottom:1px solid rgba(255,255,255,.08);
 }
 .topbar-in{
-  max-width:480px;margin:0 auto;width:100%;
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  max-width:480px;margin:0 auto;width:100%;min-width:0;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
 }
-.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
 .brand-mark{
-  width:34px;height:34px;border-radius:10px;flex:none;
-  background:var(--orange);color:#fff;font-weight:800;font-size:14px;
+  width:32px;height:32px;border-radius:9px;flex:none;
+  background:var(--orange);color:#fff;font-weight:800;font-size:13.5px;
   display:grid;place-items:center;letter-spacing:-.02em;
 }
-.brand-txt{min-width:0}
-.brand b{display:block;font-size:15px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.brand small{display:block;font-size:11.5px;color:#94A3B8;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand-txt{min-width:0;flex:1}
+.brand b{display:block;font-size:14.5px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand small{display:block;font-size:11px;color:#94A3B8;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .conn-btn{
   display:inline-flex;align-items:center;gap:6px;
-  height:36px;padding:0 11px;border-radius:10px;
+  height:34px;padding:0 10px;border-radius:9px;
   border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);
-  color:#F1F5F9;font-size:12.5px;font-weight:700;flex:none;
+  color:#F1F5F9;font-size:12px;font-weight:700;flex:none;white-space:nowrap;
 }
 .conn-btn:active{transform:scale(.96);background:rgba(255,255,255,.16)}
 .dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
@@ -103,9 +103,9 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
 
 /* Main Content Area */
 .wrap{
-  flex:1;width:100%;max-width:480px;margin:0 auto;
-  padding:12px 12px calc(22px + var(--safe-bot));
-  display:flex;flex-direction:column;gap:12px;
+  flex:1;width:100%;max-width:480px;margin:0 auto;min-width:0;
+  padding:10px 10px calc(16px + var(--safe-bot));
+  display:flex;flex-direction:column;gap:10px;
 }
 
 /* Compact 3-Step Indicator */
@@ -113,15 +113,15 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%;
 }
 .step{
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  padding:8px 6px;border-radius:10px;min-width:0;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  padding:7px 5px;border-radius:10px;min-width:0;
   background:var(--surface);border:1px solid var(--border);
-  color:var(--muted);font-size:12.5px;font-weight:700;
+  color:var(--muted);font-size:12px;font-weight:700;
 }
 .step span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .step i{
-  width:20px;height:20px;border-radius:6px;flex:none;
-  display:grid;place-items:center;font-style:normal;font-size:11.5px;font-weight:800;
+  width:19px;height:19px;border-radius:6px;flex:none;
+  display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:800;
   background:var(--surface-2);border:1px solid var(--border);color:var(--muted);
 }
 .step.active{border-color:var(--orange);color:var(--ink);background:var(--orange-soft)}
@@ -133,16 +133,16 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
 .card{
   background:var(--surface);border:1px solid var(--border);
   border-radius:var(--radius);box-shadow:var(--shadow);
-  overflow:hidden;width:100%;
+  overflow:hidden;width:100%;max-width:100%;min-width:0;
 }
 .card-head{
-  padding:14px 16px;border-bottom:1px solid var(--border);
+  padding:11px 14px;border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;gap:10px;
 }
 .card-head > div{min-width:0}
-.card-head h1,.card-head h2{margin:0;font-size:18px;font-weight:800;letter-spacing:-.02em;line-height:1.25}
-.card-head p{margin:3px 0 0;font-size:13px;color:var(--muted)}
-.card-body{padding:16px}
+.card-head h1,.card-head h2{margin:0;font-size:17px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.card-head p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+.card-body{padding:13px 14px}
 
 /* Full Mobile Camera Viewfinder */
 .scan-card{
@@ -234,52 +234,54 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
 /* Scanned QR Banner */
 .qr-banner{
   background:#0F172A;color:#F8FAFC;
-  padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.08);
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
 }
-.qr-banner-left{display:flex;align-items:center;gap:10px;min-width:0}
+.qr-banner-left{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
 .qr-badge-ic{
-  width:38px;height:38px;border-radius:10px;flex:none;
+  width:34px;height:34px;border-radius:9px;flex:none;
   background:rgba(234,88,12,.18);color:#FB923C;
   border:1px solid rgba(234,88,12,.35);display:grid;place-items:center;
 }
-.qr-banner small{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#94A3B8;font-weight:700}
-.qr-banner strong{display:block;font-size:16px;font-weight:700;color:#fff;word-break:break-all}
+.qr-banner-left > div{min-width:0}
+.qr-banner small{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#94A3B8;font-weight:700}
+.qr-banner strong{display:block;font-size:15px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qr-change{
   border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#E2E8F0;
-  border-radius:9px;padding:8px 11px;font-size:12.5px;font-weight:700;flex:none;
+  border-radius:8px;padding:7px 10px;font-size:12px;font-weight:700;flex:none;white-space:nowrap;
 }
 .qr-change:active{background:rgba(255,255,255,.16)}
 
 /* PIN Display + Touch Keypad */
 .pin-box{
-  display:flex;align-items:center;justify-content:space-between;gap:8px;
-  height:58px;border-radius:13px;background:var(--surface-2);
-  border:2px solid var(--border-strong);margin-bottom:12px;padding:0 12px 0 18px;
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  height:50px;border-radius:12px;background:var(--surface-2);
+  border:2px solid var(--border-strong);margin-bottom:10px;padding:0 8px 0 14px;
+  width:100%;max-width:100%;
 }
 .pin-box.filled{border-color:var(--orange);background:#fff}
 .pin-box input{
-  flex:1;min-width:0;border:0;background:transparent;text-align:center;outline:none;
-  font-family:var(--mono);font-size:28px;font-weight:800;letter-spacing:.35em;color:var(--ink);
+  flex:1;min-width:0;width:100%;border:0;background:transparent;text-align:center;outline:none;
+  font-family:var(--mono);font-size:25px;font-weight:800;letter-spacing:.3em;color:var(--ink);
   caret-color:transparent;
 }
 .pin-eye{
-  width:38px;height:38px;border-radius:9px;border:0;background:transparent;
+  width:36px;height:36px;border-radius:8px;border:0;background:transparent;
   color:var(--muted);display:grid;place-items:center;flex:none;
 }
 .pin-eye:active{background:var(--border)}
 
 .keypad{
-  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px;
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:10px;width:100%;
 }
 .keypad button{
-  height:58px;border-radius:12px;border:1px solid var(--border);
-  background:#fff;font-size:22px;font-weight:800;font-family:var(--mono);
+  height:50px;border-radius:11px;border:1px solid var(--border);
+  background:#fff;font-size:21px;font-weight:800;font-family:var(--mono);
   color:var(--ink);box-shadow:0 1px 2px rgba(15,23,42,.04);
-  transition:transform .08s,background .08s;
+  transition:transform .08s,background .08s;padding:0;min-width:0;
 }
 .keypad button:active{transform:scale(.95);background:var(--orange-soft);border-color:var(--orange);color:var(--orange)}
-.keypad button.fn{font-family:var(--font);font-size:14px;font-weight:700;color:var(--ink-2);background:var(--surface-2)}
+.keypad button.fn{font-family:var(--font);font-size:13.5px;font-weight:700;color:var(--ink-2);background:var(--surface-2)}
 
 /* Fields & Buttons */
 .field{display:block;margin-bottom:14px}
@@ -529,9 +531,14 @@ body.busy .busy-bar{display:block}
 }
 @keyframes loading{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
 
+@media (max-height:740px){
+  .keypad button{height:45px;font-size:19px}
+  .pin-box{height:46px}
+  .btn{min-height:48px}
+}
 @media (max-width:360px){
   .meta-grid{grid-template-columns:1fr 1fr}
-  .keypad button{height:52px;font-size:20px}
+  .keypad button{height:46px;font-size:19px}
   .btn-row{grid-template-columns:1fr}
 }
 </style>
@@ -593,6 +600,7 @@ body.busy .busy-bar{display:block}
         <button class="btn ghost" type="button" data-action="test-conn">Test Et</button>
         <button class="btn primary" type="button" data-action="save-conn">Kaydet</button>
       </div>
+      <a class="btn ghost wide" href="./index.html" style="margin-top:10px">Ana Yönetim Paneline Dön</a>
     </div>
   </section>
 </div>
