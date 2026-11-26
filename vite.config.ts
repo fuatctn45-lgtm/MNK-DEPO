@@ -13,40 +13,10 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['icon.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png', 'pwa-maskable-512x512.png', 'qr-manifest.webmanifest', 'qr-sw.js'],
-        manifest: {
-          id: './',
-          name: 'Mekanik + İSG Depo',
-          short_name: 'Depo QR',
-          description: 'Mekanik ve İSG depoları için mobil QR okuyucu ve stok yönetim uygulaması.',
-          theme_color: '#0F172A',
-          background_color: '#0F172A',
-          display: 'standalone',
-          start_url: './',
-          scope: './',
-          icons: [
-            {
-              src: './pwa-192x192.png',
-              sizes: '192x192',
-              type: 'image/png',
-              purpose: 'any',
-            },
-            {
-              src: './pwa-512x512.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'any',
-            },
-            {
-              src: './pwa-maskable-512x512.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'maskable',
-            },
-          ],
-        },
+        includeAssets: ['icon.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png', 'pwa-maskable-512x512.png', 'manifest.json', 'qr-manifest.json', 'qr-sw.js'],
+        manifest: false,
         workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,webmanifest}'],
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,json}'],
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -93,6 +63,14 @@ export default defineConfig(() => {
             return;
           }
           const distDir = path.resolve(__dirname, 'dist');
+          const distIndex = path.resolve(distDir, 'index.html');
+          if (fs.existsSync(distIndex)) {
+            const html = fs.readFileSync(distIndex, 'utf8');
+            const fixed = html.replace(/href="\.\/assets\/manifest-[^"]+\.json"/g, 'href="./manifest.json"');
+            if (fixed !== html) {
+              fs.writeFileSync(distIndex, fixed, 'utf8');
+            }
+          }
           const srcAssets = path.resolve(__dirname, 'src/assets');
           const distAssets = path.resolve(distDir, 'src/assets');
           if (fs.existsSync(distDir) && fs.existsSync(srcAssets)) {

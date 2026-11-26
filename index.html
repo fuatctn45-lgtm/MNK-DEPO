@@ -13,6 +13,8 @@
 <meta property="og:title" content="Mekanik + İSG Depo 2027 · V8.7">
 <meta property="og:description" content="Mekanik ve İSG depoları için rol bazlı QR stok yönetimi">
 <title>Mekanik + İSG Depo 2027 · V8.7</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="./pwa-192x192.png">
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2300,6 +2302,9 @@ function syncPwaUi(){
 }
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPwaPrompt=e;syncPwaUi();});
 window.addEventListener('appinstalled',()=>{deferredPwaPrompt=null;syncPwaUi();toast('Uygulama ana ekrana kuruldu.');});
+if('serviceWorker' in navigator && /^https?:$/i.test(location.protocol) && !document.getElementById('vite-plugin-pwa:register-sw')){
+ navigator.serviceWorker.register('./qr-sw.js',{scope:'./'}).catch(()=>{});
+}
 window.addEventListener('online',syncPwaUi);
 window.addEventListener('offline',()=>{syncPwaUi();toast('İnternet bağlantısı kesildi. Çevrimdışı moddasınız.','error');});
 function installAppModal(){
