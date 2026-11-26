@@ -2,15 +2,21 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Depo QR Çıkış Terminali · Mekanik + İSG Depo V8.7</title>
-<meta name="description" content="Bağımsız depo QR okuma, operatör PIN doğrulama ve depocu onaylı malzeme çıkış terminali.">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0F172A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Depo QR">
+<title>Depo QR Terminali · Mekanik + İSG Depo V8.7</title>
+<meta name="description" content="Android ve iPhone tam uyumlu bağımsız depo QR okuma, operatör PIN doğrulama ve depocu onaylı malzeme çıkış terminali.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script defer src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js" onerror="var s=document.createElement('script');s.src='https://unpkg.com/jsqr@1.4.0/dist/jsQR.js';document.head.appendChild(s)"></script>
 <style>
 :root{
-  --bg:#F4F6F9;
+  --bg:#F1F5F9;
   --surface:#FFFFFF;
   --surface-2:#F8FAFC;
   --ink:#0F172A;
@@ -34,16 +40,23 @@
   --red:#DC2626;
   --red-soft:#FEF2F2;
   --red-line:#FECACA;
-  --radius:14px;
-  --radius-sm:10px;
-  --shadow:0 1px 3px rgba(15,23,42,.06),0 8px 24px -6px rgba(15,23,42,.06);
+  --radius:16px;
+  --radius-sm:12px;
+  --shadow:0 2px 12px rgba(15,23,42,.06);
   --font:'Plus Jakarta Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
   --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:16px/1.5 var(--font);-webkit-font-smoothing:antialiased}
-button,input,select{font:inherit;color:inherit}
-button{cursor:pointer}
+html,body{
+  margin:0;padding:0;width:100%;min-height:100dvh;overflow-x:hidden;
+  background:var(--bg);color:var(--ink);
+  font:16px/1.45 var(--font);-webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:contain;
+}
+button,input,select{font:inherit;color:inherit;touch-action:manipulation}
+button{cursor:pointer;user-select:none;-webkit-user-select:none}
 .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .num{font-variant-numeric:tabular-nums}
 .ic{width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex:none}
@@ -51,55 +64,64 @@ button{cursor:pointer}
 .ic-sm{width:17px;height:17px}
 .ic-lg{width:26px;height:26px}
 
-/* Top Bar */
+/* Mobile App Shell */
+.app-shell{
+  min-height:100dvh;display:flex;flex-direction:column;width:100%;
+}
+
+/* Sticky Top Header */
 .topbar{
-  position:sticky;top:0;z-index:20;
+  position:sticky;top:0;z-index:30;
   background:#0F172A;color:#F8FAFC;
+  padding:calc(10px + var(--safe-top)) 14px 10px;
   border-bottom:1px solid rgba(255,255,255,.08);
-  padding:12px 16px;
 }
 .topbar-in{
-  max-width:540px;margin:0 auto;
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  max-width:480px;margin:0 auto;width:100%;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
 }
 .brand{display:flex;align-items:center;gap:10px;min-width:0}
 .brand-mark{
-  width:36px;height:36px;border-radius:10px;flex:none;
-  background:var(--orange);color:#fff;font-weight:800;font-size:16px;
+  width:34px;height:34px;border-radius:10px;flex:none;
+  background:var(--orange);color:#fff;font-weight:800;font-size:14px;
   display:grid;place-items:center;letter-spacing:-.02em;
 }
-.brand b{display:block;font-size:15px;font-weight:800;line-height:1.2;letter-spacing:-.01em}
-.brand small{display:block;font-size:12px;color:#94A3B8;font-weight:500}
+.brand-txt{min-width:0}
+.brand b{display:block;font-size:15px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand small{display:block;font-size:11.5px;color:#94A3B8;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .conn-btn{
-  display:inline-flex;align-items:center;gap:7px;
-  height:36px;padding:0 12px;border-radius:9px;
-  border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);
-  color:#E2E8F0;font-size:13px;font-weight:600;transition:.15s;flex:none;
+  display:inline-flex;align-items:center;gap:6px;
+  height:36px;padding:0 11px;border-radius:10px;
+  border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);
+  color:#F1F5F9;font-size:12.5px;font-weight:700;flex:none;
 }
-.conn-btn:hover{background:rgba(255,255,255,.12)}
-.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.conn-btn:active{transform:scale(.96);background:rgba(255,255,255,.16)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
 .dot.demo{background:#F59E0B}
 .dot.direct{background:#22C55E}
 .dot.proxy{background:#38BDF8}
 
-/* Main Container */
-.wrap{max-width:540px;margin:0 auto;padding:18px 16px 40px}
+/* Main Content Area */
+.wrap{
+  flex:1;width:100%;max-width:480px;margin:0 auto;
+  padding:12px 12px calc(22px + var(--safe-bot));
+  display:flex;flex-direction:column;gap:12px;
+}
 
-/* Stepper */
+/* Compact 3-Step Indicator */
 .steps{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
-  margin-bottom:16px;
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%;
 }
 .step{
-  display:flex;align-items:center;gap:8px;
-  padding:10px 11px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:8px 6px;border-radius:10px;min-width:0;
   background:var(--surface);border:1px solid var(--border);
-  color:var(--muted);font-size:13px;font-weight:600;
-  transition:.15s;
+  color:var(--muted);font-size:12.5px;font-weight:700;
 }
+.step span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .step i{
-  width:22px;height:22px;border-radius:7px;flex:none;
-  display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:800;
+  width:20px;height:20px;border-radius:6px;flex:none;
+  display:grid;place-items:center;font-style:normal;font-size:11.5px;font-weight:800;
   background:var(--surface-2);border:1px solid var(--border);color:var(--muted);
 }
 .step.active{border-color:var(--orange);color:var(--ink);background:var(--orange-soft)}
@@ -111,127 +133,194 @@ button{cursor:pointer}
 .card{
   background:var(--surface);border:1px solid var(--border);
   border-radius:var(--radius);box-shadow:var(--shadow);
-  overflow:hidden;
+  overflow:hidden;width:100%;
 }
-.card + .card{margin-top:14px}
 .card-head{
-  padding:18px 20px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
 }
-.card-head h1,.card-head h2{margin:0;font-size:19px;font-weight:800;letter-spacing:-.02em;line-height:1.25}
-.card-head p{margin:3px 0 0;font-size:13.5px;color:var(--muted)}
-.card-body{padding:20px}
+.card-head > div{min-width:0}
+.card-head h1,.card-head h2{margin:0;font-size:18px;font-weight:800;letter-spacing:-.02em;line-height:1.25}
+.card-head p{margin:3px 0 0;font-size:13px;color:var(--muted)}
+.card-body{padding:16px}
+
+/* Full Mobile Camera Viewfinder */
+.scan-card{
+  background:#0B1220;border:1px solid #1E293B;color:#F8FAFC;
+  border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);
+}
+.cam-stage{
+  position:relative;width:100%;aspect-ratio:4/4.3;max-height:56dvh;min-height:280px;
+  background:#020617;display:grid;place-items:center;overflow:hidden;
+}
+.cam-stage video{
+  width:100%;height:100%;object-fit:cover;display:block;
+}
+.cam-overlay{
+  position:absolute;inset:0;pointer-events:none;
+  display:grid;place-items:center;
+}
+.cam-frame{
+  position:relative;width:min(68vw,250px);height:min(68vw,250px);
+  border-radius:20px;box-shadow:0 0 0 9999px rgba(2,6,23,.52);
+}
+.cam-frame i{
+  position:absolute;width:30px;height:30px;border:4px solid var(--orange);
+}
+.cam-frame i:nth-child(1){top:-2px;left:-2px;border-right:0;border-bottom:0;border-radius:16px 0 0 0}
+.cam-frame i:nth-child(2){top:-2px;right:-2px;border-left:0;border-bottom:0;border-radius:0 16px 0 0}
+.cam-frame i:nth-child(3){bottom:-2px;left:-2px;border-right:0;border-top:0;border-radius:0 0 0 16px}
+.cam-frame i:nth-child(4){bottom:-2px;right:-2px;border-left:0;border-top:0;border-radius:0 0 16px 0}
+.cam-laser{
+  position:absolute;left:12px;right:12px;top:50%;height:2.5px;border-radius:4px;
+  background:linear-gradient(90deg,transparent,var(--orange),#FDBA74,var(--orange),transparent);
+  box-shadow:0 0 14px var(--orange);
+  animation:scanmove 2s ease-in-out infinite;
+}
+@keyframes scanmove{0%,100%{transform:translateY(-82px)}50%{transform:translateY(82px)}}
+
+.cam-top-bar{
+  position:absolute;top:12px;left:12px;right:12px;z-index:4;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.cam-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 11px;border-radius:999px;
+  background:rgba(15,23,42,.78);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.14);color:#F8FAFC;
+  font-size:12.5px;font-weight:700;
+}
+.cam-pill .pulse{
+  width:8px;height:8px;border-radius:50%;background:#22C55E;
+  box-shadow:0 0 0 4px rgba(34,197,94,.25);
+}
+.cam-tool-btn{
+  height:38px;padding:0 12px;border-radius:10px;
+  border:1px solid rgba(255,255,255,.18);background:rgba(15,23,42,.8);
+  backdrop-filter:blur(8px);color:#F8FAFC;font-size:12.5px;font-weight:700;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.cam-tool-btn.on{background:var(--orange);border-color:var(--orange);color:#fff}
+
+.cam-fallback{
+  text-align:center;padding:24px 20px;max-width:320px;z-index:3;
+}
+.cam-fallback-ic{
+  width:60px;height:60px;margin:0 auto 12px;border-radius:16px;
+  background:rgba(234,88,12,.16);color:#FB923C;border:1px solid rgba(234,88,12,.35);
+  display:grid;place-items:center;
+}
+.cam-fallback b{display:block;font-size:16.5px;color:#fff;margin-bottom:5px}
+.cam-fallback p{margin:0 0 16px;font-size:13.5px;color:#94A3B8;line-height:1.45}
+
+.scan-foot{
+  padding:14px 16px;background:#0F172A;border-top:1px solid rgba(255,255,255,.08);
+  display:flex;flex-direction:column;gap:10px;
+}
+.scan-foot-msg{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  font-size:13px;color:#CBD5E1;
+}
+.scan-foot-msg b{color:#fff}
+.photo-scan-label{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;height:48px;border-radius:12px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);
+  color:#F8FAFC;font-size:14.5px;font-weight:700;cursor:pointer;
+}
+.photo-scan-label:active{background:rgba(255,255,255,.15)}
+.photo-scan-label input{display:none}
 
 /* Scanned QR Banner */
 .qr-banner{
   background:#0F172A;color:#F8FAFC;
-  padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.08);
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
 }
-.qr-banner-left{display:flex;align-items:center;gap:12px;min-width:0}
+.qr-banner-left{display:flex;align-items:center;gap:10px;min-width:0}
 .qr-badge-ic{
-  width:40px;height:40px;border-radius:10px;flex:none;
+  width:38px;height:38px;border-radius:10px;flex:none;
   background:rgba(234,88,12,.18);color:#FB923C;
   border:1px solid rgba(234,88,12,.35);display:grid;place-items:center;
 }
-.qr-banner small{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:#94A3B8;font-weight:700}
-.qr-banner strong{display:block;font-size:17px;font-weight:700;color:#FFFFFF;word-break:break-all}
+.qr-banner small{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#94A3B8;font-weight:700}
+.qr-banner strong{display:block;font-size:16px;font-weight:700;color:#fff;word-break:break-all}
 .qr-change{
-  border:1px solid rgba(255,255,255,.18);background:transparent;color:#CBD5E1;
-  border-radius:8px;padding:7px 11px;font-size:12.5px;font-weight:600;flex:none;
+  border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#E2E8F0;
+  border-radius:9px;padding:8px 11px;font-size:12.5px;font-weight:700;flex:none;
 }
-.qr-change:hover{background:rgba(255,255,255,.1);color:#fff}
+.qr-change:active{background:rgba(255,255,255,.16)}
 
-/* Camera Scanner */
-.cam-box{
-  position:relative;border-radius:12px;overflow:hidden;
-  background:#0B1220;aspect-ratio:4/3;margin-bottom:14px;
-  border:1px solid #1E293B;display:grid;place-items:center;
-}
-.cam-box video{width:100%;height:100%;object-fit:cover;display:block}
-.cam-placeholder{text-align:center;padding:24px;color:#94A3B8}
-.cam-placeholder .cam-ic{
-  width:56px;height:56px;margin:0 auto 12px;border-radius:14px;
-  background:rgba(234,88,12,.14);color:#FB923C;border:1px solid rgba(234,88,12,.3);
-  display:grid;place-items:center;
-}
-.cam-placeholder b{display:block;color:#F8FAFC;font-size:15.5px;margin-bottom:4px}
-.cam-placeholder p{margin:0 0 14px;font-size:13.5px;color:#94A3B8}
-.cam-reticle{
-  position:absolute;inset:16% 20%;pointer-events:none;
-  border:2px solid rgba(255,255,255,.35);border-radius:14px;
-  box-shadow:0 0 0 999px rgba(11,18,32,.42);
-}
-.cam-reticle::after{
-  content:'';position:absolute;left:8%;right:8%;top:50%;height:2px;
-  background:var(--orange);box-shadow:0 0 12px var(--orange);
-  animation:scanline 2s ease-in-out infinite;
-}
-@keyframes scanline{0%,100%{transform:translateY(-44px)}50%{transform:translateY(44px)}}
-.cam-status{
-  position:absolute;left:12px;right:12px;bottom:12px;
+/* PIN Display + Touch Keypad */
+.pin-box{
   display:flex;align-items:center;justify-content:space-between;gap:8px;
-  background:rgba(15,23,42,.82);color:#F8FAFC;backdrop-filter:blur(6px);
-  padding:8px 12px;border-radius:9px;font-size:12.5px;font-weight:600;
+  height:58px;border-radius:13px;background:var(--surface-2);
+  border:2px solid var(--border-strong);margin-bottom:12px;padding:0 12px 0 18px;
 }
+.pin-box.filled{border-color:var(--orange);background:#fff}
+.pin-box input{
+  flex:1;min-width:0;border:0;background:transparent;text-align:center;outline:none;
+  font-family:var(--mono);font-size:28px;font-weight:800;letter-spacing:.35em;color:var(--ink);
+  caret-color:transparent;
+}
+.pin-eye{
+  width:38px;height:38px;border-radius:9px;border:0;background:transparent;
+  color:var(--muted);display:grid;place-items:center;flex:none;
+}
+.pin-eye:active{background:var(--border)}
 
-/* Inputs & Buttons */
+.keypad{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px;
+}
+.keypad button{
+  height:58px;border-radius:12px;border:1px solid var(--border);
+  background:#fff;font-size:22px;font-weight:800;font-family:var(--mono);
+  color:var(--ink);box-shadow:0 1px 2px rgba(15,23,42,.04);
+  transition:transform .08s,background .08s;
+}
+.keypad button:active{transform:scale(.95);background:var(--orange-soft);border-color:var(--orange);color:var(--orange)}
+.keypad button.fn{font-family:var(--font);font-size:14px;font-weight:700;color:var(--ink-2);background:var(--surface-2)}
+
+/* Fields & Buttons */
 .field{display:block;margin-bottom:14px}
 .field > span{display:block;font-size:13.5px;font-weight:700;color:var(--ink-2);margin-bottom:6px}
 .field > small{display:block;margin-top:5px;font-size:12.5px;color:var(--muted)}
 .input,select.input{
-  width:100%;height:48px;padding:0 14px;
+  width:100%;height:50px;padding:0 14px;
   border:1.5px solid var(--border-strong);border-radius:var(--radius-sm);
-  background:#fff;color:var(--ink);font-size:15.5px;font-weight:500;
-  outline:none;transition:.15s;
+  background:#fff;color:var(--ink);font-size:16px;font-weight:600;
+  outline:none;-webkit-appearance:none;appearance:none;
+}
+select.input{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:40px;
 }
 .input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(234,88,12,.14)}
 .input[readonly]{background:var(--surface-2);color:var(--ink-2);border-color:var(--border)}
 
-.input-row{display:flex;gap:8px}
-.input-row .input{flex:1}
-
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  height:48px;padding:0 18px;border-radius:var(--radius-sm);
-  border:1.5px solid transparent;font-size:15px;font-weight:700;
-  transition:.15s;text-decoration:none;white-space:nowrap;
+  min-height:52px;padding:0 16px;border-radius:var(--radius-sm);
+  border:1.5px solid transparent;font-size:15.5px;font-weight:800;
+  transition:transform .08s,background .12s;text-decoration:none;
 }
-.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn:active:not(:disabled){transform:scale(.98)}
+.btn:disabled{opacity:.48;cursor:not-allowed}
 .btn.wide{width:100%}
-.btn.sm{height:40px;padding:0 14px;font-size:14px}
+.btn.sm{min-height:42px;padding:0 14px;font-size:14px}
 .btn.primary{background:var(--orange);color:#fff}
 .btn.primary:hover:not(:disabled){background:var(--orange-hover)}
 .btn.success{background:var(--green);color:#fff}
-.btn.success:hover:not(:disabled){background:#15803D}
 .btn.dark{background:var(--ink);color:#fff}
-.btn.dark:hover:not(:disabled){background:#1E293B}
 .btn.ghost{background:#fff;border-color:var(--border-strong);color:var(--ink-2)}
-.btn.ghost:hover:not(:disabled){background:var(--surface-2);border-color:#94A3B8}
 .btn.danger-outline{background:#fff;border-color:var(--red-line);color:var(--red)}
-.btn.danger-outline:hover:not(:disabled){background:var(--red-soft)}
 .btn-stack{display:flex;flex-direction:column;gap:10px}
 .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-/* Demo Samples */
-.divider{
-  display:flex;align-items:center;gap:10px;
-  margin:18px 0 14px;color:var(--muted);font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
-}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
-.sample-list{display:flex;flex-direction:column;gap:8px}
-.sample-btn{
-  width:100%;text-align:left;padding:12px 14px;
-  border:1px solid var(--border);border-radius:11px;background:var(--surface-2);
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-  transition:.15s;
-}
-.sample-btn:hover{border-color:var(--orange);background:var(--orange-soft)}
-.sample-btn b{display:block;font-size:14.5px;color:var(--ink)}
-.sample-btn small{display:block;font-size:12.5px;color:var(--muted)}
+/* Tags & Callouts */
 .tag{
   display:inline-flex;align-items:center;gap:5px;
-  padding:4px 9px;border-radius:7px;font-size:12px;font-weight:700;white-space:nowrap;flex:none;
+  padding:4px 9px;border-radius:8px;font-size:12px;font-weight:700;white-space:nowrap;flex:none;
 }
 .tag.green{background:var(--green-soft);color:#15803D;border:1px solid var(--green-line)}
 .tag.amber{background:var(--amber-soft);color:#B45309;border:1px solid var(--amber-line)}
@@ -239,200 +328,199 @@ button{cursor:pointer}
 .tag.red{background:var(--red-soft);color:#B91C1C;border:1px solid var(--red-line)}
 .tag.slate{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--border)}
 
-/* PIN Entry & Keypad */
-.pin-display{
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  height:56px;border-radius:12px;background:var(--surface-2);
-  border:1.5px solid var(--border-strong);margin-bottom:12px;padding:0 16px;
-}
-.pin-display input{
-  width:100%;border:0;background:transparent;text-align:center;outline:none;
-  font-family:var(--mono);font-size:26px;font-weight:700;letter-spacing:.35em;color:var(--ink);
-}
-.keypad{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;
-}
-.keypad button{
-  height:54px;border-radius:11px;border:1px solid var(--border);
-  background:#fff;font-size:20px;font-weight:700;font-family:var(--mono);
-  color:var(--ink);transition:.12s;
-}
-.keypad button:hover{background:var(--surface-2);border-color:var(--border-strong)}
-.keypad button:active{transform:scale(.97);background:var(--orange-soft);border-color:var(--orange)}
-.keypad button.fn{font-family:var(--font);font-size:14px;font-weight:700;color:var(--muted);background:var(--surface-2)}
-
-.demo-hint{
-  margin-top:12px;padding:11px 13px;border-radius:10px;
-  background:var(--surface-2);border:1px dashed var(--border-strong);
-  font-size:13px;color:var(--ink-2);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
-}
-.demo-chips{display:flex;gap:6px;flex-wrap:wrap}
-.demo-chip{
-  border:1px solid var(--border-strong);background:#fff;border-radius:7px;
-  padding:5px 10px;font-size:12.5px;font-weight:700;color:var(--ink);
-}
-.demo-chip:hover{border-color:var(--orange);color:var(--orange)}
-
-/* Operator Strip */
-.op-strip{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  padding:11px 16px;background:var(--surface-2);border-bottom:1px solid var(--border);
-  font-size:13.5px;
-}
-.op-user{display:flex;align-items:center;gap:9px;min-width:0}
-.op-avatar{
-  width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;
-  font-size:13px;font-weight:800;display:grid;place-items:center;flex:none;
-}
-.op-user b{display:block;font-size:13.5px;line-height:1.2}
-.op-user small{display:block;font-size:12px;color:var(--muted)}
-.link-btn{border:0;background:transparent;color:var(--muted);font-size:13px;font-weight:700;padding:6px 8px;border-radius:7px}
-.link-btn:hover{background:var(--border);color:var(--ink)}
-
-/* Part Hero Card */
-.part-head{
-  display:flex;align-items:flex-start;justify-content:space-between;gap:14px;
-  padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:16px;
-}
-.part-title{margin:8px 0 4px;font-size:21px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
-.part-meta{font-size:13.5px;color:var(--muted)}
-.stock-box{
-  text-align:right;padding:10px 14px;border-radius:11px;flex:none;
-  background:var(--surface-2);border:1px solid var(--border);min-width:96px;
-}
-.stock-box.low{background:var(--red-soft);border-color:var(--red-line)}
-.stock-box small{display:block;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase}
-.stock-box strong{display:block;font-size:26px;font-weight:800;line-height:1.15;color:var(--ink)}
-.stock-box.low strong{color:var(--red)}
-.stock-box span{font-size:12.5px;font-weight:600;color:var(--ink-2)}
-
-.meta-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;
-}
-.meta-cell{
-  padding:10px 11px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);
-}
-.meta-cell small{display:block;font-size:11.5px;color:var(--muted);font-weight:600}
-.meta-cell b{display:block;font-size:14px;font-weight:700;color:var(--ink);margin-top:2px;word-break:break-word}
-
-/* Rule Callout */
 .callout{
-  display:flex;align-items:flex-start;gap:11px;
-  padding:13px 14px;border-radius:11px;margin-bottom:16px;border:1px solid;
-  font-size:13.5px;line-height:1.45;
+  display:flex;align-items:flex-start;gap:10px;
+  padding:12px 13px;border-radius:12px;margin-bottom:14px;border:1px solid;
+  font-size:13.5px;line-height:1.4;
 }
 .callout.green{background:var(--green-soft);border-color:var(--green-line);color:#14532D}
 .callout.amber{background:var(--amber-soft);border-color:var(--amber-line);color:#78350F}
 .callout.red{background:var(--red-soft);border-color:var(--red-line);color:#7F1D1D}
 .callout b{display:block;font-size:14px;margin-bottom:2px}
 
-/* Qty Stepper */
-.qty-wrap{display:grid;grid-template-columns:52px 1fr 52px;gap:8px}
-.qty-wrap button{
-  height:52px;border-radius:10px;border:1.5px solid var(--border-strong);
-  background:var(--surface-2);font-size:22px;font-weight:700;color:var(--ink);
+/* Operator Strip */
+.op-strip{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:10px 14px;background:var(--surface-2);border-bottom:1px solid var(--border);
 }
-.qty-wrap button:hover{border-color:var(--orange);background:var(--orange-soft);color:var(--orange)}
+.op-user{display:flex;align-items:center;gap:9px;min-width:0}
+.op-avatar{
+  width:32px;height:32px;border-radius:9px;background:var(--ink);color:#fff;
+  font-size:13.5px;font-weight:800;display:grid;place-items:center;flex:none;
+}
+.op-user > div{min-width:0}
+.op-user b{display:block;font-size:13.5px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.op-user small{display:block;font-size:11.5px;color:var(--muted)}
+.link-btn{border:1px solid var(--border);background:#fff;color:var(--ink-2);font-size:12.5px;font-weight:700;padding:7px 10px;border-radius:9px;flex:none}
+
+/* Part Card */
+.part-head{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:14px;
+}
+.part-head > div:first-child{min-width:0;flex:1}
+.part-tags{display:flex;flex-wrap:wrap;gap:6px}
+.part-title{margin:8px 0 4px;font-size:19px;font-weight:800;letter-spacing:-.02em;line-height:1.25;word-break:break-word}
+.part-meta{font-size:13px;color:var(--muted)}
+.stock-box{
+  text-align:center;padding:10px 12px;border-radius:12px;flex:none;
+  background:var(--surface-2);border:1px solid var(--border);min-width:86px;
+}
+.stock-box.low{background:var(--red-soft);border-color:var(--red-line)}
+.stock-box small{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase}
+.stock-box strong{display:block;font-size:24px;font-weight:800;line-height:1.15;color:var(--ink)}
+.stock-box.low strong{color:var(--red)}
+.stock-box span{font-size:12px;font-weight:700;color:var(--ink-2)}
+
+.meta-grid{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px;
+}
+.meta-cell{
+  padding:9px 10px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);min-width:0;
+}
+.meta-cell small{display:block;font-size:11px;color:var(--muted);font-weight:600}
+.meta-cell b{display:block;font-size:13.5px;font-weight:700;color:var(--ink);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Qty Stepper */
+.qty-wrap{display:grid;grid-template-columns:58px minmax(0,1fr) 58px;gap:8px}
+.qty-wrap button{
+  height:56px;border-radius:12px;border:1.5px solid var(--border-strong);
+  background:var(--surface-2);font-size:24px;font-weight:800;color:var(--ink);
+}
+.qty-wrap button:active{border-color:var(--orange);background:var(--orange-soft);color:var(--orange)}
 .qty-wrap input{
-  height:52px;text-align:center;font-family:var(--mono);font-size:22px;font-weight:800;
-  border:1.5px solid var(--border-strong);border-radius:10px;background:#fff;outline:none;
+  height:56px;text-align:center;font-family:var(--mono);font-size:24px;font-weight:800;
+  border:1.5px solid var(--border-strong);border-radius:12px;background:#fff;outline:none;width:100%;
 }
 .qty-wrap input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(234,88,12,.14)}
 
-/* Cabinet List (ISG-DOLAP) */
-.cab-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;max-height:290px;overflow:auto}
+/* ISG Cabinet List */
+.cab-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;max-height:42dvh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .cab-item{
-  display:flex;align-items:center;gap:12px;padding:12px 14px;
-  border:1.5px solid var(--border);border-radius:11px;background:#fff;cursor:pointer;transition:.15s;
+  display:flex;align-items:center;gap:10px;padding:12px;
+  border:1.5px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;
 }
 .cab-item:has(input:checked){border-color:var(--blue);background:var(--blue-soft)}
-.cab-item input{width:18px;height:18px;accent-color:var(--blue);flex:none}
+.cab-item input{width:20px;height:20px;accent-color:var(--blue);flex:none}
 .cab-item > div{flex:1;min-width:0}
-.cab-item b{display:block;font-size:15px}
-.cab-item small{display:block;font-size:12.5px;color:var(--muted)}
-.cab-item strong{font-size:15px;font-weight:800;white-space:nowrap}
+.cab-item b{display:block;font-size:14.5px;line-height:1.25}
+.cab-item small{display:block;font-size:12px;color:var(--muted)}
+.cab-item strong{font-size:14.5px;font-weight:800;white-space:nowrap}
 
 /* Approval Mode Tabs */
 .seg-tabs{
   display:grid;grid-template-columns:1fr 1fr;gap:6px;
-  padding:4px;border-radius:11px;background:var(--surface-2);border:1px solid var(--border);
-  margin-bottom:16px;
+  padding:4px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);
+  margin-bottom:14px;
 }
 .seg-tabs button{
-  height:42px;border:0;border-radius:8px;background:transparent;
-  font-size:13.5px;font-weight:700;color:var(--muted);transition:.15s;
+  min-height:44px;padding:6px 8px;border:0;border-radius:9px;background:transparent;
+  font-size:13px;font-weight:700;color:var(--muted);line-height:1.2;
 }
 .seg-tabs button.active{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(15,23,42,.1)}
 
-/* Summary Strip inside Approval */
 .req-summary{
-  padding:13px 14px;border-radius:11px;background:var(--surface-2);border:1px solid var(--border);
-  margin-bottom:16px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;
+  padding:12px 14px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);
+  margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;
 }
-.req-summary b{display:block;font-size:15.5px}
-.req-summary small{display:block;font-size:13px;color:var(--muted)}
-.req-summary strong{font-size:20px;font-weight:800;color:var(--orange)}
+.req-summary > div{min-width:0}
+.req-summary b{display:block;font-size:15px;line-height:1.25}
+.req-summary small{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.req-summary strong{font-size:19px;font-weight:800;color:var(--orange);white-space:nowrap}
 
 /* Receipt */
-.receipt-hero{
-  text-align:center;padding:24px 20px 18px;border-bottom:1px solid var(--border);
-}
+.receipt-hero{text-align:center;padding:22px 16px 16px;border-bottom:1px solid var(--border)}
 .receipt-icon{
-  width:60px;height:60px;margin:0 auto 12px;border-radius:16px;
+  width:60px;height:60px;margin:0 auto 10px;border-radius:16px;
   display:grid;place-items:center;
 }
 .receipt-icon.green{background:var(--green-soft);color:var(--green);border:1.5px solid var(--green-line)}
 .receipt-icon.amber{background:var(--amber-soft);color:var(--amber);border:1.5px solid var(--amber-line)}
 .receipt-icon.red{background:var(--red-soft);color:var(--red);border:1.5px solid var(--red-line)}
-.receipt-hero h2{margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em}
-.receipt-hero p{margin:6px 0 0;font-size:14px;color:var(--muted)}
-
-.receipt-rows{display:flex;flex-direction:column;margin-bottom:18px}
+.receipt-hero h2{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.receipt-hero p{margin:5px 0 0;font-size:13.5px;color:var(--muted)}
+.receipt-rows{display:flex;flex-direction:column;margin-bottom:16px}
 .receipt-row{
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-  padding:11px 0;border-bottom:1px solid var(--border);font-size:14.5px;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;
 }
 .receipt-row:last-child{border-bottom:0}
-.receipt-row span{color:var(--muted);font-weight:500}
-.receipt-row b{color:var(--ink);font-weight:700;text-align:right}
+.receipt-row span{color:var(--muted);font-weight:500;flex:none}
+.receipt-row b{color:var(--ink);font-weight:700;text-align:right;word-break:break-word}
 
-/* Modal (Connection Settings) */
+/* Demo Helper Drawer (ONLY shown in Demo mode) */
+.demo-drawer{
+  background:var(--surface);border:1px dashed var(--border-strong);border-radius:12px;overflow:hidden;
+}
+.demo-drawer summary{
+  list-style:none;padding:12px 14px;font-size:13px;font-weight:700;color:var(--ink-2);
+  display:flex;align-items:center;justify-content:space-between;cursor:pointer;
+}
+.demo-drawer summary::-webkit-details-marker{display:none}
+.demo-drawer-body{padding:0 12px 12px;display:flex;flex-direction:column;gap:8px}
+.sample-btn{
+  width:100%;text-align:left;padding:11px 12px;
+  border:1px solid var(--border);border-radius:10px;background:var(--surface-2);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.sample-btn:active{border-color:var(--orange);background:var(--orange-soft)}
+.sample-btn > div{min-width:0}
+.sample-btn b{display:block;font-size:14px;color:var(--ink)}
+.sample-btn small{display:block;font-size:12px;color:var(--muted)}
+
+.demo-hint{
+  margin-top:12px;padding:10px 12px;border-radius:10px;
+  background:var(--surface-2);border:1px dashed var(--border-strong);
+  font-size:12.5px;color:var(--ink-2);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+}
+.demo-chips{display:flex;gap:6px;flex-wrap:wrap}
+.demo-chip{
+  border:1px solid var(--border-strong);background:#fff;border-radius:8px;
+  padding:6px 10px;font-size:12.5px;font-weight:700;color:var(--ink);
+}
+.demo-chip:active{border-color:var(--orange);color:var(--orange)}
+
+/* Connection Modal */
 .modal-back{
-  position:fixed;inset:0;z-index:50;background:rgba(15,23,42,.55);
-  backdrop-filter:blur(3px);display:grid;place-items:center;padding:16px;
+  position:fixed;inset:0;z-index:50;background:rgba(15,23,42,.6);
+  backdrop-filter:blur(4px);display:grid;place-items:end center;padding:0;
 }
 .modal-back[hidden]{display:none}
 .modal{
-  width:100%;max-width:440px;background:#fff;border-radius:var(--radius);
-  box-shadow:0 20px 50px rgba(15,23,42,.25);overflow:hidden;border:1px solid var(--border);
+  width:100%;max-width:480px;background:#fff;
+  border-radius:20px 20px 0 0;padding-bottom:var(--safe-bot);
+  box-shadow:0 -12px 40px rgba(15,23,42,.28);overflow:hidden;
+}
+@media (min-width:540px){
+  .modal-back{place-items:center;padding:16px}
+  .modal{border-radius:var(--radius);padding-bottom:0}
 }
 .modal-head{
-  padding:16px 18px;border-bottom:1px solid var(--border);
+  padding:15px 18px;border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;
 }
 .modal-head h3{margin:0;font-size:17px;font-weight:800}
 .icon-btn{
-  width:34px;height:34px;border-radius:8px;border:1px solid var(--border);
+  width:36px;height:36px;border-radius:10px;border:1px solid var(--border);
   background:#fff;color:var(--ink-2);display:grid;place-items:center;
 }
-.icon-btn:hover{background:var(--surface-2)}
-.modal-body{padding:18px}
+.modal-body{padding:16px 18px 20px}
 
-/* Toast */
+/* Toasts */
 .toasts{
-  position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:60;
-  width:calc(100% - 32px);max-width:460px;display:flex;flex-direction:column;gap:8px;pointer-events:none;
+  position:fixed;left:50%;bottom:calc(16px + var(--safe-bot));transform:translateX(-50%);z-index:60;
+  width:calc(100% - 24px);max-width:456px;display:flex;flex-direction:column;gap:8px;pointer-events:none;
 }
 .toast{
-  display:flex;align-items:center;gap:10px;padding:13px 16px;border-radius:12px;
+  display:flex;align-items:center;gap:10px;padding:13px 15px;border-radius:12px;
   background:#0F172A;color:#fff;font-size:14px;font-weight:600;
-  box-shadow:0 12px 30px rgba(15,23,42,.28);pointer-events:auto;
+  box-shadow:0 12px 30px rgba(15,23,42,.3);pointer-events:auto;
 }
 .toast.ok{border-left:4px solid var(--green)}
 .toast.err{border-left:4px solid var(--red)}
 .toast.warn{border-left:4px solid var(--amber)}
 
-/* Busy bar */
+/* Busy Bar */
 .busy-bar{position:fixed;top:0;left:0;right:0;height:3px;z-index:70;overflow:hidden;display:none}
 body.busy .busy-bar{display:block}
 .busy-bar::after{
@@ -441,45 +529,43 @@ body.busy .busy-bar{display:block}
 }
 @keyframes loading{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
 
-/* Footer */
-.foot{
-  margin-top:20px;text-align:center;font-size:12.5px;color:var(--muted);
-}
-
-@media (max-width:440px){
-  .step{padding:8px 8px;font-size:12px;gap:6px}
+@media (max-width:360px){
   .meta-grid{grid-template-columns:1fr 1fr}
+  .keypad button{height:52px;font-size:20px}
   .btn-row{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
 <div class="busy-bar"></div>
-<header class="topbar">
-  <div class="topbar-in">
-    <div class="brand">
-      <span class="brand-mark">QR</span>
-      <div>
-        <b>Depo QR Terminali</b>
-        <small>Mekanik + İSG Depo V8.7</small>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="topbar-in">
+      <div class="brand">
+        <span class="brand-mark">QR</span>
+        <div class="brand-txt">
+          <b>Depo QR Terminali</b>
+          <small>Mekanik + İSG Depo V8.7</small>
+        </div>
       </div>
+      <button class="conn-btn" type="button" data-action="open-conn" id="connBtn">
+        <i class="dot demo" id="connDot"></i>
+        <span id="connLabel">Demo</span>
+      </button>
     </div>
-    <button class="conn-btn" type="button" data-action="open-conn" id="connBtn">
-      <i class="dot demo" id="connDot"></i>
-      <span id="connLabel">Demo</span>
-    </button>
-  </div>
-</header>
+  </header>
 
-<main class="wrap">
-  <div class="steps" id="stepper">
-    <div class="step active" data-step="1"><i>1</i><span>QR Okut</span></div>
-    <div class="step" data-step="2"><i>2</i><span>OP Şifresi</span></div>
-    <div class="step" data-step="3"><i>3</i><span>Parça Çıkış</span></div>
-  </div>
-  <div id="view"></div>
-  <footer class="foot">Bağımsız Depo QR Terminali · Tek HTML · Operatör ve Depocu Onay Akışı</footer>
-</main>
+  <main class="wrap">
+    <div class="steps" id="stepper">
+      <div class="step active" data-step="1"><i>1</i><span>QR Okut</span></div>
+      <div class="step" data-step="2"><i>2</i><span>OP PIN</span></div>
+      <div class="step" data-step="3"><i>3</i><span>Çıkış</span></div>
+    </div>
+    <div id="view"></div>
+  </main>
+</div>
+
+<canvas id="decodeCanvas" hidden></canvas>
 
 <div class="modal-back" id="connModal" hidden>
   <section class="modal" role="dialog" aria-modal="true" aria-label="Bağlantı Ayarı">
@@ -504,7 +590,7 @@ body.busy .busy-bar{display:block}
         <small>Doğrudan modda Apps Script Web App /exec adresini girin. Ana uygulama ile aynı ayarı paylaşır.</small>
       </label>
       <div class="btn-row">
-        <button class="btn ghost" type="button" data-action="test-conn">Bağlantıyı Test Et</button>
+        <button class="btn ghost" type="button" data-action="test-conn">Test Et</button>
         <button class="btn primary" type="button" data-action="save-conn">Kaydet</button>
       </div>
     </div>
@@ -524,18 +610,32 @@ const norm = s => String(s ?? '').trim().toLocaleUpperCase('tr-TR')
 const num = v => new Intl.NumberFormat('tr-TR',{maximumFractionDigits:2}).format(Number(v)||0);
 const uid = p => p + '-' + Math.random().toString(36).slice(2,8).toUpperCase();
 const nowStr = () => new Date().toLocaleString('tr-TR');
+const vibrate = ms => { try { if (navigator.vibrate) navigator.vibrate(ms); } catch {} };
+
+function beepScan() {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx(), osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.type = 'sine'; osc.frequency.value = 1320;
+    gain.gain.value = 0.08;
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start();
+    setTimeout(() => { osc.stop(); ctx.close(); }, 90);
+  } catch {}
+}
 
 const SVG = {
   qr: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v3h-3M14 20h7"/>',
   scan: '<path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/>',
   lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
   check: '<path d="M20 6 9 17l-5-5"/>',
-  shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
-  wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
   alert: '<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   arrow: '<path d="M5 12h14M13 5l7 7-7 7"/>',
   camera: '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+  flash: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  eye: '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>',
   x: '<path d="M18 6 6 18M6 6l12 12"/>'
 };
 const ic = (name, cls='') => `<span class="ic ${cls}" aria-hidden="true"><svg viewBox="0 0 24 24">${SVG[name]||''}</svg></span>`;
@@ -547,7 +647,6 @@ const ROLE_LABEL = {
   YONETICI: 'Bakım Şefi / Yönetici'
 };
 
-// Built-in Demo Dataset (matches main application)
 const DEMO = {
   users: [
     {name:'Bakım Operatörü',pin:'1111',role:'OP',active:true},
@@ -586,20 +685,32 @@ function readInitialQr() {
 const state = {
   mode: localStorage.getItem('depo.mode') || 'demo',
   directUrl: localStorage.getItem('depo.directUrl') || '',
-  step: 'scan', // 'scan' | 'pin' | 'part' | 'cabinet' | 'approval' | 'receipt'
+  step: 'scan',
   scannedQr: readInitialQr(),
   user: null,
   session: '',
   stock: [],
   machines: [],
   item: null,
-  pendingCheckout: null, // { item, qty, machine, requiresManagerFallback }
-  approvalTab: 'pin', // 'pin' | 'pool'
-  receipt: null
+  pendingCheckout: null,
+  approvalTab: 'pin',
+  receipt: null,
+  camActive: false,
+  camError: '',
+  torchSupported: false,
+  torchOn: false,
+  showPin: false
 };
 
 let cameraStream = null;
-let cameraTimer = null;
+let scanRaf = null;
+let scanningBusy = false;
+let nativeDetector = null;
+let lastScanAt = 0;
+
+if ('BarcodeDetector' in window) {
+  try { nativeDetector = new BarcodeDetector({formats:['qr_code']}); } catch {}
+}
 
 function needsDepotApproval(item) {
   return norm(item?.usage || '').includes('DEPO_ONAYI_GEREKLI');
@@ -614,24 +725,18 @@ function isUserDepotApprover(user, depot) {
 function isConsumable(item) {
   return !item.machine || /SARF|ORTAK/.test(norm(item.type + ' ' + item.usage));
 }
-
-function setBusy(v) {
-  document.body.classList.toggle('busy', v);
-}
+function setBusy(v) { document.body.classList.toggle('busy', v); }
 function toast(msg, type = 'ok') {
   const el = document.createElement('div');
   el.className = 'toast ' + type;
   el.innerHTML = `${ic(type === 'err' ? 'alert' : type === 'warn' ? 'clock' : 'check', 'ic-sm')}<span>${esc(msg)}</span>`;
   $('#toasts').append(el);
-  setTimeout(() => el.remove(), 4200);
+  setTimeout(() => el.remove(), 3800);
 }
-
 function updateConnBadge() {
-  const dot = $('#connDot'), lbl = $('#connLabel');
-  dot.className = 'dot ' + state.mode;
-  lbl.textContent = state.mode === 'demo' ? 'Demo' : state.mode === 'direct' ? 'Canlı GAS' : '/api/gas';
+  $('#connDot').className = 'dot ' + state.mode;
+  $('#connLabel').textContent = state.mode === 'demo' ? 'Demo' : state.mode === 'direct' ? 'Canlı GAS' : '/api/gas';
 }
-
 function updateStepper() {
   const stepNum = state.step === 'scan' ? 1 : state.step === 'pin' ? 2 : 3;
   $$('#stepper .step').forEach(el => {
@@ -641,7 +746,7 @@ function updateStepper() {
   });
 }
 
-// API client (Demo / Direct GAS / Proxy /api/gas)
+// API Client
 async function api(action, payload = {}) {
   if (state.mode === 'demo') return demoApi(action, payload);
   const endpoint = state.mode === 'direct' ? state.directUrl : '/api/gas';
@@ -657,13 +762,13 @@ async function api(action, payload = {}) {
 }
 
 async function demoApi(action, p = {}) {
-  await new Promise(r => setTimeout(r, 110));
+  await new Promise(r => setTimeout(r, 90));
   if (action === 'health') return {service:'DEMO', time: nowStr()};
   if (action === 'auth') {
     const clean = String(p.pin || '').replace(/\s+/g, '').trim();
     if (!/^\d{4,8}$/.test(clean)) throw new Error('PIN 4-8 rakam olmalıdır.');
     const u = DEMO.users.find(x => x.pin === clean && x.active);
-    if (!u) throw new Error('Geçersiz PIN. (Demo OP PIN: 1111)');
+    if (!u) throw new Error('Geçersiz PIN. (Demo OP: 1111)');
     return {user:{name:u.name, role:u.role}, session:'demo-' + u.role};
   }
   if (!state.user) throw new Error('Oturum gerekli.');
@@ -689,89 +794,202 @@ async function demoApi(action, p = {}) {
       if (p.depotApproverPin) {
         const clean = String(p.depotApproverPin).replace(/\s+/g, '').trim();
         const approver = DEMO.users.find(x => x.pin === clean && x.active && isUserDepotApprover(x, item.depot));
-        if (!approver) throw new Error('Depocu PIN geçersiz veya bu depo için yetkisiz. (Demo: 2222 / 3333 / 4444)');
+        if (!approver) throw new Error('Depocu PIN geçersiz veya yetkisiz. (Demo: 2222 / 3333 / 4444)');
         item.stock = Number((item.stock - qty).toFixed(2));
-        return {
-          completed: true,
-          depotApproved: true,
-          approver: approver.name,
-          id: uid('CIK'),
-          remaining: item.stock,
-          autoLogout: state.user.role === 'OP'
-        };
+        return {completed:true, depotApproved:true, approver:approver.name, id:uid('CIK'), remaining:item.stock, autoLogout:state.user.role==='OP'};
       }
       if (p.sendApproval) {
         const reqId = uid('ONAY');
         DEMO.approvals.unshift({id:reqId, itemId:item.id, qty, machine, requester:state.user.name, status:'BEKLIYOR'});
-        return {
-          pending: true,
-          depotApproval: true,
-          id: reqId,
-          remaining: item.stock,
-          message: 'Depocu onay havuzuna gönderildi. Talep No: ' + reqId,
-          autoLogout: state.user.role === 'OP'
-        };
+        return {pending:true, depotApproval:true, id:reqId, remaining:item.stock, message:'Depocu onay havuzuna gönderildi.', autoLogout:state.user.role==='OP'};
       }
-      return {depotApprovalRequired: true, message: 'Bu parça için Depo Onayı Gerekli.'};
+      return {depotApprovalRequired:true, message:'Bu parça için Depo Onayı Gerekli.'};
     }
 
-    // Depo onayı gerekmiyorsa direkt düşer
     item.stock = Number((item.stock - qty).toFixed(2));
-    return {
-      completed: true,
-      id: uid('CIK'),
-      remaining: item.stock,
-      autoLogout: state.user.role === 'OP'
-    };
+    return {completed:true, id:uid('CIK'), remaining:item.stock, autoLogout:state.user.role==='OP'};
   }
   throw new Error('Desteklenmeyen işlem: ' + action);
 }
 
-// Camera Scanner Controls
+// Camera & Universal QR Decoder (Android + iPhone Safari + Firefox)
 function stopCamera() {
-  if (cameraTimer) clearInterval(cameraTimer);
-  cameraTimer = null;
+  if (scanRaf) cancelAnimationFrame(scanRaf);
+  scanRaf = null;
+  scanningBusy = false;
+  state.camActive = false;
+  state.torchOn = false;
+  state.torchSupported = false;
   if (cameraStream) {
     cameraStream.getTracks().forEach(t => t.stop());
     cameraStream = null;
   }
 }
 
-async function startCamera() {
+async function decodeCanvasFrame(canvas, ctx) {
+  if (nativeDetector) {
+    try {
+      const codes = await nativeDetector.detect(canvas);
+      if (codes && codes[0]?.rawValue) return codes[0].rawValue;
+    } catch {}
+  }
+  if (typeof window.jsQR === 'function') {
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const res = window.jsQR(img.data, img.width, img.height, {inversionAttempts: 'dontInvert'});
+    if (res && res.data) return res.data;
+  }
+  return '';
+}
+
+function scheduleScanLoop(video) {
+  const canvas = $('#decodeCanvas');
+  const ctx = canvas.getContext('2d', {willReadFrequently: true});
+
+  const tick = async (ts) => {
+    if (!state.camActive || !cameraStream || state.step !== 'scan') return;
+    if (video.readyState >= 2 && video.videoWidth > 0 && !scanningBusy && (ts - lastScanAt > 180)) {
+      lastScanAt = ts;
+      scanningBusy = true;
+      try {
+        // Prefer direct native detection on video first (fastest on Android Chrome)
+        let raw = '';
+        if (nativeDetector) {
+          try {
+            const codes = await nativeDetector.detect(video);
+            if (codes && codes[0]?.rawValue) raw = codes[0].rawValue;
+          } catch {}
+        }
+        if (!raw && typeof window.jsQR === 'function') {
+          const maxDim = 640;
+          const scale = Math.min(1, maxDim / Math.max(video.videoWidth, video.videoHeight));
+          const w = Math.max(1, Math.round(video.videoWidth * scale));
+          const h = Math.max(1, Math.round(video.videoHeight * scale));
+          if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+          ctx.drawImage(video, 0, 0, w, h);
+          const img = ctx.getImageData(0, 0, w, h);
+          const res = window.jsQR(img.data, w, h, {inversionAttempts: 'attemptBoth'});
+          if (res && res.data) raw = res.data;
+        }
+        if (raw) {
+          const code = extractCodeFromQr(raw);
+          if (code) {
+            vibrate(70);
+            beepScan();
+            selectQrCode(code);
+            return;
+          }
+        }
+      } catch {}
+      scanningBusy = false;
+    }
+    scanRaf = requestAnimationFrame(tick);
+  };
+  scanRaf = requestAnimationFrame(tick);
+}
+
+async function startCamera(silent = false) {
   stopCamera();
-  const box = $('#camBox');
-  if (!box) return;
+  state.camError = '';
+  const stage = $('#camStage');
+  if (!stage) return;
+
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    toast('Bu tarayıcıda kamera desteği yok; kodu elle girebilirsiniz.', 'warn');
+    state.camError = 'Canlı kamera bu tarayıcıda desteklenmiyor. Aşağıdan "Kamera ile QR Fotoğrafı Çek" butonunu kullanın.';
+    renderCamStage();
     return;
   }
+
   try {
-    cameraStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});
-    box.innerHTML = `<video id="camVideo" playsinline muted autoplay></video><div class="cam-reticle"></div><div class="cam-status"><span>${'BarcodeDetector' in window ? 'QR kodu çerçeveye hizalayın...' : 'Kamera açık · Otomatik okuma desteklenmiyor, kodu alta yazın'}</span><button class="qr-change" type="button" data-action="stop-cam">Kapat</button></div>`;
-    const v = $('#camVideo');
-    v.srcObject = cameraStream;
-    await v.play();
-    if ('BarcodeDetector' in window) {
-      const detector = new BarcodeDetector({formats:['qr_code']});
-      cameraTimer = setInterval(async () => {
-        try {
-          const codes = await detector.detect(v);
-          if (codes[0]?.rawValue) {
-            const raw = extractCodeFromQr(codes[0].rawValue);
-            if (raw) selectQrCode(raw);
-          }
-        } catch {}
-      }, 380);
+    const constraints = {
+      audio: false,
+      video: {
+        facingMode: {ideal: 'environment'},
+        width: {ideal: 1280},
+        height: {ideal: 720}
+      }
+    };
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+    } catch {
+      cameraStream = await navigator.mediaDevices.getUserMedia({audio: false, video: true});
     }
+
+    const track = cameraStream.getVideoTracks()[0];
+    if (track && typeof track.getCapabilities === 'function') {
+      const caps = track.getCapabilities();
+      state.torchSupported = !!caps.torch;
+    }
+    state.camActive = true;
+    renderCamStage();
+
+    const video = $('#camVideo');
+    if (!video) return;
+    video.srcObject = cameraStream;
+    video.setAttribute('playsinline', 'true');
+    video.setAttribute('webkit-playsinline', 'true');
+    video.muted = true;
+    await video.play();
+    scheduleScanLoop(video);
   } catch (err) {
-    toast('Kamera açılamadı. Kodu elle girebilir veya aşağıdan seçebilirsiniz.', 'err');
+    stopCamera();
+    state.camError = err?.name === 'NotAllowedError'
+      ? 'Kamera izni verilmedi. Tarayıcıdan kamera izni verip tekrar deneyin veya aşağıdan fotoğraf çekerek okutun.'
+      : 'Kamera açılamadı. Aşağıdan "Kamerayı Başlat" veya "QR Fotoğrafı Çek" ile devam edin.';
+    renderCamStage();
+    if (!silent) toast('Kamera başlatılamadı; izinleri kontrol edin.', 'warn');
+  }
+}
+
+async function toggleTorch() {
+  if (!cameraStream || !state.torchSupported) return;
+  const track = cameraStream.getVideoTracks()[0];
+  if (!track) return;
+  try {
+    state.torchOn = !state.torchOn;
+    await track.applyConstraints({advanced: [{torch: state.torchOn}]});
+    const btn = $('#torchBtn');
+    if (btn) btn.classList.toggle('on', state.torchOn);
+  } catch {
+    state.torchOn = false;
+    toast('Flaş bu cihazda açılamadı.', 'warn');
+  }
+}
+
+async function decodeImageFile(file) {
+  if (!file) return;
+  setBusy(true);
+  try {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
+    const canvas = $('#decodeCanvas');
+    const ctx = canvas.getContext('2d', {willReadFrequently: true});
+    const maxDim = 1280;
+    const scale = Math.min(1, maxDim / Math.max(img.naturalWidth || img.width, img.naturalHeight || img.height));
+    canvas.width = Math.max(1, Math.round((img.naturalWidth || img.width) * scale));
+    canvas.height = Math.max(1, Math.round((img.naturalHeight || img.height) * scale));
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+
+    const raw = await decodeCanvasFrame(canvas, ctx);
+    const code = extractCodeFromQr(raw);
+    if (!code) {
+      toast('Fotoğrafta QR kodu okunamadı. Kodu net ve yakın çekin.', 'err');
+      return;
+    }
+    vibrate(70);
+    beepScan();
+    selectQrCode(code);
+  } catch {
+    toast('Görüntü işlenemedi. Tekrar deneyin.', 'err');
+  } finally {
+    setBusy(false);
   }
 }
 
 function extractCodeFromQr(raw) {
   const s = String(raw || '').trim();
   if (!s) return '';
-  // If QR contains a URL with ?qr=CODE, extract the CODE parameter
   try {
     if (/^https?:\/\//i.test(s)) {
       const u = new URL(s);
@@ -784,14 +1002,14 @@ function extractCodeFromQr(raw) {
 
 function selectQrCode(code) {
   const clean = extractCodeFromQr(code);
-  if (!clean) return toast('Lütfen geçerli bir QR kodu girin.', 'err');
+  if (!clean) return toast('QR kodu okunamadı.', 'err');
   stopCamera();
   state.scannedQr = clean;
-  // Always require OP PIN first when scanning a new QR code!
   state.user = null;
   state.session = '';
   state.item = null;
   state.pendingCheckout = null;
+  state.showPin = false;
   state.step = 'pin';
   render();
 }
@@ -805,6 +1023,7 @@ function resetToScan() {
   state.item = null;
   state.pendingCheckout = null;
   state.receipt = null;
+  state.showPin = false;
   state.step = 'scan';
   if (location.search) {
     try { history.replaceState(null, '', location.pathname); } catch {}
@@ -838,78 +1057,77 @@ function render() {
   updateConnBadge();
   updateStepper();
   const root = $('#view');
-  if (state.step === 'scan') root.innerHTML = renderScan();
+  if (state.step === 'scan') {
+    root.innerHTML = renderScan();
+    renderCamStage();
+    // Auto-start rear camera on phones/browsers
+    setTimeout(() => { if (state.step === 'scan' && !state.camActive && !state.camError) startCamera(true); }, 120);
+  }
   else if (state.step === 'pin') root.innerHTML = renderPin();
   else if (state.step === 'part') root.innerHTML = renderPart();
   else if (state.step === 'cabinet') root.innerHTML = renderCabinet();
   else if (state.step === 'approval') root.innerHTML = renderApproval();
   else if (state.step === 'receipt') root.innerHTML = renderReceipt();
   else if (state.step === 'notfound') root.innerHTML = renderNotFound();
+}
 
-  // Auto-focus PIN input on desktop without disturbing mobile keyboard unnecessarily
-  if (state.step === 'pin') {
-    const inp = $('#opPinInput');
-    if (inp && window.innerWidth > 720) inp.focus();
+function renderCamStage() {
+  const stage = $('#camStage');
+  if (!stage) return;
+  if (state.camActive) {
+    stage.innerHTML = `
+      <video id="camVideo" playsinline webkit-playsinline muted autoplay></video>
+      <div class="cam-overlay">
+        <div class="cam-frame"><i></i><i></i><i></i><i></i><span class="cam-laser"></span></div>
+      </div>
+      <div class="cam-top-bar">
+        <span class="cam-pill"><span class="pulse"></span>QR Aranıyor...</span>
+        ${state.torchSupported ? `<button class="cam-tool-btn ${state.torchOn ? 'on' : ''}" type="button" id="torchBtn" data-action="toggle-torch">${ic('flash','ic-sm')} Flaş</button>` : ''}
+      </div>`;
+  } else {
+    stage.innerHTML = `
+      <div class="cam-fallback">
+        <div class="cam-fallback-ic">${ic('camera','ic-lg')}</div>
+        <b>Depo QR Kodunu Okutun</b>
+        <p>${esc(state.camError || 'Arka kamera ile raf etiketi veya İSG dolabı QR kodunu okutun.')}</p>
+        <button class="btn primary wide" type="button" data-action="start-cam">${ic('scan','ic-sm')} Kamerayı Başlat</button>
+      </div>`;
   }
 }
 
 function renderScan() {
   return `
-  <section class="card">
-    <div class="card-head">
-      <div>
-        <h1>Depo QR Kodunu Okutun</h1>
-        <p>QR okutulduktan sonra önce operatör şifresi sorulur</p>
+  <section class="scan-card">
+    <div class="cam-stage" id="camStage"></div>
+    <div class="scan-foot">
+      <div class="scan-foot-msg">
+        <span><b>Adım 1:</b> QR kodu çerçeveye tutun, ardından OP şifrenizi girin.</span>
       </div>
-      <span style="color:var(--orange);display:inline-flex">${ic('qr','ic-lg')}</span>
+      <label class="photo-scan-label">
+        ${ic('camera','ic-sm')} Kamera ile QR Fotoğrafı Çek
+        <input type="file" id="qrPhotoInput" accept="image/*" capture="environment">
+      </label>
     </div>
-    <div class="card-body">
-      <div class="cam-box" id="camBox">
-        <div class="cam-placeholder">
-          <div class="cam-ic">${ic('camera','ic-lg')}</div>
-          <b>Kamera ile Raf QR Kodu Okut</b>
-          <p>Depodaki raf etiketi veya İSG dolabı QR kodunu kameraya gösterin</p>
-          <button class="btn primary sm" type="button" data-action="start-cam">${ic('scan','ic-sm')} Kamerayı Başlat</button>
-        </div>
-      </div>
+  </section>
 
-      <form id="manualQrForm">
-        <label class="field" style="margin-bottom:0">
-          <span>Veya QR / Parça Kodunu Elle Girin</span>
-          <div class="input-row">
-            <input class="input mono" id="manualQrInput" placeholder="MEK-0001, RUL-6205 veya ISG-DOLAP" autocomplete="off">
-            <button class="btn dark" type="submit">Devam</button>
-          </div>
-        </label>
-      </form>
-
-      ${state.mode === 'demo' ? `
-      <div class="divider">Hızlı Demo QR Testi</div>
-      <div class="sample-list">
-        <button class="sample-btn" type="button" data-qr="MEK-0001">
-          <div>
-            <b>Rulman 6205 2RS</b>
-            <small class="mono">MEK-0001 · RUL-6205 · Raf A-01</small>
-          </div>
-          <span class="tag green">Direkt Düşer</span>
-        </button>
-        <button class="sample-btn" type="button" data-qr="MEK-0004">
-          <div>
-            <b>M18 Endüktif Sensör</b>
-            <small class="mono">MEK-0004 · SEN-M18 · Raf E-03</small>
-          </div>
-          <span class="tag amber">Depo Onayı Gerekli</span>
-        </button>
-        <button class="sample-btn" type="button" data-qr="ISG-DOLAP">
-          <div>
-            <b>İSG Dolabı (KKD)</b>
-            <small class="mono">ISG-DOLAP · Sabit Dolap QR</small>
-          </div>
-          <span class="tag blue">Direkt Düşer</span>
-        </button>
-      </div>` : ''}
+  ${state.mode === 'demo' ? `
+  <details class="demo-drawer">
+    <summary><span>Demo Test QR Simülasyonu (Yalnız Demo Modunda)</span><span>▾</span></summary>
+    <div class="demo-drawer-body">
+      <button class="sample-btn" type="button" data-qr="MEK-0001">
+        <div><b>Rulman 6205 2RS</b><small class="mono">MEK-0001 · Raf A-01</small></div>
+        <span class="tag green">Direkt Düşer</span>
+      </button>
+      <button class="sample-btn" type="button" data-qr="MEK-0004">
+        <div><b>M18 Endüktif Sensör</b><small class="mono">MEK-0004 · Raf E-03</small></div>
+        <span class="tag amber">Depo Onayı</span>
+      </button>
+      <button class="sample-btn" type="button" data-qr="ISG-DOLAP">
+        <div><b>İSG Dolabı (KKD)</b><small class="mono">ISG-DOLAP</small></div>
+        <span class="tag blue">Direkt Düşer</span>
+      </button>
     </div>
-  </section>`;
+  </details>` : ''}`;
 }
 
 function renderPin() {
@@ -919,23 +1137,24 @@ function renderPin() {
       <div class="qr-banner-left">
         <div class="qr-badge-ic">${ic('qr')}</div>
         <div>
-          <small>Okutulan QR Kodu</small>
+          <small>Okutulan QR</small>
           <strong class="mono">${esc(state.scannedQr)}</strong>
         </div>
       </div>
-      <button class="qr-change" type="button" data-action="reset-scan">Değiştir</button>
+      <button class="qr-change" type="button" data-action="reset-scan">Yeniden Okut</button>
     </div>
     <div class="card-head">
       <div>
         <h2>Operatör Şifresi (PIN)</h2>
-        <p>Parçayı görüntülemek ve çıkış yapmak için OP PIN’inizi girin</p>
+        <p>Parçayı açmak için OP PIN’inizi tuşlayın</p>
       </div>
       <span style="color:var(--orange);display:inline-flex">${ic('lock')}</span>
     </div>
     <div class="card-body">
       <form id="opPinForm">
-        <div class="pin-display">
-          <input id="opPinInput" type="password" inputmode="numeric" maxlength="8" placeholder="••••" autocomplete="off">
+        <div class="pin-box" id="opPinBox">
+          <input id="opPinInput" type="${state.showPin ? 'text' : 'password'}" inputmode="none" readonly maxlength="8" placeholder="••••" autocomplete="off">
+          <button class="pin-eye" type="button" data-action="toggle-pin-eye" aria-label="PIN göster">${ic('eye','ic-sm')}</button>
         </div>
         <div class="keypad" data-keypad="opPinInput">
           ${['1','2','3','4','5','6','7','8','9'].map(d => `<button type="button" data-key="${d}">${d}</button>`).join('')}
@@ -943,14 +1162,14 @@ function renderPin() {
           <button type="button" data-key="0">0</button>
           <button type="button" class="fn" data-key="DEL">Sil</button>
         </div>
-        <button class="btn primary wide" type="submit">Doğrula ve Parçayı Getir ${ic('arrow','ic-sm')}</button>
+        <button class="btn primary wide" type="submit">Parçayı Getir ${ic('arrow','ic-sm')}</button>
       </form>
       ${state.mode === 'demo' ? `
       <div class="demo-hint">
-        <span>Demo OP PIN:</span>
+        <span>Demo OP:</span>
         <div class="demo-chips">
-          <button class="demo-chip mono" type="button" data-fill-op="1111">1111 (Operatör)</button>
-          <button class="demo-chip mono" type="button" data-fill-op="1155">1155 (Engin)</button>
+          <button class="demo-chip mono" type="button" data-fill-op="1111">1111</button>
+          <button class="demo-chip mono" type="button" data-fill-op="1155">1155</button>
           <button class="demo-chip mono" type="button" data-fill-op="2222">2222 (Depocu)</button>
         </div>
       </div>` : ''}
@@ -968,7 +1187,7 @@ function renderOpStrip() {
         <small>${esc(ROLE_LABEL[state.user?.role] || state.user?.role || '')}</small>
       </div>
     </div>
-    <button class="link-btn" type="button" data-action="reset-scan">Yeni QR / Çıkış</button>
+    <button class="link-btn" type="button" data-action="reset-scan">Yeni QR</button>
   </div>`;
 }
 
@@ -986,13 +1205,15 @@ function renderPart() {
     <div class="card-body">
       <div class="part-head">
         <div>
-          <span class="tag ${isIsg ? 'blue' : 'slate'}">${isIsg ? 'İSG Depo' : 'Mekanik Depo'}</span>
-          ${reqDepot ? ' <span class="tag amber">Depo Onayı Gerekli</span>' : ' <span class="tag green">Direkt Çıkış</span>'}
+          <div class="part-tags">
+            <span class="tag ${isIsg ? 'blue' : 'slate'}">${isIsg ? 'İSG Depo' : 'Mekanik'}</span>
+            ${reqDepot ? '<span class="tag amber">Depo Onayı Gerekli</span>' : '<span class="tag green">Direkt Çıkış</span>'}
+          </div>
           <h2 class="part-title">${esc(item.name)}</h2>
           <div class="part-meta"><span class="mono">${esc(item.code)}</span> · <span class="mono">${esc(item.id)}</span></div>
         </div>
         <div class="stock-box ${low ? 'low' : ''}">
-          <small>Mevcut</small>
+          <small>Stok</small>
           <strong class="num">${num(item.stock)}</strong>
           <span>${esc(item.unit)}</span>
         </div>
@@ -1005,20 +1226,11 @@ function renderPart() {
       </div>
 
       ${outOfStock ? `
-        <div class="callout red">
-          ${ic('alert','ic-sm')}
-          <div><b>Stok Tükendi</b>Bu parçada çıkış yapılabilecek mevcut stok bulunmuyor.</div>
-        </div>
+        <div class="callout red">${ic('alert','ic-sm')}<div><b>Stok Tükendi</b>Çıkış yapılabilecek mevcut stok yok.</div></div>
       ` : reqDepot ? `
-        <div class="callout amber">
-          ${ic('lock','ic-sm')}
-          <div><b>Depocu Onayı Gerekli</b>Bu parça depo onayı olmadan düşülemez. Devam ettiğinizde Depocu PIN’i ile anında onay verilebilir veya Onay Havuzuna gönderilebilir.</div>
-        </div>
+        <div class="callout amber">${ic('lock','ic-sm')}<div><b>Depocu Onayı Gerekli</b>Depocu PIN’i ile anında onaylanabilir veya Onay Havuzuna gönderilebilir.</div></div>
       ` : `
-        <div class="callout green">
-          ${ic('check','ic-sm')}
-          <div><b>Onay Gerektirmez — Direkt Düşer</b>Miktarı onayladığınız anda malzeme doğrudan stoktan düşülür.</div>
-        </div>
+        <div class="callout green">${ic('check','ic-sm')}<div><b>Onay Gerektirmez — Direkt Düşer</b>Onay beklemeden doğrudan stoktan düşülür.</div></div>
       `}
 
       <form id="partCheckoutForm">
@@ -1036,17 +1248,14 @@ function renderPart() {
           <span>Çıkış Miktarı (${esc(item.unit)})</span>
           <div class="qty-wrap">
             <button type="button" data-qty="-1" ${outOfStock ? 'disabled' : ''}>−</button>
-            <input id="qtyInput" name="qty" type="number" min="0.01" step="any" max="${item.stock}" value="${Math.min(1, item.stock || 1)}" required ${outOfStock ? 'disabled' : ''}>
+            <input id="qtyInput" name="qty" type="number" inputmode="decimal" min="0.01" step="any" max="${item.stock}" value="${Math.min(1, item.stock || 1)}" required ${outOfStock ? 'disabled' : ''}>
             <button type="button" data-qty="1" ${outOfStock ? 'disabled' : ''}>＋</button>
           </div>
         </label>
 
         <div class="btn-stack">
           <button class="btn ${reqDepot ? 'primary' : 'success'} wide" type="submit" ${outOfStock ? 'disabled' : ''}>
-            ${reqDepot
-              ? `${ic('lock','ic-sm')} Depocu Onayına Geç`
-              : `${ic('check','ic-sm')} Stoktan Direkt Düş`
-            }
+            ${reqDepot ? `${ic('lock','ic-sm')} Depocu Onayına Geç` : `${ic('check','ic-sm')} Stoktan Direkt Düş`}
           </button>
           <button class="btn ghost wide" type="button" data-action="reset-scan">Vazgeç ve Yeni QR Okut</button>
         </div>
@@ -1063,9 +1272,9 @@ function renderCabinet() {
     <div class="card-head">
       <div>
         <h2>İSG Dolabı · ISG-DOLAP</h2>
-        <p>Alacağınız KKD ekipmanını ve adedi seçin; doğrudan üzerinize düşer</p>
+        <p>Alacağınız KKD ekipmanını seçin; doğrudan düşer</p>
       </div>
-      <span class="tag blue">${isgItems.length} ekipman</span>
+      <span class="tag blue">${isgItems.length}</span>
     </div>
     <div class="card-body">
       ${isgItems.length ? `
@@ -1085,16 +1294,16 @@ function renderCabinet() {
           <span>Adet</span>
           <div class="qty-wrap">
             <button type="button" data-qty="-1">−</button>
-            <input id="qtyInput" name="qty" type="number" min="1" step="1" value="1" required>
+            <input id="qtyInput" name="qty" type="number" inputmode="numeric" min="1" step="1" value="1" required>
             <button type="button" data-qty="1">＋</button>
           </div>
         </label>
         <div class="btn-stack">
-          <button class="btn success wide" type="submit">${ic('check','ic-sm')} Üzerime Düş</button>
+          <button class="btn success wide" type="submit">${ic('check','ic-sm')} Üzerime Direkt Düş</button>
           <button class="btn ghost wide" type="button" data-action="reset-scan">Vazgeç</button>
         </div>
       </form>` : `
-      <div class="callout red">${ic('alert','ic-sm')}<div><b>İSG Ekipmanı Bulunamadı</b>Bu kullanıcı rolü için listelenecek İSG kartı yok.</div></div>
+      <div class="callout red">${ic('alert','ic-sm')}<div><b>İSG Ekipmanı Bulunamadı</b>Listelenecek İSG kartı yok.</div></div>
       <button class="btn ghost wide" type="button" data-action="reset-scan">Yeni QR Okut</button>`}
     </div>
   </section>`;
@@ -1116,29 +1325,28 @@ function renderApproval() {
         <h2>${title}</h2>
         <p>${esc(pc.message || 'Depocu onayı verilirse parça anında stoktan düşer')}</p>
       </div>
-      <span class="tag amber">Onay Bekliyor</span>
+      <span class="tag amber">Onay</span>
     </div>
     <div class="card-body">
       <div class="req-summary">
         <div>
           <b>${esc(item.name)}</b>
-          <small><span class="mono">${esc(item.code)}</span> · ${esc(pc.machine)} · Talep: ${esc(state.user.name)}</small>
+          <small><span class="mono">${esc(item.code)}</span> · ${esc(pc.machine)}</small>
         </div>
         <strong class="num">${num(pc.qty)} ${esc(item.unit)}</strong>
       </div>
 
       <div class="seg-tabs">
-        <button type="button" class="${state.approvalTab === 'pin' ? 'active' : ''}" data-ap-tab="pin">Depocu PIN ile Onayla</button>
+        <button type="button" class="${state.approvalTab === 'pin' ? 'active' : ''}" data-ap-tab="pin">Depocu PIN ile Onay</button>
         <button type="button" class="${state.approvalTab === 'pool' ? 'active' : ''}" data-ap-tab="pool">Onay Havuzuna Gönder</button>
       </div>
 
       ${state.approvalTab === 'pin' ? `
       <form id="depotApproveForm">
-        <label class="field" style="margin-bottom:8px">
-          <span>${pinLabel}</span>
-        </label>
-        <div class="pin-display">
-          <input id="depotPinInput" type="password" inputmode="numeric" maxlength="8" placeholder="••••" autocomplete="off">
+        <label class="field" style="margin-bottom:8px"><span>${pinLabel}</span></label>
+        <div class="pin-box" id="depotPinBox">
+          <input id="depotPinInput" type="${state.showPin ? 'text' : 'password'}" inputmode="none" readonly maxlength="8" placeholder="••••" autocomplete="off">
+          <button class="pin-eye" type="button" data-action="toggle-pin-eye" aria-label="PIN göster">${ic('eye','ic-sm')}</button>
         </div>
         <div class="keypad" data-keypad="depotPinInput">
           ${['1','2','3','4','5','6','7','8','9'].map(d => `<button type="button" data-key="${d}">${d}</button>`).join('')}
@@ -1147,29 +1355,25 @@ function renderApproval() {
           <button type="button" class="fn" data-key="DEL">Sil</button>
         </div>
         <div class="btn-stack">
-          <button class="btn success wide" type="submit">${ic('check','ic-sm')} Depocu Onayla ve Stoktan Düş</button>
-          <button class="btn danger-outline wide" type="button" data-action="reject-local">${ic('x','ic-sm')} Onaylama / Çıkışı İptal Et</button>
+          <button class="btn success wide" type="submit">${ic('check','ic-sm')} Depocu Onayla ve Düş</button>
+          <button class="btn danger-outline wide" type="button" data-action="reject-local">${ic('x','ic-sm')} Onaylama / İptal Et</button>
         </div>
         ${state.mode === 'demo' ? `
         <div class="demo-hint">
-          <span>Demo Depocu PIN:</span>
+          <span>Demo Depocu:</span>
           <div class="demo-chips">
-            <button class="demo-chip mono" type="button" data-fill-depot="2222">2222 (Mekanik)</button>
+            <button class="demo-chip mono" type="button" data-fill-depot="2222">2222 (Mek)</button>
             <button class="demo-chip mono" type="button" data-fill-depot="3333">3333 (İSG)</button>
-            <button class="demo-chip mono" type="button" data-fill-depot="4444">4444 (Yönetici)</button>
+            <button class="demo-chip mono" type="button" data-fill-depot="4444">4444 (Şef)</button>
           </div>
         </div>` : ''}
       </form>
       ` : `
-      <div class="callout amber">
-        ${ic('clock','ic-sm')}
-        <div><b>Onay Havuzuna Aktar</b>Talep depocunun ana ekranındaki "Onay Bekleyenler" listesine iletilir. Depocu onay verene kadar stoktan düşülmez.</div>
-      </div>
+      <div class="callout amber">${ic('clock','ic-sm')}<div><b>Onay Havuzuna Gönder</b>Talep depocunun ekranındaki Onay Bekleyenler listesine düşer. Onaylanana kadar stoktan düşülmez.</div></div>
       <div class="btn-stack">
-        <button class="btn primary wide" type="button" data-action="send-pool">${ic('clock','ic-sm')} Depocu Onay Havuzuna Gönder</button>
+        <button class="btn primary wide" type="button" data-action="send-pool">${ic('clock','ic-sm')} Onay Havuzuna Gönder</button>
         <button class="btn ghost wide" type="button" data-action="back-to-part">Geri Dön</button>
-      </div>
-      `}
+      </div>`}
     </div>
   </section>`;
 }
@@ -1188,16 +1392,16 @@ function renderReceipt() {
     </div>
     <div class="card-body">
       <div class="receipt-rows">
-        ${r.refId ? `<div class="receipt-row"><span>İşlem / Talep No</span><b class="mono">${esc(r.refId)}</b></div>` : ''}
+        ${r.refId ? `<div class="receipt-row"><span>İşlem No</span><b class="mono">${esc(r.refId)}</b></div>` : ''}
         <div class="receipt-row"><span>Malzeme</span><b>${esc(r.itemName)} <span class="mono" style="color:var(--muted);font-weight:600">(${esc(r.itemCode)})</span></b></div>
         <div class="receipt-row"><span>Miktar</span><b class="num">${num(r.qty)} ${esc(r.unit)}</b></div>
-        ${r.remaining !== undefined ? `<div class="receipt-row"><span>Kalan Güncel Stok</span><b class="num" style="font-size:17px;color:${r.status === 'deducted' ? 'var(--green)' : 'var(--ink)'}">${num(r.remaining)} ${esc(r.unit)}</b></div>` : ''}
-        <div class="receipt-row"><span>Makine / Bölüm</span><b>${esc(r.machine)}</b></div>
+        ${r.remaining !== undefined ? `<div class="receipt-row"><span>Kalan Stok</span><b class="num" style="font-size:17px;color:${r.status === 'deducted' ? 'var(--green)' : 'var(--ink)'}">${num(r.remaining)} ${esc(r.unit)}</b></div>` : ''}
+        <div class="receipt-row"><span>Makine</span><b>${esc(r.machine)}</b></div>
         <div class="receipt-row"><span>Operatör</span><b>${esc(r.operator)}</b></div>
-        <div class="receipt-row"><span>Onay Durumu</span><b>${esc(r.approvalLabel)}</b></div>
-        <div class="receipt-row"><span>Tarih / Saat</span><b class="mono">${esc(r.time)}</b></div>
+        <div class="receipt-row"><span>Onay</span><b>${esc(r.approvalLabel)}</b></div>
+        <div class="receipt-row"><span>Tarih</span><b class="mono">${esc(r.time)}</b></div>
       </div>
-      <button class="btn primary wide" type="button" data-action="reset-scan">${ic('scan','ic-sm')} Yeni QR Kodu Okut</button>
+      <button class="btn primary wide" type="button" data-action="reset-scan">${ic('scan','ic-sm')} Yeni QR Okut</button>
     </div>
   </section>`;
 }
@@ -1207,11 +1411,8 @@ function renderNotFound() {
   <section class="card">
     ${renderOpStrip()}
     <div class="card-body">
-      <div class="callout red">
-        ${ic('alert','ic-sm')}
-        <div><b>Parça Bulunamadı</b><span class="mono">${esc(state.scannedQr)}</span> kodu aktif stok kartlarınızla eşleşmedi.</div>
-      </div>
-      <button class="btn primary wide" type="button" data-action="reset-scan">${ic('scan','ic-sm')} Yeni QR Kodu Okut</button>
+      <div class="callout red">${ic('alert','ic-sm')}<div><b>Parça Bulunamadı</b><span class="mono">${esc(state.scannedQr)}</span> kodu aktif stok kartlarıyla eşleşmedi.</div></div>
+      <button class="btn primary wide" type="button" data-action="reset-scan">${ic('scan','ic-sm')} Yeni QR Okut</button>
     </div>
   </section>`;
 }
@@ -1219,7 +1420,7 @@ function renderNotFound() {
 // Actions
 async function submitOpPin(pinRaw) {
   const pin = String(pinRaw || '').replace(/\s+/g, '').trim();
-  if (!pin) return toast('Lütfen operatör PIN’inizi girin.', 'err');
+  if (!pin) return toast('Lütfen operatör PIN’inizi tuşlayın.', 'err');
   setBusy(true);
   try {
     const auth = await api('auth', {pin});
@@ -1228,11 +1429,13 @@ async function submitOpPin(pinRaw) {
     const boot = await api('bootstrap');
     state.stock = boot.stock || [];
     state.machines = boot.lists?.machines || DEMO.machines;
+    vibrate(35);
     resolveScannedItem();
   } catch (err) {
+    vibrate([40, 40, 40]);
     toast(err.message, 'err');
     const inp = $('#opPinInput');
-    if (inp) { inp.value = ''; inp.focus(); }
+    if (inp) { inp.value = ''; $('#opPinBox')?.classList.remove('filled'); }
   } finally {
     setBusy(false);
   }
@@ -1249,15 +1452,15 @@ async function initiatePartCheckout(item, qty, machine) {
     state.pendingCheckout = {
       item, qty, machine,
       requiresManagerFallback: false,
-      message: 'Bu parça Depo Onayı Gerekli işaretli. Depocu PIN ile anında onaylayabilir veya havuza gönderebilirsiniz.'
+      message: 'Depocu PIN ile anında onay verilebilir veya Onay Havuzuna gönderilebilir.'
     };
     state.approvalTab = 'pin';
+    state.showPin = false;
     state.step = 'approval';
     render();
     return;
   }
 
-  // Depo onayı gerekmiyorsa direkt stoktan düş
   await executeCheckout({item, qty, machine, extra: {}});
 }
 
@@ -1275,7 +1478,6 @@ async function executeCheckout({item, qty, machine, extra = {}}) {
     };
     const r = await api('checkout', payload);
 
-    // Server indicates depot or manager approval is required
     if (r.depotApprovalRequired || r.approvalRequired) {
       state.pendingCheckout = {
         item, qty, machine,
@@ -1283,6 +1485,7 @@ async function executeCheckout({item, qty, machine, extra = {}}) {
         message: r.message
       };
       state.approvalTab = 'pin';
+      state.showPin = false;
       state.step = 'approval';
       render();
       return;
@@ -1310,7 +1513,7 @@ async function executeCheckout({item, qty, machine, extra = {}}) {
         ? 'Depocu Onaylı (' + r.approver + ')'
         : isUserDepotApprover(state.user, item.depot) && needsDepotApproval(item)
           ? 'Yetkili Onaylı (' + opName + ')'
-          : 'Direkt Çıkış (Onay Gerektirmez)';
+          : 'Direkt Çıkış';
       state.receipt = {
         status: 'deducted',
         title: 'Stoktan Düşüldü',
@@ -1328,7 +1531,7 @@ async function executeCheckout({item, qty, machine, extra = {}}) {
       };
     }
 
-    // Auto-clear operator session for warehouse terminal security
+    vibrate(60);
     if (r.autoLogout !== false) {
       state.user = null;
       state.session = '';
@@ -1337,45 +1540,70 @@ async function executeCheckout({item, qty, machine, extra = {}}) {
     state.step = 'receipt';
     render();
   } catch (err) {
+    vibrate([40, 40, 40]);
     toast(err.message, 'err');
   } finally {
     setBusy(false);
   }
 }
 
-// Event Delegation
+function updatePinInput(inp, nextVal) {
+  if (!inp) return;
+  inp.value = nextVal.slice(0, 8);
+  inp.closest('.pin-box')?.classList.toggle('filled', inp.value.length > 0);
+}
+
+// Events
+document.addEventListener('change', e => {
+  if (e.target.id === 'qrPhotoInput' && e.target.files?.[0]) {
+    decodeImageFile(e.target.files[0]);
+    e.target.value = '';
+  }
+});
+
+// Physical keyboard support for PIN screens without opening mobile soft keyboard
+document.addEventListener('keydown', e => {
+  if (!$('#connModal').hidden) return;
+  const inp = state.step === 'pin' ? $('#opPinInput') : (state.step === 'approval' && state.approvalTab === 'pin' ? $('#depotPinInput') : null);
+  if (!inp) return;
+  if (/^\d$/.test(e.key)) {
+    e.preventDefault();
+    updatePinInput(inp, inp.value + e.key);
+  } else if (e.key === 'Backspace') {
+    e.preventDefault();
+    updatePinInput(inp, inp.value.slice(0, -1));
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    inp.closest('form')?.requestSubmit();
+  }
+});
+
 document.addEventListener('click', async e => {
   const qrBtn = e.target.closest('[data-qr]');
-  if (qrBtn) return selectQrCode(qrBtn.dataset.qr);
+  if (qrBtn) { vibrate(25); return selectQrCode(qrBtn.dataset.qr); }
 
   const keyBtn = e.target.closest('[data-key]');
   if (keyBtn) {
+    vibrate(12);
     const pad = keyBtn.closest('[data-keypad]');
     const inp = $('#' + pad.dataset.keypad);
     if (!inp) return;
     const k = keyBtn.dataset.key;
-    if (k === 'CLR') inp.value = '';
-    else if (k === 'DEL') inp.value = inp.value.slice(0, -1);
-    else if (inp.value.length < 8) inp.value += k;
+    if (k === 'CLR') updatePinInput(inp, '');
+    else if (k === 'DEL') updatePinInput(inp, inp.value.slice(0, -1));
+    else updatePinInput(inp, inp.value + k);
     return;
   }
 
   const fillOp = e.target.closest('[data-fill-op]');
-  if (fillOp) {
-    const inp = $('#opPinInput');
-    if (inp) inp.value = fillOp.dataset.fillOp;
-    return;
-  }
+  if (fillOp) { vibrate(15); return updatePinInput($('#opPinInput'), fillOp.dataset.fillOp); }
 
   const fillDepot = e.target.closest('[data-fill-depot]');
-  if (fillDepot) {
-    const inp = $('#depotPinInput');
-    if (inp) inp.value = fillDepot.dataset.fillDepot;
-    return;
-  }
+  if (fillDepot) { vibrate(15); return updatePinInput($('#depotPinInput'), fillDepot.dataset.fillDepot); }
 
   const qtyBtn = e.target.closest('[data-qty]');
   if (qtyBtn) {
+    vibrate(12);
     const inp = $('#qtyInput');
     if (!inp || inp.disabled) return;
     const max = Number(inp.max) || 999999;
@@ -1395,10 +1623,16 @@ document.addEventListener('click', async e => {
   const act = e.target.closest('[data-action]')?.dataset.action;
   if (!act) return;
 
-  if (act === 'start-cam') return startCamera();
-  if (act === 'stop-cam') { stopCamera(); return render(); }
+  if (act === 'start-cam') return startCamera(false);
+  if (act === 'toggle-torch') return toggleTorch();
   if (act === 'reset-scan') return resetToScan();
   if (act === 'back-to-part') { state.step = 'part'; return render(); }
+  if (act === 'toggle-pin-eye') {
+    state.showPin = !state.showPin;
+    const inp = $('#opPinInput') || $('#depotPinInput');
+    if (inp) inp.type = state.showPin ? 'text' : 'password';
+    return;
+  }
 
   if (act === 'reject-local') {
     const pc = state.pendingCheckout;
@@ -1414,7 +1648,7 @@ document.addEventListener('click', async e => {
       remaining: pc.item.stock,
       machine: pc.machine,
       operator: state.user?.name || '',
-      approvalLabel: 'Depocu Tarafından İptal Edildi',
+      approvalLabel: 'Depocu İptal Etti',
       time: nowStr()
     };
     state.user = null;
@@ -1437,25 +1671,15 @@ document.addEventListener('click', async e => {
     $('#connModal').hidden = false;
     return;
   }
-  if (act === 'close-conn') {
-    $('#connModal').hidden = true;
-    return;
-  }
+  if (act === 'close-conn') { $('#connModal').hidden = true; return; }
   if (act === 'test-conn') {
     const oldMode = state.mode, oldUrl = state.directUrl;
     state.mode = $('#connMode').value;
     state.directUrl = $('#connUrl').value.trim();
     setBusy(true);
-    try {
-      await api('health');
-      toast('Bağlantı başarılı.');
-    } catch (err) {
-      toast(err.message, 'err');
-    } finally {
-      state.mode = oldMode;
-      state.directUrl = oldUrl;
-      setBusy(false);
-    }
+    try { await api('health'); toast('Bağlantı başarılı.'); }
+    catch (err) { toast(err.message, 'err'); }
+    finally { state.mode = oldMode; state.directUrl = oldUrl; setBusy(false); }
     return;
   }
   if (act === 'save-conn') {
@@ -1477,29 +1701,21 @@ document.addEventListener('click', async e => {
 document.addEventListener('submit', async e => {
   e.preventDefault();
   const id = e.target.id;
-
-  if (id === 'manualQrForm') {
-    return selectQrCode($('#manualQrInput')?.value);
-  }
-  if (id === 'opPinForm') {
-    return submitOpPin($('#opPinInput')?.value);
-  }
+  if (id === 'opPinForm') return submitOpPin($('#opPinInput')?.value);
   if (id === 'partCheckoutForm') {
     const fd = new FormData(e.target);
     return initiatePartCheckout(state.item, Number(fd.get('qty')), String(fd.get('machine') || '').trim());
   }
   if (id === 'cabinetForm') {
     const fd = new FormData(e.target);
-    const itemId = fd.get('cabItem');
-    const qty = Number(fd.get('qty'));
-    const item = state.stock.find(x => x.id === itemId);
+    const item = state.stock.find(x => x.id === fd.get('cabItem'));
     if (!item) return toast('Bir İSG ekipmanı seçin.', 'err');
-    return initiatePartCheckout(item, qty, 'PERSONEL KKD');
+    return initiatePartCheckout(item, Number(fd.get('qty')), 'PERSONEL KKD');
   }
   if (id === 'depotApproveForm') {
     const pc = state.pendingCheckout;
     const pin = String($('#depotPinInput')?.value || '').replace(/\s+/g, '').trim();
-    if (!pin) return toast('Depocu PIN’ini girin.', 'err');
+    if (!pin) return toast('Depocu PIN’ini tuşlayın.', 'err');
     const extra = pc.requiresManagerFallback ? {managerPin: pin} : {depotApproverPin: pin};
     return executeCheckout({item: pc.item, qty: pc.qty, machine: pc.machine, extra});
   }
@@ -1509,10 +1725,12 @@ $('#connModal').addEventListener('click', e => {
   if (e.target === $('#connModal')) $('#connModal').hidden = true;
 });
 
-// Boot: If opened with ?qr=CODE, go straight to Step 2 (OP PIN)!
-if (state.scannedQr) {
-  state.step = 'pin';
-}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) stopCamera();
+  else if (state.step === 'scan' && !state.camActive) startCamera(true);
+});
+
+if (state.scannedQr) state.step = 'pin';
 render();
 })();
 </script>
