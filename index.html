@@ -592,14 +592,15 @@ details p{margin-top:8px;font-size:13.5px}
 </style>
 <script type="text/plain" id="gasCode">/*
  * MEKANİK + İSG DEPO V8.7 — Google Apps Script backend
- * Script Properties:
- *   DEPOT_SPREADSHEET_ID : MEKANİK DEPO-2027 spreadsheet id
- *   FAULT_SPREADSHEET_ID : Arıza Formu spreadsheet id
- *   PROXY_TOKEN          : long random secret, same as GAS_PROXY_TOKEN on server
- *   SESSION_SECRET       : long random secret for signed sessions
- *   ALLOW_DIRECT         : true only when the downloaded standalone HTML must call GAS directly
- *
- * Deploy as Web app: Execute as me; access limited as required by your Workspace.
+ * V8.7-ONAY2:
+ *   - ONAY_HAVUZU gerçek sütun eşleştirmesi (TALEP NO | TARİH | OPERATÖR | ID | MALZEME | MAKİNE | ADET | DURUM | ONAYLAYAN | ONAY TARİHİ) — yeni sütun açılmaz.
+ *   - İSG Depo Sorumlusu (ISG_ADMIN) kendi deposundaki onay taleplerini görebilir ve onaylayıp/reddedebilir.
+ *   - Bağımsız Depo QR Terminali desteği (anında Depocu PIN onayı, onay havuzu ve onaysız parçada direkt düşüm).
+ * V8.7: DEPO ONAYI GEREKLİ akışı.
+ * V8.6: PLANLI_BAKIM_RECETE başlıkları (MAKİNE | PERİYOT | MALZEME ID | PARÇA KODU | MALZEME | STANDART ADET).
+ * V8.5: Hareketler tarih düzeltmesi.  V8.4: Mevcut sayfalara yeni sütun eklenmez.
+ * V8.3/V8.2: Başlık eşleştirme ve formüller.  V8.1: Doğrudan bağlantı varsayılan AÇIK (kapatmak: ALLOW_DIRECT=false).
+ * Dağıtım: Dağıt → Dağıtımları yönet → Düzenle (kalem) → Sürüm: Yeni sürüm → Dağıt
  */
 
 const CFG = Object.freeze({
@@ -609,113 +610,89 @@ const CFG = Object.freeze({
     recipes: 'PLANLI_BAKIM_RECETE', log: 'LOG', faults: 'Açık Arizalar'
   },
   spreadsheetId: '1AtCrVmav8bIQno5aeP-sFtS3L90KwdipMpZtFeP1KT4',
+  apiVersion: 'V8.7-ONAY2',
   sessionHours: 8,
   roles: ['OP', 'MEK_ADMIN', 'ISG_ADMIN', 'YONETICI'],
   periods: ['AYLIK', '3 AYLIK', '6 AYLIK', 'YILLIK']
 });
 
+/* Yalnızca sayfa HİÇ yoksa oluştururken kullanılır. Mevcut sayfaya sütun eklenmez. */
 const HEADERS = Object.freeze({
-  stock: ['ID','DEPO','MALZEME TİPİ','PARÇA KODU','MALZEME ADI','KATEGORİ','FİRMA','BİRİM','MALZEME DEPO ŞEKLİ','RAF NO','MAKİNE PARÇAY','MİN STOK','GİREN','ÇIKAN','ANLIK STOK','DURUM','AKTİF/PASİF','OLUŞTURAN','TARİH','BİRİM FİYAT','TOPLAM FİYAT'],
-  incoming: ['ID','STOK ID','PARÇA KODU','MALZEME ADI','DEPO','MİKTAR','BİRİM','İŞLEM TÜRÜ','YAPAN','TARİH','AÇIKLAMA','BİRİM FİYAT','TOPLAM FİYAT'],
-  outgoing: ['ID','STOK ID','ÇIKIŞ YAPAN','KULLANILACAK MAKİNE/BÖLÜM','PARÇA KODU','MALZEME ADI','KATEGORİ','DEPO','BİRİM','ÇIKIŞ AD','KULLANIM TARİHİ','KAYNAK','ONAYLAYAN'],
-  approvals: ['ID','TALEP TARİHİ','TALEP EDEN','STOK ID','PARÇA KODU','MALZEME ADI','MAKİNE','MİKTAR','BİRİM','DEPO','NEDEN','DURUM','KARAR VEREN','KARAR TARİHİ'],
-  recipes: ['ID','MAKİNE','PERİYOT','STOK ID','PARÇA KODU','MALZEME ADI','MİKTAR','BİRİM','RAF NO','AKTİF/PASİF','GÜNCELLEYEN','GÜNCELLEME TARİHİ'],
+  stock: ['ID','MALZEME TİPİ','PARÇA KODU','MALZEME ADI','MALZEME TÜRÜ','FİRMA','BİRİM','MALZEME DEPO ŞEKLİ','RAF','MAKİNE','MİN STOK','GİREN','ÇIKAN','ANLIK STOK','DURUM','AKTİF/PASİF','OLUŞTURAN','TARİH','BİRİM FİYAT','TOPLAM FİYAT'],
+  incoming: ['KAYIT NO','TARİH','ID','PARÇA KODU','MALZEME','ADET','BİRİM','YAPAN','İŞLEM TÜRÜ','ÖNCEKİ STOK','YENİ STOK','NOT','BİRİM FİYAT','TOPLAM FİYAT'],
+  outgoing: ['KAYIT NO','TARİH','ID','PARÇA KODU','MALZEME','OPERATÖR','MAKİNE','ADET','BİRİM','ÇIKIŞ TÜRÜ','ONAY','ONAYLAYAN','TALEP NO'],
+  approvals: ['TALEP NO','TARİH','OPERATÖR','ID','MALZEME','MAKİNE','ADET','DURUM','ONAYLAYAN','ONAY TARİHİ'],
+  recipes: ['MAKİNE','PERİYOT','MALZEME ID','PARÇA KODU','MALZEME','STANDART ADET'],
   log: ['TARİH','KULLANICI','ROL','İŞLEM','KAYNAK ID','DETAY']
 });
 
+/* ===================== GİRİŞ NOKTALARI ===================== */
 function doGet(e) {
   const action = String((e && e.parameter && e.parameter.action) || 'health');
   if (action !== 'health') return json_({ok:false, error:'GET yalnız sağlık kontrolü içindir.'});
-  return json_({ok:true, service:'MEKANIK_ISG_DEPO_V8_7', time:new Date().toISOString()});
+  return json_({ok:true, data:{service:'MEKANIK_ISG_DEPO_V8.7', apiVersion:CFG.apiVersion, time:new Date().toISOString()}});
 }
-
 function doPost(e) {
   try {
     const body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     verifyTransport_(body);
-    const result = route_(body.action, body.payload || {}, body.session || '');
-    return json_({ok:true, data:result});
+    return json_({ok:true, data:route_(body.action, body.payload || {}, body.session || '')});
   } catch (err) {
-    return json_({ok:false, error:String(err && err.message || err)});
+    return json_({ok:false, error:String((err && err.message) || err)});
   }
 }
-
 function route_(action, p, token) {
-  if (action === 'health') return {service:'MEKANIK_ISG_DEPO_V8_7', time:new Date().toISOString()};
+  if (action === 'health') return {service:'MEKANIK_ISG_DEPO_V8.7', apiVersion:CFG.apiVersion, time:new Date().toISOString()};
   if (action === 'auth') return authenticate_(p.pin);
-  // Turkish endpoint aliases kept for the existing integration contract.
   if (action === 'onayHavuzu') action = p.operation === 'create' ? 'approvalCreate' : p.operation === 'decide' ? 'approvalDecide' : 'approvalList';
   if (action === 'planliBakimRecete') action = p.operation === 'save' ? 'recipeSave' : p.operation === 'bulkCheckout' ? 'recipeBulkCheckout' : 'recipeList';
   if (action === 'kkdAnaliz') action = 'ppeAnalysis';
   if (action === 'hareketAnaliz') action = 'movementAnalysis';
   const user = verifySession_(token);
   const read = {
-    bootstrap: () => bootstrap_(user),
-    stockList: () => filteredStock_(user),
-    approvalList: () => approvalList_(user),
-    recipeList: () => recipeList_(user, p),
-    ppeAnalysis: () => ppeAnalysis_(user, p),
-    movementAnalysis: () => movementAnalysis_(user, p)
+    bootstrap: () => bootstrap_(user), stockList: () => filteredStock_(user),
+    approvalList: () => approvalList_(user), recipeList: () => recipeList_(user, p),
+    ppeAnalysis: () => ppeAnalysis_(user, p), movementAnalysis: () => movementAnalysis_(user, p)
   };
   if (read[action]) return read[action]();
   const write = {
-    checkout: () => checkout_(user, p),
-    stockIn: () => stockIn_(user, p),
-    stockCount: () => stockCount_(user, p),
-    itemCreate: () => itemCreate_(user, p),
-    itemUpdate: () => itemUpdate_(user, p),
-    approvalCreate: () => approvalCreate_(user, p),
-    approvalDecide: () => approvalDecide_(user, p),
-    recipeSave: () => recipeSave_(user, p),
-    recipeBulkCheckout: () => recipeBulkCheckout_(user, p)
+    checkout: () => checkout_(user, p), stockIn: () => stockIn_(user, p), stockCount: () => stockCount_(user, p),
+    itemCreate: () => itemCreate_(user, p), itemUpdate: () => itemUpdate_(user, p),
+    approvalCreate: () => approvalCreate_(user, p), approvalDecide: () => approvalDecide_(user, p),
+    recipeSave: () => recipeSave_(user, p), recipeBulkCheckout: () => recipeBulkCheckout_(user, p)
   };
   if (!write[action]) throw new Error('Bilinmeyen işlem: ' + action);
-  const lock = LockService.getScriptLock();
-  lock.waitLock(20000);
+  const lock = LockService.getScriptLock(); lock.waitLock(20000);
   try { return write[action](); } finally { lock.releaseLock(); }
 }
-
+/* Doğrudan erişim varsayılan AÇIK. Sadece ALLOW_DIRECT=false ise kapanır. */
 function verifyTransport_(body) {
   const props = PropertiesService.getScriptProperties();
-  const expected = props.getProperty('PROXY_TOKEN') || '';
-  const direct = String(props.getProperty('ALLOW_DIRECT') || '').toLowerCase() === 'true';
-  if (expected && body._proxyToken === expected) return;
-  if (direct) return;
-  throw new Error('Güvenli /api/gas aracısı dışında doğrudan erişim kapalı.');
+  const expected = String(props.getProperty('PROXY_TOKEN') || '').trim();
+  const directProp = String(props.getProperty('ALLOW_DIRECT') || '').trim().toLowerCase();
+  if (expected && body && body._proxyToken === expected) return;
+  if (directProp !== 'false') return;
+  throw new Error('Doğrudan erişim kapalı (ALLOW_DIRECT=false).');
 }
 
+/* ===================== E-TABLO YARDIMCILARI ===================== */
 function depotBook_() {
-  const id = PropertiesService.getScriptProperties().getProperty('DEPOT_SPREADSHEET_ID') || CFG.spreadsheetId;
+  const id = String(PropertiesService.getScriptProperties().getProperty('DEPOT_SPREADSHEET_ID') || CFG.spreadsheetId).trim();
   return id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActive();
 }
 function faultBook_() {
   const id = PropertiesService.getScriptProperties().getProperty('FAULT_SPREADSHEET_ID');
-  if (!id) throw new Error('FAULT_SPREADSHEET_ID tanımlı değil.');
-  return SpreadsheetApp.openById(id);
+  return id ? SpreadsheetApp.openById(id) : null;
 }
 function sh_(name) {
   const s = depotBook_().getSheetByName(name);
   if (!s) throw new Error(name + ' sayfası bulunamadı.');
   return s;
 }
-function ensureSheet_(name, headers) {
+function ensureHeaders_(name, headers) {
   const ss = depotBook_(); let s = ss.getSheetByName(name);
   if (!s) s = ss.insertSheet(name);
-  if (!s.getLastRow()) s.getRange(1,1,1,headers.length).setValues([headers]).setFontWeight('bold').setBackground('#f97316').setFontColor('#fff');
-  return s;
-}
-function ensureHeaders_(name, headers) {
-  const s = ensureSheet_(name, headers);
-  const last = Math.max(1, s.getLastColumn());
-  const existing = s.getRange(1,1,1,last).getDisplayValues()[0].map(norm_);
-  let col = last;
-  headers.forEach(h => {
-    if (existing.indexOf(norm_(h)) < 0) {
-      col++;
-      s.getRange(1,col).setValue(h).setFontWeight('bold').setBackground('#f97316').setFontColor('#fff');
-      existing.push(norm_(h));
-    }
-  });
+  if (!s.getLastRow() || !s.getLastColumn()) s.getRange(1,1,1,headers.length).setValues([headers]).setFontWeight('bold').setBackground('#1f3a5f').setFontColor('#fff');
   return s;
 }
 function values_(name) {
@@ -724,371 +701,636 @@ function values_(name) {
 }
 function objects_(name) {
   const v = values_(name); if (v.length < 2) return [];
-  const h = v[0].map(norm_);
-  return v.slice(1).filter(r => r.some(Boolean)).map((r,i) => {
-    const o = {_row:i+2}; h.forEach((k,j) => o[k] = r[j]); return o;
+  const h = v[0].map(norm_), out = [];
+  v.slice(1).forEach((r,i) => {
+    if (!r.some(Boolean)) return;
+    const o = {_row:i + 2};
+    h.forEach((k,j) => { if (k && o[k] === undefined) o[k] = r[j]; });
+    out.push(o);
   });
+  return out;
 }
 function append_(name, headers, obj) {
   const s = ensureHeaders_(name, headers);
-  const actual = s.getRange(1,1,1,s.getLastColumn()).getDisplayValues()[0];
-  const row = actual.map(h => obj[norm_(h)] === undefined ? '' : obj[norm_(h)]);
-  s.appendRow(row); return s.getLastRow();
+  const h = s.getRange(1,1,1,s.getLastColumn()).getDisplayValues()[0];
+  const row = h.map(x => obj[norm_(x)] === undefined ? '' : obj[norm_(x)]);
+  const r = firstEmptyRow_(s);
+  s.getRange(r, 1, 1, row.length).setValues([row]);
+  return r;
 }
-function mirrorLegacy_(name, obj) {
-  const s = depotBook_().getSheetByName(name); if (!s || !s.getLastColumn()) return;
-  const headers = s.getRange(1,1,1,s.getLastColumn()).getDisplayValues()[0];
-  const row = headers.map(h => obj[norm_(h)] === undefined ? '' : obj[norm_(h)]);
-  s.appendRow(row);
+function firstEmptyRow_(s) {
+  const last = Math.max(s.getLastRow(), 1);
+  if (last < 2) return 2;
+  const v = s.getRange(2, 1, last - 1, Math.min(s.getLastColumn(), 10)).getDisplayValues();
+  for (let i = v.length - 1; i >= 0; i--) { if (v[i].some(Boolean)) return i + 3; }
+  return 2;
+}
+function nextNo_(name) {
+  const c = headerCol_(name, ['KAYIT NO']); if (!c) return '';
+  const s = sh_(name); if (s.getLastRow() < 2) return 1;
+  const max = s.getRange(2, c, s.getLastRow() - 1, 1).getValues().reduce((m, r) => Math.max(m, Number(r[0]) || 0), 0);
+  return max + 1;
 }
 function norm_(s) {
   return String(s == null ? '' : s).trim().toLocaleUpperCase('tr-TR')
     .replace(/İ/g,'I').replace(/Ş/g,'S').replace(/Ğ/g,'G').replace(/Ü/g,'U').replace(/Ö/g,'O').replace(/Ç/g,'C')
     .replace(/[^A-Z0-9]+/g,'_').replace(/^_|_$/g,'');
 }
-function n_(v) { const x = Number(String(v || 0).replace(',','.')); return isFinite(x) ? x : 0; }
+function n_(v) { const x = Number(String(v == null ? 0 : v).replace(/\./g,'').replace(',','.')); return isFinite(x) ? x : 0; }
+function s_(v) { return v == null ? '' : String(v); }
 function uid_(prefix) { return prefix + '-' + Utilities.getUuid().slice(0,8).toUpperCase(); }
 function now_() { return Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Europe/Istanbul', 'yyyy-MM-dd HH:mm:ss'); }
 function json_(obj) { return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON); }
+function colLetter_(n) { let s = ''; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; }
+function headerCol_(sheetName, names) {
+  const s = depotBook_().getSheetByName(sheetName); if (!s || !s.getLastColumn()) return 0;
+  const h = s.getRange(1,1,1,s.getLastColumn()).getDisplayValues()[0].map(norm_);
+  for (const n of names) { const i = h.indexOf(norm_(n)); if (i >= 0) return i + 1; }
+  return 0;
+}
 
+/* ===================== TARİH ===================== */
+function parseDate_(v) {
+  if (v instanceof Date) return isNaN(v) ? new Date(0) : v;
+  const t = String(v || '').trim(); if (!t) return new Date(0);
+  let m = t.match(/^(\d{1,2})[.\/](\d{1,2})[.\/](\d{4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+  if (m) return new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0));
+  m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0));
+  const d = new Date(t); return isNaN(d) ? new Date(0) : d;
+}
+function iso_(v) {
+  const d = parseDate_(v); if (!d.getTime()) return '';
+  return Utilities.formatDate(d, Session.getScriptTimeZone() || 'Europe/Istanbul', "yyyy-MM-dd'T'HH:mm:ss");
+}
+
+/* ===================== KULLANICI / OTURUM ===================== */
 function role_(v) {
   const x = norm_(v);
-  if (x === 'YONETICI' || x === 'ADMIN' || x.indexOf('YONET') >= 0 || x.indexOf('SEF') >= 0 || x.indexOf('TAM_YETKI') >= 0) return 'YONETICI';
-  if (x === 'MEK_ADMIN' || x.indexOf('MEKANIK') >= 0 || x.indexOf('DEPOCU') >= 0) return 'MEK_ADMIN';
+  if (x === 'OP' || x.indexOf('OPERAT') >= 0 || x.indexOf('OPARAT') >= 0) return 'OP';
+  if (x === 'MEK_ADMIN' || x.indexOf('MEKANIK') >= 0) return 'MEK_ADMIN';
   if (x === 'ISG_ADMIN' || x.indexOf('ISG') >= 0) return 'ISG_ADMIN';
-  if (x === 'OP' || x.indexOf('OPERAT') >= 0 || x.indexOf('OPARAT') >= 0 || x.indexOf('BAKIM') >= 0) return 'OP';
+  if (x === 'YONETICI' || x === 'ADMIN' || x.indexOf('YONETIC') >= 0 || x.indexOf('SEF') >= 0) return 'YONETICI';
   return '';
 }
 function users_() {
   const v = values_(CFG.sheets.data); if (v.length < 2) return [];
   const h = v[0].map(norm_);
-  const ix = (...names) => { for (const name of names) { const i=h.indexOf(norm_(name)); if(i>=0)return i; } return -1; };
-  let nameI=ix('BAKIM OPERATÖR','BAKIM OPARATÖR','PERSONEL','AD SOYAD'), pinI=ix('ŞİFRE','PIN','ŞİFRE / PIN','GİRİŞ PIN','PAROLA'), roleI=ix('YETKİ','ROL'), activeI=ix('AKTİF/PASİF','DURUM');
-  if (nameI < 0 || pinI < 0 || roleI < 0) {
-    // Backward-compatible positional layouts: J:L or K:M.
-    nameI = nameI < 0 ? (v[0].length >= 12 ? 9 : 10) : nameI;
-    pinI = pinI < 0 ? nameI + 1 : pinI; roleI = roleI < 0 ? nameI + 2 : roleI;
-  }
-  return v.slice(1).map((r,i)=>({row:i+2,name:String(r[nameI]||'').trim(),pin:String(r[pinI]||'').replace(/\s+/g,'').trim(),role:role_(r[roleI]),active:activeI<0?true:!/(PASIF|HAYIR|^0$|^FALSE$)/.test(norm_(r[activeI]))})).filter(x=>x.name&&x.pin&&x.role&&x.active);
+  const ix = (...names) => { for (const name of names) { const i = h.indexOf(norm_(name)); if (i >= 0) return i; } return -1; };
+  let nameI = ix('BAKIM OPERATÖR','BAKIM OPARATÖR','PERSONEL','AD SOYAD');
+  let pinI = ix('ŞİFRE','SIFRE','PIN');
+  let roleI = ix('YETKİ','YETKI','ROL');
+  const activeI = ix('AKTİF/PASİF','DURUM');
+  if (nameI < 0) nameI = 9; if (pinI < 0) pinI = nameI + 1; if (roleI < 0) roleI = nameI + 2;
+  return v.slice(1).map((r,i) => ({
+    row:i + 2, name:String(r[nameI] || '').trim(), pin:String(r[pinI] || '').replace(/\s+/g,'').trim(), role:role_(r[roleI]),
+    active:activeI < 0 ? true : !/(PASIF|HAYIR)/.test(norm_(r[activeI]))
+  })).filter(x => x.name && x.pin && x.role && x.active);
 }
 function authenticate_(pin) {
-  pin = String(pin || '').replace(/\s+/g,'').trim(); if (!/^\d{4,8}$/.test(pin)) throw new Error('PIN 4-8 rakam olmalıdır.');
+  pin = String(pin || '').replace(/\s+/g,'').trim();
+  if (!/^\d{4,8}$/.test(pin)) throw new Error('PIN 4-8 rakam olmalıdır.');
   const u = users_().find(x => constantTime_(x.pin, pin));
   if (!u) throw new Error('PIN geçersiz veya kullanıcı pasif.');
   const safe = {name:u.name, role:u.role};
-  log_(safe,'OTURUM_ACILDI','',{});
+  log_(safe, 'OTURUM_ACILDI', '', {});
   return {user:safe, session:signSession_(safe)};
 }
+function sessionSecret_() {
+  const props = PropertiesService.getScriptProperties();
+  let secret = props.getProperty('SESSION_SECRET');
+  if (!secret) { secret = Utilities.getUuid() + Utilities.getUuid(); props.setProperty('SESSION_SECRET', secret); }
+  return secret;
+}
 function signSession_(u) {
-  const props=PropertiesService.getScriptProperties(); let secret=props.getProperty('SESSION_SECRET');
-  if (!secret) { secret=Utilities.getUuid()+Utilities.getUuid(); props.setProperty('SESSION_SECRET',secret); }
-  const data=Utilities.base64EncodeWebSafe(JSON.stringify({name:u.name,role:u.role,exp:Date.now()+CFG.sessionHours*3600000}));
-  const sig=Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature(data,secret));
-  return data+'.'+sig;
+  const data = Utilities.base64EncodeWebSafe(Utilities.newBlob(JSON.stringify({name:u.name, role:u.role, exp:Date.now() + CFG.sessionHours*3600000})).getBytes());
+  return data + '.' + Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature(data, sessionSecret_()));
 }
 function verifySession_(token) {
-  const parts=String(token||'').split('.'); if(parts.length!==2) throw new Error('Oturum gerekli.');
-  const secret=PropertiesService.getScriptProperties().getProperty('SESSION_SECRET')||'';
-  const sig=Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature(parts[0],secret));
-  if(!constantTime_(sig,parts[1])) throw new Error('Oturum imzası geçersiz.');
-  const p=JSON.parse(Utilities.newBlob(Utilities.base64DecodeWebSafe(parts[0])).getDataAsString());
-  if(!p.exp || Date.now()>p.exp || CFG.roles.indexOf(p.role)<0) throw new Error('Oturum süresi doldu.');
-  return {name:p.name,role:p.role};
+  const parts = String(token || '').split('.');
+  if (parts.length !== 2) throw new Error('Oturum gerekli.');
+  const sig = Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature(parts[0], sessionSecret_()));
+  if (!constantTime_(sig, parts[1])) throw new Error('Oturum imzası geçersiz.');
+  const p = JSON.parse(Utilities.newBlob(Utilities.base64DecodeWebSafe(parts[0])).getDataAsString());
+  if (!p.exp || Date.now() > p.exp || CFG.roles.indexOf(p.role) < 0) throw new Error('Oturum süresi doldu.');
+  return {name:p.name, role:p.role};
 }
-function constantTime_(a,b) { a=String(a);b=String(b); let d=a.length^b.length; for(let i=0;i<Math.max(a.length,b.length);i++) d|=(a.charCodeAt(i)||0)^(b.charCodeAt(i)||0); return d===0; }
-function requireRole_(u, roles) { if(roles.indexOf(u.role)<0) throw new Error('Bu işlem için yetkiniz yok.'); }
-function canDepot_(u,depot) { return u.role==='YONETICI'||u.role==='OP'||(u.role==='MEK_ADMIN'&&depot==='MEKANIK')||(u.role==='ISG_ADMIN'&&depot==='ISG'); }
-function managerByPin_(pin) { const u=users_().find(x=>constantTime_(x.pin,String(pin||''))&&x.role==='YONETICI'); return u ? {name:u.name,role:u.role} : null; }
-function depotApproverByPin_(pin, depot) { const clean=String(pin||'').replace(/\s+/g,'').trim(); const u=users_().find(x=>constantTime_(x.pin,clean)&&(x.role==='YONETICI'||(depot==='ISG'?x.role==='ISG_ADMIN':x.role==='MEK_ADMIN'))); return u ? {name:u.name,role:u.role} : null; }
-function isDepotApproverRole_(role, depot) { return role==='YONETICI'||(depot==='ISG'?role==='ISG_ADMIN':role==='MEK_ADMIN'); }
+function constantTime_(a, b) {
+  a = String(a); b = String(b); let d = a.length ^ b.length;
+  for (let i = 0; i < Math.max(a.length, b.length); i++) d |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  return d === 0;
+}
+function requireRole_(u, roles) { if (roles.indexOf(u.role) < 0) throw new Error('Bu işlem için yetkiniz yok.'); }
+function canDepot_(u, depot) {
+  if (u.role === 'YONETICI' || u.role === 'OP') return true;
+  if (u.role === 'MEK_ADMIN') return depot === 'MEKANIK';
+  if (u.role === 'ISG_ADMIN') return depot === 'ISG';
+  return false;
+}
+function isDepotApproverRole_(role, depot) {
+  return role === 'YONETICI' || (depot === 'ISG' ? role === 'ISG_ADMIN' : role === 'MEK_ADMIN');
+}
+function managerByPin_(pin) {
+  const clean = String(pin || '').replace(/\s+/g,'').trim();
+  const u = users_().find(x => constantTime_(x.pin, clean) && x.role === 'YONETICI');
+  return u ? {name:u.name, role:u.role} : null;
+}
+function depotApproverByPin_(pin, depot) {
+  const clean = String(pin || '').replace(/\s+/g,'').trim();
+  const u = users_().find(x => constantTime_(x.pin, clean) && isDepotApproverRole_(x.role, depot));
+  return u ? {name:u.name, role:u.role} : null;
+}
 
+/* ===================== STOK ===================== */
 function stock_() {
-  return objects_(CFG.sheets.stock).map(o=>({
-    id:o.ID, depot: /ISG/.test(norm_(o.DEPO||o.KATEGORI)) ? 'ISG':'MEKANIK', type:o.MALZEME_TIPI||'', code:o.PARCA_KODU||'',
-    name:o.MALZEME_ADI||o.URUN_ACIKLAMASI||'', category:o.KATEGORI||'', company:o.FIRMA||'', unit:o.BIRIM||'AD',
-    usage:o.MALZEME_DEPO_SEKLI||'', shelf:o.RAF_NO||o.RAF||'', machine:o.MAKINE_PARCAY||o.MAKINE||'', min:n_(o.MIN_STOK||o.SIPARIS_NOKTASI), unitPrice:n_(o.BIRIM_FIYAT), totalPrice:n_(o.TOPLAM_FIYAT),
-    incoming:n_(o.GIREN), outgoing:n_(o.CIKAN), stock:n_(o.ANLIK_STOK), active:!/(PASIF|HAYIR|0)/.test(norm_(o.AKTIF_PASIF)), row:o._row
-  })).filter(x=>x.id&&x.active);
+  return objects_(CFG.sheets.stock).map(o => ({
+    id:o.ID,
+    depot:/ISG/.test(o.DEPO ? norm_(o.DEPO) : norm_(o.MALZEME_TIPI) + '_' + norm_(o.MALZEME_DEPO_SEKLI)) ? 'ISG' : 'MEKANIK',
+    type:o.MALZEME_TIPI || '', code:o.PARCA_KODU || '', name:o.MALZEME_ADI || '',
+    category:o.MALZEME_TURU || o.KATEGORI || '', company:o.FIRMA || '', unit:o.BIRIM || 'AD',
+    usage:o.MALZEME_DEPO_SEKLI || '', shelf:o.RAF || o.RAF_NO || '', machine:o.MAKINE || o.MAKINE_PARCAY || '',
+    min:n_(o.MIN_STOK), unitPrice:n_(o.BIRIM_FIYAT), totalPrice:n_(o.TOPLAM_FIYAT),
+    incoming:n_(o.GIREN), outgoing:n_(o.CIKAN), stock:n_(o.ANLIK_STOK),
+    active:!/(PASIF|HAYIR)/.test(norm_(o.AKTIF_PASIF)), row:o._row
+  })).map(x => Object.assign(x, {depotApproval:needsDepotApproval_(x)})).filter(x => x.id && x.active);
 }
-function filteredStock_(u) { return stock_().filter(x=>canDepot_(u,x.depot)); }
+/* V8.7: MALZEME DEPO ŞEKLİ içinde "Depo Onayı Gerekli" varsa true. */
+function needsDepotApproval_(item) { return /DEPO_ONAYI/.test(norm_(item && item.usage)); }
+function filteredStock_(u) { return stock_().filter(x => canDepot_(u, x.depot)); }
+function item_(id) {
+  const x = stock_().find(i => i.id === id || norm_(i.code) === norm_(id));
+  if (!x) throw new Error('Stok kartı bulunamadı: ' + id);
+  return x;
+}
+function outs_() {
+  const st = stock_();
+  return objects_(CFG.sheets.outgoing).map(o => {
+    const code = s_(o.PARCA_KODU), item = st.find(i => norm_(i.code) === norm_(code) || (o.STOK_ID && i.id === o.STOK_ID));
+    return {
+      id:s_(o.ID), no:s_(o.KAYIT_NO), date:iso_(o.TARIH || o.KULLANIM_TARIHI),
+      person:s_(o.OPERATOR || o.CIKIS_YAPAN), itemId:item ? item.id : s_(o.STOK_ID), code:code,
+      name:s_(o.MALZEME || o.MALZEME_ADI || (item && item.name)), qty:n_(o.ADET || o.CIKIS_AD || o.MIKTAR),
+      unit:s_(o.BIRIM || (item && item.unit)), machine:s_(o.MAKINE || o.KULLANILACAK_MAKINE_BOLUM),
+      source:s_(o.CIKIS_TURU || o.KAYNAK || 'QR'),
+      depot:o.DEPO ? (norm_(o.DEPO) === 'ISG' ? 'ISG' : 'MEKANIK') : (item ? item.depot : 'MEKANIK')
+    };
+  }).filter(x => x.code || x.name);
+}
 function bootstrap_(u) {
   return {
-    user:u, stock:filteredStock_(u), approvals:u.role==='OP'?[]:approvalList_(u), recipes:recipeList_(u,{}),
-    movements:recentMovements_(u), lists:dataLists_(), serverTime:now_(), capabilities:capabilities_(u)
+    user:u, stock:filteredStock_(u), approvals:u.role === 'OP' ? [] : approvalList_(u), recipes:recipeList_(u, {}),
+    movements:recentMovements_(u), lists:dataLists_(), serverTime:now_(), apiVersion:CFG.apiVersion, capabilities:capabilities_(u)
   };
 }
 function recentMovements_(u) {
   if (u.role === 'OP') return [];
-  return objects_(CFG.sheets.outgoing).map(o=>({id:o.ID,date:o.KULLANIM_TARIHI,person:o.CIKIS_YAPAN,itemId:o.STOK_ID,code:o.PARCA_KODU,name:o.MALZEME_ADI,depot:norm_(o.DEPO)==='ISG'?'ISG':'MEKANIK',qty:n_(o.CIKIS_AD),unit:o.BIRIM,machine:o.KULLANILACAK_MAKINE_BOLUM,source:o.KAYNAK})).filter(x=>canDepot_(u,x.depot)).slice(-200).reverse();
+  return outs_().filter(x => canDepot_(u, x.depot))
+    .sort((a,b) => parseDate_(b.date) - parseDate_(a.date)).slice(0, 200);
 }
 function capabilities_(u) {
-  return {mechanical:['MEK_ADMIN','YONETICI'].indexOf(u.role)>=0, isg:['ISG_ADMIN','YONETICI'].indexOf(u.role)>=0, operator:u.role==='OP', full:u.role==='YONETICI'};
-}
-function dataLists_() {
-  const v=values_(CFG.sheets.data); if(!v.length)return {};
-  const h=v[0].map(norm_); const get=(...names)=>{let i=-1;for(const n of names){i=h.indexOf(norm_(n));if(i>=0)break;}if(i<0)return[];return [...new Set(v.slice(1).map(r=>String(r[i]||'').trim()).filter(Boolean))];};
-  return {types:get('MALZEME TÜR','KATEGORİ'),companies:get('FİRMA BİLGİLERİ','FİRMA'),units:get('BİRİM'),usage:get('MALZEME DEPO ŞEKLİ'),shelves:get('RAF NO','RAFNO'),machines:get('MAKİNE ADI','MAKİNE')};
-}
-function item_(id) { const x=stock_().find(i=>i.id===id||i.code===id); if(!x)throw new Error('Stok kartı bulunamadı.'); return x; }
-function needsDepotApproval_(item) { return norm_(item && item.usage).indexOf('DEPO_ONAYI_GEREKLI') >= 0; }
-
-function checkout_(u,p) {
-  const item=item_(p.itemId||p.code); const qty=n_(p.qty); if(qty<=0)throw new Error('Miktar 0’dan büyük olmalıdır.');
-  if(!canDepot_(u,item.depot))throw new Error('Bu depoya erişim yetkiniz yok.');
-  if(item.stock<qty)throw new Error('Yetersiz stok. Mevcut: '+item.stock+' '+item.unit);
-  const isIsg=item.depot==='ISG', isConsumable=!item.machine||/(SARF|ORTAK)/.test(norm_(item.type+' '+item.usage));
-  const machine=isIsg ? (p.machine||'PERSONEL KKD') : (isConsumable ? String(p.machine||'').trim() : item.machine);
-  if(!isIsg&&!machine)throw new Error('Kullanılacak makine/bölüm seçilmelidir.');
-  if(needsDepotApproval_(item)&&!isDepotApproverRole_(u.role,item.depot)) {
-    if(p.depotApproverPin) {
-      const depocu=depotApproverByPin_(p.depotApproverPin,item.depot);
-      if(!depocu)throw new Error('Depocu PIN geçersiz veya bu depo için yetkisiz.');
-      const id=writeExit_(u,item,qty,machine,'DEPO ONAYI',depocu.name,{exitType:'DEPO ONAYI',approval:'ONAYLANDI'});
-      log_(u,'STOK_CIKIS_DEPO_ONAYLI',id,{item:item.id,qty:qty,machine:machine,approver:depocu.name});
-      return {completed:true,depotApproved:true,approver:depocu.name,id:id,remaining:item.stock-qty,autoLogout:u.role==='OP'};
-    }
-    if(p.promptDepotApproval&&!p.sendApproval) {
-      return {depotApprovalRequired:true,message:'Bu parça için Depo Onayı Gerekli.'};
-    }
-    const request=approvalCreate_(u,{itemId:item.id,qty:qty,machine:machine,reason:'Depo Onayı Gerekli',depotApproval:true});
-    return {pending:true,depotApproval:true,id:request.id,message:'Depocu onayına istek gönderildi. Talep No: '+request.id,autoLogout:u.role==='OP'};
-  }
-  let approver='';
-  if(!p.qrTerminal&&!isIsg&&!isConsumable&&!hasActiveMaintenance_(machine)) {
-    const manager=managerByPin_(p.managerPin);
-    if(manager) approver=manager.name;
-    else if(p.sendApproval) return approvalCreate_(u,{itemId:item.id,qty:qty,machine:machine,reason:'Açık arıza veya planlı bakım kaydı bulunamadı'});
-    else return {approvalRequired:true,message:'Bu makinede açık arıza veya planlı bakım kaydı bulunamadı — Yönetici Onayı Gerekli'};
-  }
-  const id=writeExit_(u,item,qty,machine,p.source||'QR',approver);
-  log_(u,'STOK_CIKIS',id,{item:item.id,qty:qty,machine:machine,approver:approver});
-  return {completed:true,id:id,remaining:item.stock-qty,autoLogout:u.role==='OP'};
-}
-function hasActiveMaintenance_(machine) {
-  const s=faultBook_().getSheetByName(CFG.sheets.faults); if(!s)return false;
-  const v=s.getDataRange().getDisplayValues(); if(v.length<2)return false;
-  const h=v[0].map(norm_), mi=findIndex_(h,['MAKİNE','MAKINE ADI','EKİPMAN']), si=findIndex_(h,['DURUM','STATÜ','STATUS']), ti=findIndex_(h,['TÜR','KAYIT TÜRÜ','BAKIM TÜRÜ']);
-  return v.slice(1).some(r=>norm_(r[mi])===norm_(machine)&&!/(KAPALI|TAMAMLANDI|IPTAL)/.test(norm_(r[si]))&&(/(ARIZA|PLANLI BAKIM)/.test(norm_((ti>=0?r[ti]:'')+' '+r.join(' ')))));
-}
-function findIndex_(headers,names){for(const n of names){const i=headers.indexOf(norm_(n));if(i>=0)return i;}return 0;}
-function appendExistingHeaders_(name,baseHeaders,obj) {
-  const s=ensureSheet_(name,baseHeaders), headers=s.getRange(1,1,1,s.getLastColumn()).getDisplayValues()[0];
-  s.appendRow(headers.map(h=>obj[norm_(h)]===undefined?'':obj[norm_(h)])); return s.getLastRow();
-}
-function writeExit_(u,item,qty,machine,source,approver,approvalInfo) {
-  approvalInfo=approvalInfo||{};
-  const id=uid_('CIK'), row={ID:id,STOK_ID:item.id,CIKIS_YAPAN:u.name,CIKIS_YAPAN_PERSONEL:u.name,KULLANILACAK_MAKINE_BOLUM:machine,KULLANILACAK_MAKINE:machine,URUN_KODU:item.code,PARCA_KODU:item.code,URUN_ACIKLAMASI:item.name,MALZEME_ADI:item.name,KATEGORI:item.category,DEPO:item.depot,BIRIM:item.unit,CIKIS_AD:qty,KULLANIM_TARIHI:now_(),KAYNAK:source,CIKIS_TURU:approvalInfo.exitType||'',ONAY:approvalInfo.approval||'',ONAYLAYAN:approver,TALEP_NO:approvalInfo.requestId||''};
-  appendExistingHeaders_(CFG.sheets.outgoing,HEADERS.outgoing,row); mirrorLegacy_('DEPOCIK',row); return id;
-}
-
-function ensureApprovalHeaders_() {
-  const s = ensureSheet_(CFG.sheets.approvals, HEADERS.approvals);
-  const last = Math.max(1, s.getLastColumn());
-  const existing = s.getRange(1,1,1,last).getDisplayValues()[0].map(norm_);
-  if (existing.indexOf('TALEP_NO') >= 0) {
-    ensureHeaders_(CFG.sheets.approvals, ['PARÇA KODU','BİRİM','DEPO','NEDEN']);
-    return {sheet: s, legacy: true};
-  }
-  ensureHeaders_(CFG.sheets.approvals, HEADERS.approvals);
-  return {sheet: s, legacy: false};
-}
-function parseApprovalRow_(o, stock) {
-  const rawId = String(o.ID || '').trim();
-  const isReqInId = rawId.indexOf('ONAY-') === 0;
-  const id = String(o.TALEP_NO || (isReqInId ? rawId : '') || rawId || ('ONAY-SATIR-' + o._row)).trim();
-  const itemId = String(o.STOK_ID || (isReqInId ? '' : rawId) || '').trim();
-  const rawCode = String(o.PARCA_KODU || o.URUN_KODU || '').trim();
-  const rawName = String(o.MALZEME_ADI || o.MALZEME || o.URUN_ACIKLAMASI || '').trim();
-  const item = (itemId && stock.find(i => i.id === itemId)) || (rawCode && stock.find(i => norm_(i.code) === norm_(rawCode))) || (rawName && stock.find(i => norm_(i.name) === norm_(rawName))) || null;
-  const machine = String(o.MAKINE || (item ? item.machine : '') || '').trim();
-  const rawDepot = norm_(o.DEPO);
-  const depot = rawDepot === 'ISG' ? 'ISG' : rawDepot === 'MEKANIK' ? 'MEKANIK' : (item ? item.depot : (/ISG|KKD/.test(norm_(itemId + ' ' + rawCode + ' ' + machine + ' ' + rawName)) ? 'ISG' : 'MEKANIK'));
-  const rawStatus = norm_(o.DURUM || o.ONAY_DURUMU || o.STATUS);
-  const status = (rawStatus === 'ONAYLANDI' || rawStatus === 'ONAY') ? 'ONAYLANDI' : (rawStatus === 'REDDEDILDI' || rawStatus === 'REDDET' || rawStatus === 'IPTAL') ? 'REDDEDILDI' : 'BEKLIYOR';
-  const qty = n_(o.MIKTAR || o.ADET);
-  const resolvedItemId = itemId || (item ? item.id : '');
-  const incomplete = !resolvedItemId || qty <= 0;
-  const reason = String(o.NEDEN || '').trim() || (incomplete ? 'Eksik sütun kaydı (eski şablon) — Reddet ile kapatılabilir' : (item && needsDepotApproval_(item) ? 'Depo Onayı Gerekli' : 'Onay bekliyor'));
   return {
-    _row: o._row,
-    id: id,
-    date: String(o.TALEP_TARIHI || o.TARIH || '').trim(),
-    requester: String(o.TALEP_EDEN || o.OPERATOR || '').trim(),
-    itemId: resolvedItemId,
-    code: rawCode || (item ? item.code : ''),
-    name: rawName || (item ? item.name : (machine ? 'Eksik Kayıt (' + machine + ')' : 'Eksik Talep Kaydı')),
-    machine: machine,
-    qty: qty,
-    unit: String(o.BIRIM || (item ? item.unit : '') || 'AD').trim(),
-    depot: depot,
-    status: status,
-    reason: reason,
-    decider: String(o.KARAR_VEREN || o.ONAYLAYAN || '').trim(),
-    depotApproval: (!!item && needsDepotApproval_(item)) || norm_(reason).indexOf('DEPO_ONAYI') >= 0,
-    incomplete: incomplete
+    mechanical:['MEK_ADMIN','YONETICI'].indexOf(u.role) >= 0, isg:['ISG_ADMIN','YONETICI'].indexOf(u.role) >= 0,
+    operator:u.role === 'OP', full:u.role === 'YONETICI'
   };
 }
-function approvalCreate_(u,p) {
-  const item=item_(p.itemId), depotApproval=!!p.depotApproval||needsDepotApproval_(item);
-  if(item.depot!=='MEKANIK'&&!depotApproval)throw new Error('Onay havuzu yalnız mekanik depo veya Depo Onayı Gerekli parçalar içindir.');
-  const qty=n_(p.qty); if(qty<=0||qty>item.stock)throw new Error('Talep miktarı geçersiz.');
-  const id=uid_('ONAY'), ts=now_(), machine=p.machine||item.machine, reason=depotApproval?'Depo Onayı Gerekli':(p.reason||'Yönetici onayı gerekli');
-  const meta=ensureApprovalHeaders_();
-  const row=meta.legacy
-    ? {TALEP_NO:id,TARIH:ts,OPERATOR:u.name,ID:item.id,STOK_ID:item.id,MALZEME:item.name,MALZEME_ADI:item.name,MAKINE:machine,ADET:qty,MIKTAR:qty,DURUM:'BEKLIYOR',ONAYLAYAN:'',ONAY_TARIHI:'',PARCA_KODU:item.code,BIRIM:item.unit,DEPO:item.depot,NEDEN:reason}
-    : {ID:id,TALEP_NO:id,TALEP_TARIHI:ts,TARIH:ts,TALEP_EDEN:u.name,OPERATOR:u.name,STOK_ID:item.id,PARCA_KODU:item.code,MALZEME_ADI:item.name,MALZEME:item.name,MAKINE:machine,MIKTAR:qty,ADET:qty,BIRIM:item.unit,DEPO:item.depot,NEDEN:reason,DURUM:'BEKLIYOR'};
-  appendExistingHeaders_(CFG.sheets.approvals,HEADERS.approvals,row);
-  log_(u,'ONAY_TALEBI',id,{item:item.id,qty:qty,depotApproval:depotApproval}); return {pending:true,depotApproval:depotApproval,id:id,message:depotApproval?'Depocu onayına istek gönderildi. Talep No: '+id:'Talep onay havuzuna gönderildi. Talep No: '+id,autoLogout:u.role==='OP'};
+function dataLists_() {
+  const v = values_(CFG.sheets.data); if (!v.length) return {};
+  const h = v[0].map(norm_);
+  const get = (...names) => {
+    let i = -1; for (const n of names) { if (i < 0) i = h.indexOf(norm_(n)); }
+    return i < 0 ? [] : [...new Set(v.slice(1).map(r => String(r[i] || '').trim()).filter(Boolean))];
+  };
+  return {
+    types:get('MALZEME TÜR','MALZEME TÜRÜ','KATEGORİ'), companies:get('FİRMA BİLGİLERİ','FİRMA'), units:get('BİRİM'),
+    usage:get('MALZEME DEPO ŞEKLİ'), shelves:get('RAFNO','RAF NO'), machines:get('MAKİNE ADI','MAKİNE')
+  };
+}
+
+/* ===================== ÇIKIŞ ===================== */
+function checkout_(u, p) {
+  const item = item_(p.itemId || p.code); const qty = n_(p.qty);
+  if (qty <= 0) throw new Error('Miktar 0’dan büyük olmalıdır.');
+  if (!canDepot_(u, item.depot)) throw new Error('Bu depoya erişim yetkiniz yok.');
+  if (item.stock < qty) throw new Error('Yetersiz stok. Mevcut: ' + item.stock + ' ' + item.unit);
+  const isIsg = item.depot === 'ISG', isConsumable = !item.machine || /(SARF|ORTAK)/.test(norm_(item.type + ' ' + item.usage));
+  const machine = isIsg ? (p.machine || 'PERSONEL KKD') : String(p.machine || item.machine || '').trim();
+  if (!isIsg && !machine) throw new Error('Kullanılacak makine/bölüm seçilmelidir.');
+  /* V8.7: Depo onayı gereken parça → Depocu PIN ile anında onay veya Onay Havuzu'na */
+  if (needsDepotApproval_(item) && !isDepotApproverRole_(u.role, item.depot)) {
+    if (p.depotApproverPin) {
+      const depocu = depotApproverByPin_(p.depotApproverPin, item.depot);
+      if (!depocu) throw new Error('Depocu PIN geçersiz veya bu depo için yetkisiz.');
+      const id = writeExit_(u, item, qty, machine, 'DEPO ONAYI', depocu.name, '');
+      log_(u, 'STOK_CIKIS_DEPO_ONAYLI', id, {item:item.id, qty:qty, machine:machine, approver:depocu.name});
+      return {completed:true, depotApproved:true, approver:depocu.name, id:id, remaining:item.stock - qty, autoLogout:u.role === 'OP'};
+    }
+    if (p.promptDepotApproval && !p.sendApproval) {
+      return {depotApprovalRequired:true, message:'Bu parça için Depo Onayı Gerekli.'};
+    }
+    const r = approvalCreate_(u, {itemId:item.id, qty:qty, machine:machine, reason:'Depo Onayı Gerekli', depotApproval:true});
+    return {pending:true, depotApproval:true, id:r.id, message:'Depocu onayına istek gönderildi. Talep No: ' + r.id, autoLogout:u.role === 'OP'};
+  }
+  let approver = '';
+  if (!p.qrTerminal && !isIsg && !isConsumable && !hasActiveMaintenance_(machine)) {
+    const manager = managerByPin_(p.managerPin);
+    if (manager) approver = manager.name;
+    else if (p.sendApproval) return approvalCreate_(u, {itemId:item.id, qty:qty, machine:machine, reason:'Açık arıza veya planlı bakım kaydı bulunamadı'});
+    else return {approvalRequired:true, message:'Bu makinede açık arıza veya planlı bakım kaydı bulunamadı — Yönetici Onayı Gerekli'};
+  }
+  const id = writeExit_(u, item, qty, machine, p.source || 'QR', approver, '');
+  log_(u, 'STOK_CIKIS', id, {item:item.id, qty:qty, machine:machine, approver:approver});
+  return {completed:true, id:id, remaining:item.stock - qty, autoLogout:u.role === 'OP'};
+}
+function hasActiveMaintenance_(machine) {
+  let book; try { book = faultBook_(); } catch (e) { return true; }
+  if (!book) return true;
+  const s = book.getSheetByName(CFG.sheets.faults); if (!s) return true;
+  const v = s.getDataRange().getDisplayValues(); if (v.length < 2) return false;
+  const h = v[0].map(norm_), mi = findIndex_(h, ['MAKİNE','MAKINE ADI','EKİPMAN']), si = findIndex_(h, ['DURUM','STATÜ','STATUS']);
+  return v.slice(1).some(r => norm_(r[mi]) === norm_(machine) && !/(KAPALI|TAMAMLANDI|IPTAL)/.test(norm_(r[si])));
+}
+function findIndex_(headers, names) { for (const n of names) { const i = headers.indexOf(norm_(n)); if (i >= 0) return i; } return 0; }
+function writeExit_(u, item, qty, machine, source, approver, talepNo) {
+  const id = uid_('CKS'), t = now_();
+  append_(CFG.sheets.outgoing, HEADERS.outgoing, {
+    KAYIT_NO:nextNo_(CFG.sheets.outgoing), TARIH:t, ID:id, PARCA_KODU:item.code, MALZEME:item.name,
+    OPERATOR:u.name, MAKINE:machine, ADET:qty, BIRIM:item.unit, CIKIS_TURU:source || 'QR',
+    ONAY:approver ? 'ONAYLANDI' : 'GEREKMEDİ', ONAYLAYAN:approver || '', TALEP_NO:talepNo || ''
+  });
+  return id;
+}
+
+/* ===================== ONAY ===================== */
+function parseApprovalRow_(o, stock) {
+  const rawId = s_(o.ID).trim();
+  const isReqInId = rawId.indexOf('ONAY-') === 0;
+  const id = (s_(o.TALEP_NO).trim() || (isReqInId ? rawId : '') || rawId || ('ONAY-SATIR-' + o._row)).trim();
+  const itemId = (s_(o.STOK_ID).trim() || (isReqInId ? '' : rawId)).trim();
+  const rawCode = s_(o.PARCA_KODU).trim();
+  const rawName = s_(o.MALZEME || o.MALZEME_ADI).trim();
+  const item = (itemId && stock.find(i => i.id === itemId || norm_(i.code) === norm_(itemId)))
+    || (rawCode && stock.find(i => norm_(i.code) === norm_(rawCode)))
+    || (rawName && stock.find(i => norm_(i.name) === norm_(rawName))) || null;
+  const machine = s_(o.MAKINE || (item && item.machine)).trim();
+  const rawDepot = norm_(o.DEPO);
+  const depot = rawDepot === 'ISG' ? 'ISG'
+    : rawDepot === 'MEKANIK' ? 'MEKANIK'
+    : (item ? item.depot : (/ISG|KKD/.test(norm_(itemId + ' ' + rawCode + ' ' + machine + ' ' + rawName)) ? 'ISG' : 'MEKANIK'));
+  const rawStatus = norm_(o.DURUM || o.ONAY_DURUMU || o.STATUS);
+  const status = (rawStatus === 'ONAYLANDI' || rawStatus === 'ONAY') ? 'ONAYLANDI'
+    : (rawStatus === 'REDDEDILDI' || rawStatus === 'REDDET' || rawStatus === 'IPTAL') ? 'REDDEDILDI'
+    : 'BEKLIYOR';
+  const qty = n_(o.ADET || o.MIKTAR);
+  const resolvedItemId = (item ? item.id : itemId);
+  const incomplete = !resolvedItemId || qty <= 0;
+  const depotApproval = (!!item && needsDepotApproval_(item)) || /DEPO_ONAYI/.test(norm_(o.NEDEN));
+  const reason = s_(o.NEDEN).trim() || (incomplete ? 'Eksik sütun kaydı (eski şablon) — Reddet ile kapatılabilir' : (depotApproval ? 'Depo Onayı Gerekli' : 'Onay bekliyor'));
+  return {
+    _row:o._row,
+    id:id,
+    date:iso_(o.TARIH || o.TALEP_TARIHI) || s_(o.TARIH || o.TALEP_TARIHI).trim(),
+    requester:s_(o.OPERATOR || o.TALEP_EDEN).trim(),
+    itemId:resolvedItemId,
+    code:rawCode || (item ? item.code : ''),
+    name:rawName || (item ? item.name : (machine ? 'Eksik Kayıt (' + machine + ')' : 'Eksik Talep Kaydı')),
+    machine:machine,
+    qty:qty,
+    unit:s_(o.BIRIM || (item && item.unit) || 'AD').trim(),
+    depot:depot,
+    status:status,
+    reason:reason,
+    decider:s_(o.ONAYLAYAN || o.KARAR_VEREN).trim(),
+    depotApproval:depotApproval,
+    incomplete:incomplete
+  };
+}
+function approvalCreate_(u, p) {
+  const item = item_(p.itemId), depotApproval = !!p.depotApproval || needsDepotApproval_(item);
+  if (item.depot !== 'MEKANIK' && !depotApproval) throw new Error('Onay havuzu yalnız mekanik depo veya Depo Onayı Gerekli parçalar içindir.');
+  const qty = n_(p.qty); if (qty <= 0 || qty > item.stock) throw new Error('Talep miktarı geçersiz.');
+  const id = uid_('ONAY'), t = now_(), machine = p.machine || item.machine;
+  const reason = depotApproval ? 'Depo Onayı Gerekli' : (p.reason || 'Yönetici onayı gerekli');
+  const hasTalepNo = headerCol_(CFG.sheets.approvals, ['TALEP NO']) > 0;
+  const row = hasTalepNo
+    ? {TALEP_NO:id, TARIH:t, OPERATOR:u.name, ID:item.id, STOK_ID:item.id, PARCA_KODU:item.code, MALZEME:item.name, MALZEME_ADI:item.name, MAKINE:machine, ADET:qty, MIKTAR:qty, BIRIM:item.unit, DEPO:item.depot, NEDEN:reason, DURUM:'BEKLIYOR', ONAYLAYAN:'', ONAY_TARIHI:''}
+    : {ID:id, TALEP_NO:id, TALEP_TARIHI:t, TARIH:t, TALEP_EDEN:u.name, OPERATOR:u.name, STOK_ID:item.id, PARCA_KODU:item.code, MALZEME_ADI:item.name, MALZEME:item.name, MAKINE:machine, MIKTAR:qty, ADET:qty, BIRIM:item.unit, DEPO:item.depot, NEDEN:reason, DURUM:'BEKLIYOR', KARAR_VEREN:'', KARAR_TARIHI:''};
+  append_(CFG.sheets.approvals, HEADERS.approvals, row);
+  log_(u, 'ONAY_TALEBI', id, {item:item.id, qty:qty, depot:item.depot, depotApproval:depotApproval});
+  return {pending:true, depotApproval:depotApproval, id:id,
+    message:depotApproval ? 'Depocu onayına istek gönderildi. Talep No: ' + id : 'Talep onay havuzuna gönderildi. Talep No: ' + id,
+    autoLogout:u.role === 'OP'};
 }
 function approvalList_(u) {
-  requireRole_(u,['MEK_ADMIN','YONETICI','ISG_ADMIN']);
-  const stock=stock_();
-  return objects_(CFG.sheets.approvals).map(o=>parseApprovalRow_(o,stock)).filter(x=>u.role==='YONETICI'||(u.role==='MEK_ADMIN'&&x.depot==='MEKANIK')||(u.role==='ISG_ADMIN'&&x.depot==='ISG'));
+  requireRole_(u, ['MEK_ADMIN','ISG_ADMIN','YONETICI']);
+  if (!depotBook_().getSheetByName(CFG.sheets.approvals)) return [];
+  const st = stock_();
+  return objects_(CFG.sheets.approvals)
+    .map(o => parseApprovalRow_(o, st))
+    .filter(x => u.role === 'YONETICI' || (u.role === 'MEK_ADMIN' && x.depot === 'MEKANIK') || (u.role === 'ISG_ADMIN' && x.depot === 'ISG'));
 }
-function approvalDecide_(u,p) {
-  requireRole_(u,['MEK_ADMIN','ISG_ADMIN','YONETICI']);
-  const stock=stock_(), list=objects_(CFG.sheets.approvals).map(o=>parseApprovalRow_(o,stock)), a=list.find(x=>x.id===p.id);
-  if(!a)throw new Error('Talep bulunamadı.');
-  if(a.status!=='BEKLIYOR')throw new Error('Talep daha önce sonuçlanmış.');
-  if(!isDepotApproverRole_(u.role,a.depot))throw new Error('Bu deponun talebini onaylama yetkiniz yok.');
-  const decision=norm_(p.decision)==='ONAYLA'?'ONAYLANDI':'REDDEDILDI'; let exitId='';
-  if(decision==='ONAYLANDI') {
-    if(a.incomplete)throw new Error('Bu kayıtta stok ID veya miktar eksik (eski hatalı kayıt). Reddet ile kapatıp işlemi yeniden oluşturun.');
-    const item=item_(a.itemId), qty=a.qty, depotApproval=a.depotApproval||needsDepotApproval_(item);
-    if(item.stock<qty)throw new Error('Onay anında stok yetersiz.');
-    exitId=writeExit_({name:a.requester||u.name,role:'OP'},item,qty,a.machine,depotApproval?'DEPO ONAYI':'ONAY_HAVUZU',u.name,depotApproval?{exitType:'DEPO ONAYI',approval:'ONAYLANDI',requestId:a.id}:{approval:'ONAYLANDI',requestId:a.id});
+function approvalDecide_(u, p) {
+  requireRole_(u, ['MEK_ADMIN','ISG_ADMIN','YONETICI']);
+  const st = stock_(), a = objects_(CFG.sheets.approvals).map(o => parseApprovalRow_(o, st)).find(x => x.id === p.id);
+  if (!a) throw new Error('Talep bulunamadı.');
+  if (a.status !== 'BEKLIYOR') throw new Error('Talep daha önce sonuçlanmış.');
+  if (!isDepotApproverRole_(u.role, a.depot)) throw new Error('Bu deponun talebini onaylama yetkiniz yok.');
+  const decision = norm_(p.decision) === 'ONAYLA' ? 'ONAYLANDI' : 'REDDEDILDI'; let exitId = '';
+  if (decision === 'ONAYLANDI') {
+    if (a.incomplete) throw new Error('Bu kayıtta stok ID veya adet eksik (eski hatalı kayıt). Reddet ile kapatıp işlemi yeniden oluşturun.');
+    const item = item_(a.itemId || a.code); const qty = a.qty;
+    if (item.stock < qty) throw new Error('Onay anında stok yetersiz.');
+    const depotApproval = a.depotApproval || needsDepotApproval_(item);
+    exitId = writeExit_({name:a.requester || u.name, role:'OP'}, item, qty, a.machine, depotApproval ? 'DEPO ONAYI' : 'ONAY_HAVUZU', u.name, a.id);
   }
-  const s=sh_(CFG.sheets.approvals), h=s.getRange(1,1,1,s.getLastColumn()).getDisplayValues()[0].map(norm_);
-  const setCol=(names,val)=>{for(let i=0;i<names.length;i++){const j=h.indexOf(names[i]);if(j>=0){s.getRange(a._row,j+1).setValue(val);return;}}};
-  setCol(['DURUM','ONAY_DURUMU','STATUS'],decision);
-  setCol(['KARAR_VEREN','ONAYLAYAN'],u.name);
-  setCol(['KARAR_TARIHI','ONAY_TARIHI'],now_());
-  log_(u,'ONAY_KARARI',a.id,{decision:decision,exitId:exitId}); return {id:a.id,status:decision,exitId:exitId};
+  const s = sh_(CFG.sheets.approvals), h = s.getRange(1,1,1,s.getLastColumn()).getDisplayValues()[0].map(norm_);
+  const putAny = (keys, v) => { for (let i = 0; i < keys.length; i++) { const j = h.indexOf(keys[i]); if (j >= 0) { s.getRange(a._row, j + 1).setValue(v); return; } } };
+  putAny(['DURUM','ONAY_DURUMU','STATUS'], decision);
+  putAny(['ONAYLAYAN','KARAR_VEREN'], u.name);
+  putAny(['ONAY_TARIHI','KARAR_TARIHI'], now_());
+  log_(u, 'ONAY_KARARI', a.id, {decision:decision, exitId:exitId});
+  return {id:a.id, status:decision, exitId:exitId};
 }
 
-function updateStockPrice_(itemId, unitPrice) {
-  unitPrice=n_(unitPrice); if(unitPrice<0)return;
-  const item=item_(itemId), s=sh_(CFG.sheets.stock), h=s.getRange(1,1,1,s.getLastColumn()).getDisplayValues()[0].map(norm_);
-  const j=h.indexOf('BIRIM_FIYAT'); if(j>=0)s.getRange(item.row,j+1).setValue(unitPrice);
+/* ===================== GİRİŞ / SAYIM ===================== */
+function entryRow_(u, item, qty, type, note, unitPrice, before) {
+  const t = now_(), prev = n_(before);
+  return {
+    KAYIT_NO:nextNo_(CFG.sheets.incoming), TARIH:t, GIRIS_TARIHI:t, ID:uid_('GRS'), STOK_ID:item.id,
+    PARCA_KODU:item.code, MALZEME:item.name, MALZEME_ADI:item.name, FIRMA:item.company, RAF:item.shelf,
+    ADET:qty, MIKTAR:qty, GIRIS_AD:qty, BIRIM:item.unit,
+    GIRIS_TURU:type, ISLEM_TURU:type, ISLEM:type,
+    OPERATOR:u.name, YAPAN:u.name, GIRIS_YAPAN:u.name, DEPOYA_GIRIS_YAPAN:u.name,
+    ONCEKI_STOK:prev, YENI_STOK:prev + qty,
+    BIRIM_FIYAT:unitPrice || '', TOPLAM_FIYAT:unitPrice ? qty * unitPrice : '', ACIKLAMA:note || '', NOT:note || ''
+  };
 }
-function stockIn_(u,p) {
-  const item=item_(p.itemId); requireRole_(u,item.depot==='ISG'?['ISG_ADMIN','YONETICI']:['MEK_ADMIN','YONETICI']);
-  const qty=n_(p.qty), unitPrice=n_(p.unitPrice); if(qty<=0)throw new Error('Giriş miktarı geçersiz.'); if(unitPrice<0)throw new Error('Birim fiyat negatif olamaz.'); const id=uid_('GRS');
-  const row={ID:id,STOK_ID:item.id,PARCA_KODU:item.code,URUN_KODU:item.code,MALZEME_ADI:item.name,URUN_ACIKLAMASI:item.name,DEPO:item.depot,MIKTAR:qty,GIRIS_AD:qty,BIRIM:item.unit,ISLEM_TURU:p.entryType||'GIRIS',YAPAN:u.name,DEPO_GIRIS_YAPAN:u.name,TARIH:now_(),GIRIS_TARIHI:now_(),ACIKLAMA:p.note||'',BIRIM_FIYAT:unitPrice,TOPLAM_FIYAT:qty*unitPrice};
-  append_(CFG.sheets.incoming,HEADERS.incoming,row); mirrorLegacy_('DEPOGRS',row); updateStockPrice_(item.id,unitPrice);
-  log_(u,'STOK_GIRIS',id,{item:item.id,qty:qty,unitPrice:unitPrice}); return {id:id,newStock:item.stock+qty};
+function updateStockPrice_(item, unitPrice) {
+  unitPrice = n_(unitPrice); if (unitPrice <= 0) return;
+  const c = headerCol_(CFG.sheets.stock, ['BİRİM FİYAT']); if (c) sh_(CFG.sheets.stock).getRange(item.row, c).setValue(unitPrice);
 }
-function stockCount_(u,p) {
-  const item=item_(p.itemId); requireRole_(u,item.depot==='ISG'?['ISG_ADMIN','YONETICI']:['MEK_ADMIN','YONETICI']);
-  const actual=n_(p.actual), delta=actual-item.stock; const id=uid_('SAY');
-  const row={ID:id,STOK_ID:item.id,PARCA_KODU:item.code,URUN_KODU:item.code,MALZEME_ADI:item.name,URUN_ACIKLAMASI:item.name,DEPO:item.depot,MIKTAR:delta,GIRIS_AD:delta,BIRIM:item.unit,ISLEM_TURU:'SAYIM_DUZELTME',YAPAN:u.name,DEPO_GIRIS_YAPAN:u.name,TARIH:now_(),GIRIS_TARIHI:now_(),ACIKLAMA:'Sayım: '+actual};
-  append_(CFG.sheets.incoming,HEADERS.incoming,row); mirrorLegacy_('DEPOGRS',row);
-  log_(u,'STOK_SAYIM',id,{item:item.id,old:item.stock,actual:actual}); return {id:id,newStock:actual};
+function stockIn_(u, p) {
+  const item = item_(p.itemId);
+  requireRole_(u, item.depot === 'ISG' ? ['ISG_ADMIN','YONETICI'] : ['MEK_ADMIN','YONETICI']);
+  const qty = n_(p.qty), unitPrice = n_(p.unitPrice);
+  if (qty <= 0) throw new Error('Giriş miktarı geçersiz.');
+  if (unitPrice < 0) throw new Error('Birim fiyat negatif olamaz.');
+  const row = entryRow_(u, item, qty, p.entryType || 'GİRİŞ', p.note, unitPrice, item.stock);
+  append_(CFG.sheets.incoming, HEADERS.incoming, row); updateStockPrice_(item, unitPrice);
+  log_(u, 'STOK_GIRIS', row.ID, {item:item.id, qty:qty, unitPrice:unitPrice});
+  return {id:row.ID, newStock:item.stock + qty};
 }
-const REGISTRATION_USAGE=['Kritik Malzeme','Planlı Bakım','Sarf','İSG','Tekli Makine','Çoklu Makine','Depo Onayı Gerekli'];
+function stockCount_(u, p) {
+  const item = item_(p.itemId);
+  requireRole_(u, item.depot === 'ISG' ? ['ISG_ADMIN','YONETICI'] : ['MEK_ADMIN','YONETICI']);
+  const actual = n_(p.actual), delta = actual - item.stock;
+  const row = entryRow_(u, item, delta, 'SAYIM DÜZELTME', 'Sayım: ' + actual, 0, item.stock);
+  append_(CFG.sheets.incoming, HEADERS.incoming, row);
+  log_(u, 'STOK_SAYIM', row.ID, {item:item.id, old:item.stock, actual:actual});
+  return {id:row.ID, newStock:actual};
+}
+
+/* ===================== YENİ MALZEME KAYDI ===================== */
+const REGISTRATION_USAGE = ['Kritik Malzeme','Planlı Bakım','Sarf','İSG','Tekli Makine','Çoklu Makine','Depo Onayı Gerekli'];
 function usageList_(value) {
-  const raw=Array.isArray(value)?value:String(value||'').split('|');
-  return [...new Set(raw.map(v=>REGISTRATION_USAGE.find(x=>norm_(x)===norm_(v))).filter(Boolean))];
+  const raw = Array.isArray(value) ? value : String(value || '').split('|');
+  return [...new Set(raw.map(v => REGISTRATION_USAGE.find(x => norm_(x) === norm_(v))).filter(Boolean))];
 }
 function machineList_(p) {
-  const raw=Array.isArray(p.machines)?p.machines:String(p.machine||'').split('|');
-  return [...new Set(raw.map(String).map(x=>x.trim()).filter(Boolean))];
+  const raw = Array.isArray(p.machines) ? p.machines : String(p.machine || '').split('|');
+  return [...new Set(raw.map(String).map(x => x.trim()).filter(Boolean))];
 }
 function nextStockCode_(depot) {
-  const prefix=depot==='ISG'?'ISG':'MEK', ids=stock_().map(x=>String(x.id||'')); let max=0;
-  ids.forEach(id=>{const m=id.match(new RegExp('^'+prefix+'-(\\d+)$'));if(m)max=Math.max(max,Number(m[1]));});
-  let code; do { max++; code=prefix+'-'+String(max).padStart(6,'0'); } while(ids.indexOf(code)>=0); return code;
+  const prefix = depot === 'ISG' ? 'ISG' : 'MEK';
+  const ids = objects_(CFG.sheets.stock).map(x => String(x.ID || '')); let max = 0;
+  ids.forEach(id => { const m = id.match(new RegExp('^' + prefix + '-(\\d+)$')); if (m) max = Math.max(max, Number(m[1])); });
+  let code; do { max++; code = prefix + '-' + String(max).padStart(6, '0'); } while (ids.indexOf(code) >= 0);
+  return code;
 }
-function setStockFormulas_(sheet,row) {
-  const sep=depotBook_().getSpreadsheetLocale().toLowerCase().indexOf('tr')===0?';':',';
-  sheet.getRange(row,13).setFormula('=IF(A'+row+'=""'+sep+'""'+sep+'SUMIF(GIRIS_HAREKETLERI!B:B'+sep+'A'+row+sep+'GIRIS_HAREKETLERI!F:F))');
-  sheet.getRange(row,14).setFormula('=IF(A'+row+'=""'+sep+'""'+sep+'SUMIF(CIKIS_HAREKETLERI!B:B'+sep+'A'+row+sep+'CIKIS_HAREKETLERI!J:J))');
-  sheet.getRange(row,15).setFormula('=IF(A'+row+'=""'+sep+'""'+sep+'M'+row+'-N'+row+')');
-  sheet.getRange(row,16).setFormula('=IF(A'+row+'=""'+sep+'""'+sep+'IF(O'+row+'<=L'+row+sep+'"EKSİK"'+sep+'"TAM"))');
-  sheet.getRange(row,21).setFormula('=IF(A'+row+'=""'+sep+'""'+sep+'O'+row+'*T'+row+')');
+function setStockFormulas_(sheet, row) {
+  const sep = depotBook_().getSpreadsheetLocale().toLowerCase().indexOf('tr') === 0 ? ';' : ',';
+  const S = CFG.sheets.stock, I = CFG.sheets.incoming, O = CFG.sheets.outgoing;
+  const c = {
+    id:headerCol_(S, ['ID']), code:headerCol_(S, ['PARÇA KODU']), min:headerCol_(S, ['MİN STOK']),
+    giren:headerCol_(S, ['GİREN']), cikan:headerCol_(S, ['ÇIKAN']), stok:headerCol_(S, ['ANLIK STOK']),
+    durum:headerCol_(S, ['DURUM']), fiyat:headerCol_(S, ['BİRİM FİYAT']), toplam:headerCol_(S, ['TOPLAM FİYAT']),
+    inKey:headerCol_(I, ['PARÇA KODU']), inQty:headerCol_(I, ['ADET','MİKTAR','GİRİŞ AD']),
+    outKey:headerCol_(O, ['PARÇA KODU']), outQty:headerCol_(O, ['ADET','ÇIKIŞ AD','MİKTAR'])
+  };
+  if (!c.id || !c.code) return;
+  const L = colLetter_, A = L(c.id) + row, K = L(c.code) + row, q = x => "'" + x + "'!";
+  const set = (col, f) => { if (col) sheet.getRange(row, col).setFormula(f); };
+  const blank = '=IF(' + A + '=""' + sep + '""' + sep;
+  if (c.inKey && c.inQty) set(c.giren, blank + 'SUMIF(' + q(I) + L(c.inKey) + ':' + L(c.inKey) + sep + K + sep + q(I) + L(c.inQty) + ':' + L(c.inQty) + '))');
+  if (c.outKey && c.outQty) set(c.cikan, blank + 'SUMIF(' + q(O) + L(c.outKey) + ':' + L(c.outKey) + sep + K + sep + q(O) + L(c.outQty) + ':' + L(c.outQty) + '))');
+  if (c.giren && c.cikan) set(c.stok, blank + L(c.giren) + row + '-' + L(c.cikan) + row + ')');
+  if (c.stok && c.min) set(c.durum, blank + 'IF(' + L(c.stok) + row + '<=' + L(c.min) + row + sep + '"EKSİK"' + sep + '"TAM"))');
+  if (c.stok && c.fiyat) set(c.toplam, blank + L(c.stok) + row + '*' + L(c.fiyat) + row + ')');
 }
-function itemCreate_(u,p) {
-  const usage=usageList_(p.usage), machines=machineList_(p), single=usage.indexOf('Tekli Makine')>=0, multiple=usage.indexOf('Çoklu Makine')>=0;
-  if(!usage.length)throw new Error('En az bir kullanım şekli seçilmelidir.');
-  if(single&&multiple)throw new Error('Tekli Makine ve Çoklu Makine birlikte seçilemez.');
-  const needsMachine=usage.some(x=>['Kritik Malzeme','Planlı Bakım','Tekli Makine','Çoklu Makine'].indexOf(x)>=0);
-  if(needsMachine&&!machines.length)throw new Error('Seçilen kullanım şekli için makine seçilmelidir.');
-  if(single&&machines.length!==1)throw new Error('Tekli Makine için yalnız bir makine seçilmelidir.');
-  if(multiple&&machines.length<2)throw new Error('Çoklu Makine için en az iki makine seçilmelidir.');
-  const depot=usage.indexOf('İSG')>=0?'ISG':'MEKANIK'; requireRole_(u,depot==='ISG'?['ISG_ADMIN','YONETICI']:['MEK_ADMIN','YONETICI']);
-  if(!p.code||!p.name||!p.category||!p.company||!p.unit||!p.shelf)throw new Error('Malzeme türü, kod, açıklama, raf, firma ve birim zorunludur.');
-  const qty=n_(p.initial), min=n_(p.min), unitPrice=n_(p.unitPrice); if(qty<=0)throw new Error('Stok miktarı 0’dan büyük olmalıdır.'); if(min<0||unitPrice<0)throw new Error('Sipariş noktası ve birim fiyat negatif olamaz.');
-  const existing=stock_().find(x=>norm_(x.code)===norm_(p.code));
-  if(existing){
-    requireRole_(u,existing.depot==='ISG'?['ISG_ADMIN','YONETICI']:['MEK_ADMIN','YONETICI']);
-    const entry=stockIn_(u,{itemId:existing.id,qty:qty,unitPrice:unitPrice,entryType:'GIRIS',note:'Yeni malzeme formu: mevcut parça koduna giriş'});
-    log_(u,'MEVCUT_KARTA_GIRIS',existing.id,{entryId:entry.id,qty:qty}); return {id:existing.id,existing:true,entryId:entry.id,newStock:entry.newStock};
+function itemCreate_(u, p) {
+  const usage = usageList_(p.usage), machines = machineList_(p);
+  const single = usage.indexOf('Tekli Makine') >= 0, multiple = usage.indexOf('Çoklu Makine') >= 0;
+  if (!usage.length) throw new Error('En az bir kullanım şekli seçilmelidir.');
+  if (single && multiple) throw new Error('Tekli Makine ve Çoklu Makine birlikte seçilemez.');
+  const needsMachine = usage.some(x => ['Kritik Malzeme','Planlı Bakım','Tekli Makine','Çoklu Makine'].indexOf(x) >= 0);
+  if (needsMachine && !machines.length) throw new Error('Seçilen kullanım şekli için makine seçilmelidir.');
+  if (single && machines.length !== 1) throw new Error('Tekli Makine için yalnız bir makine seçilmelidir.');
+  if (multiple && machines.length < 2) throw new Error('Çoklu Makine için en az iki makine seçilmelidir.');
+  const depot = usage.indexOf('İSG') >= 0 ? 'ISG' : 'MEKANIK';
+  requireRole_(u, depot === 'ISG' ? ['ISG_ADMIN','YONETICI'] : ['MEK_ADMIN','YONETICI']);
+  if (!p.code || !p.name || !p.category || !p.company || !p.unit || !p.shelf) throw new Error('Malzeme türü, kod, açıklama, raf, firma ve birim zorunludur.');
+  const qty = n_(p.initial), min = n_(p.min), unitPrice = n_(p.unitPrice);
+  if (qty <= 0) throw new Error('Stok miktarı 0’dan büyük olmalıdır.');
+  if (min < 0 || unitPrice < 0) throw new Error('Sipariş noktası ve birim fiyat negatif olamaz.');
+
+  const existing = stock_().find(x => norm_(x.code) === norm_(p.code));
+  if (existing) {
+    const entry = stockIn_(u, {itemId:existing.id, qty:qty, unitPrice:unitPrice, entryType:'GİRİŞ', note:'Mevcut parça koduna giriş'});
+    log_(u, 'MEVCUT_KARTA_GIRIS', existing.id, {entryId:entry.id, qty:qty});
+    return {id:existing.id, existing:true, entryId:entry.id, newStock:entry.newStock};
   }
-  const type=depot==='ISG'?'İSG MALZEME':(!needsMachine&&usage.every(x=>x==='Sarf')?'SARF / ORTAK KULLANIM':'MAKİNE PARÇASI');
-  const id=nextStockCode_(depot), machine=needsMachine?machines.join(' | '):'';
-  const stockRow=append_(CFG.sheets.stock,HEADERS.stock,{ID:id,DEPO:depot,MALZEME_TIPI:type,PARCA_KODU:String(p.code).trim(),MALZEME_ADI:String(p.name).trim(),KATEGORI:p.category,FIRMA:p.company,BIRIM:p.unit,MALZEME_DEPO_SEKLI:usage.join(' | '),RAF_NO:p.shelf,MAKINE_PARCAY:machine,MIN_STOK:min,GIREN:0,CIKAN:0,ANLIK_STOK:0,DURUM:'EKSİK',AKTIF_PASIF:'AKTİF',OLUSTURAN:u.name,TARIH:now_(),BIRIM_FIYAT:unitPrice,TOPLAM_FIYAT:0});
-  const stockSheet=sh_(CFG.sheets.stock); setStockFormulas_(stockSheet,stockRow);
-  const first={ID:uid_('GRS'),STOK_ID:id,PARCA_KODU:p.code,URUN_KODU:p.code,MALZEME_ADI:p.name,URUN_ACIKLAMASI:p.name,DEPO:depot,MIKTAR:qty,GIRIS_AD:qty,BIRIM:p.unit,ISLEM_TURU:'ILK_STOK',YAPAN:u.name,DEPO_GIRIS_YAPAN:u.name,TARIH:now_(),GIRIS_TARIHI:now_(),ACIKLAMA:'Yeni stok kartı ilk girişi',BIRIM_FIYAT:unitPrice,TOPLAM_FIYAT:qty*unitPrice};
-  append_(CFG.sheets.incoming,HEADERS.incoming,first); mirrorLegacy_('DEPOGRS',first);
-  log_(u,'KART_OLUSTUR',id,{code:p.code,usage:usage,machines:machines,initial:qty,unitPrice:unitPrice}); return {id:id,existing:false,entryId:first.ID};
+  const base = usage.filter(x => x !== 'Depo Onayı Gerekli');
+  const type = depot === 'ISG' ? 'İSG MALZEME' : (!needsMachine && base.length && base.every(x => x === 'Sarf') ? 'SARF / ORTAK KULLANIM' : 'MAKİNE PARÇASI');
+  const id = nextStockCode_(depot), machine = needsMachine ? machines.join(' | ') : '';
+  const stockRow = append_(CFG.sheets.stock, HEADERS.stock, {
+    ID:id, MALZEME_TIPI:type, PARCA_KODU:String(p.code).trim(), MALZEME_ADI:String(p.name).trim(),
+    MALZEME_TURU:p.category, FIRMA:p.company, BIRIM:p.unit, MALZEME_DEPO_SEKLI:usage.join(' | '), RAF:p.shelf,
+    MAKINE:machine, MIN_STOK:min, AKTIF_PASIF:'AKTİF', OLUSTURAN:u.name, TARIH:now_(), BIRIM_FIYAT:unitPrice
+  });
+  setStockFormulas_(sh_(CFG.sheets.stock), stockRow);
+  const item = {id:id, code:String(p.code).trim(), name:String(p.name).trim(), company:p.company, shelf:p.shelf, unit:p.unit};
+  const first = entryRow_(u, item, qty, 'İLK STOK', 'Yeni stok kartı ilk girişi', unitPrice, 0);
+  append_(CFG.sheets.incoming, HEADERS.incoming, first);
+  log_(u, 'KART_OLUSTUR', id, {code:p.code, usage:usage, machines:machines, initial:qty, unitPrice:unitPrice});
+  return {id:id, existing:false, entryId:first.ID};
 }
-function itemUpdate_(u,p) {
-  const item=item_(p.id); requireRole_(u,item.depot==='ISG'?['ISG_ADMIN','YONETICI']:['MEK_ADMIN','YONETICI']);
-  if (p.code && stock_().some(x=>x.id!==item.id&&norm_(x.code)===norm_(p.code))) throw new Error('Parça kodu başka bir kartta kullanılıyor.');
-  const allowed=['PARÇA KODU','MALZEME ADI','KATEGORİ','FİRMA','BİRİM','MALZEME DEPO ŞEKLİ','RAF NO','MAKİNE PARÇAY','MİN STOK','AKTİF/PASİF','BİRİM FİYAT'];
-  const s=sh_(CFG.sheets.stock), h=s.getRange(1,1,1,s.getLastColumn()).getDisplayValues()[0];
-  const map={code:'PARÇA KODU',name:'MALZEME ADI',category:'KATEGORİ',company:'FİRMA',unit:'BİRİM',usage:'MALZEME DEPO ŞEKLİ',shelf:'RAF NO',machine:'MAKİNE PARÇAY',min:'MİN STOK',active:'AKTİF/PASİF',unitPrice:'BİRİM FİYAT'};
-  Object.keys(map).forEach(k=>{if(p[k]!==undefined){const j=h.map(norm_).indexOf(norm_(map[k]));if(j>=0&&allowed.indexOf(map[k])>=0)s.getRange(item.row,j+1).setValue(p[k]);}});
-  log_(u,'KART_GUNCELLE',item.id,p); return {id:item.id};
-}
-
-function recipeList_(u,p) {
-  const rows=objects_(CFG.sheets.recipes).map(o=>({id:o.ID,machine:o.MAKINE,period:o.PERIYOT,itemId:o.STOK_ID,code:o.PARCA_KODU,name:o.MALZEME_ADI,qty:n_(o.MIKTAR),unit:o.BIRIM,shelf:o.RAF_NO,active:!/(PASIF|HAYIR|0)/.test(norm_(o.AKTIF_PASIF))})).filter(x=>x.active);
-  const st=stock_(); return rows.filter(x=>(!p.machine||x.machine===p.machine)&&(!p.period||norm_(x.period)===norm_(p.period))).map(x=>{const item=st.find(i=>i.id===x.itemId);return Object.assign(x,{stock:item?item.stock:0,ready:!!item&&item.stock>=x.qty});});
-}
-function recipeSave_(u,p) {
-  requireRole_(u,['MEK_ADMIN','YONETICI']); if(!p.machine||CFG.periods.indexOf(norm_(p.period))<0||!Array.isArray(p.items)||!p.items.length)throw new Error('Makine, periyot ve reçete kalemleri zorunludur.');
-  const s=ensureSheet_(CFG.sheets.recipes,HEADERS.recipes), existing=objects_(CFG.sheets.recipes).filter(x=>x.MAKINE===p.machine&&norm_(x.PERIYOT)===norm_(p.period));
-  existing.forEach(x=>s.getRange(x._row,HEADERS.recipes.indexOf('AKTİF/PASİF')+1).setValue('PASİF'));
-  p.items.forEach(row=>{const item=item_(row.itemId);if(item.depot!=='MEKANIK')throw new Error('Reçeteye yalnız mekanik parça eklenebilir.');append_(CFG.sheets.recipes,HEADERS.recipes,{ID:uid_('BOM'),MAKINE:p.machine,PERIYOT:norm_(p.period),STOK_ID:item.id,PARCA_KODU:item.code,MALZEME_ADI:item.name,MIKTAR:n_(row.qty),BIRIM:item.unit,RAF_NO:item.shelf,AKTIF_PASIF:'AKTİF',GUNCELLEYEN:u.name,GUNCELLEME_TARIHI:now_()});});
-  log_(u,'RECETE_KAYDET',p.machine+' '+p.period,{count:p.items.length}); return {saved:p.items.length};
-}
-function recipeBulkCheckout_(u,p) {
-  const rows=recipeList_(u,{machine:p.machine,period:p.period}); if(!rows.length)throw new Error('Reçete bulunamadı.'); const missing=rows.filter(x=>!x.ready); if(missing.length)throw new Error('Eksik stok: '+missing.map(x=>x.code).join(', '));
-  const ids=[]; rows.forEach(r=>{const item=item_(r.itemId);ids.push(writeExit_(u,item,r.qty,p.machine,'PLANLI_BAKIM_SET',''));});
-  log_(u,'RECETE_TOPLU_CIKIS',p.machine+' '+p.period,{ids:ids}); return {completed:true,ids:ids,autoLogout:u.role==='OP'};
+function itemUpdate_(u, p) {
+  const item = item_(p.id);
+  requireRole_(u, item.depot === 'ISG' ? ['ISG_ADMIN','YONETICI'] : ['MEK_ADMIN','YONETICI']);
+  if (p.code && stock_().some(x => x.id !== item.id && norm_(x.code) === norm_(p.code))) throw new Error('Parça kodu başka bir kartta kullanılıyor.');
+  const s = sh_(CFG.sheets.stock), h = s.getRange(1,1,1,s.getLastColumn()).getDisplayValues()[0].map(norm_);
+  const map = {code:'PARÇA KODU', name:'MALZEME ADI', category:'MALZEME TÜRÜ', company:'FİRMA', unit:'BİRİM', usage:'MALZEME DEPO ŞEKLİ', shelf:'RAF', machine:'MAKİNE', min:'MİN STOK', active:'AKTİF/PASİF', unitPrice:'BİRİM FİYAT'};
+  Object.keys(map).forEach(k => {
+    if (p[k] === undefined) return;
+    const j = h.indexOf(norm_(map[k]));
+    if (j >= 0) s.getRange(item.row, j + 1).setValue(Array.isArray(p[k]) ? p[k].join(' | ') : p[k]);
+  });
+  log_(u, 'KART_GUNCELLE', item.id, p);
+  return {id:item.id, updated:true};
 }
 
-function ppeAnalysis_(u,p) {
-  requireRole_(u,['ISG_ADMIN','YONETICI']); const days=p.range==='3m'?90:(p.range==='month'?Math.max(1,new Date().getDate()):30), since=new Date(Date.now()-days*86400000);
-  const personnel=users_().filter(x=>x.active&&x.role==='OP').map(x=>x.name), exits=objects_(CFG.sheets.outgoing).filter(o=>norm_(o.DEPO)==='ISG'&&parseDate_(o.KULLANIM_TARIHI)>=since);
-  const cards=personnel.map(name=>{const own=exits.filter(e=>norm_(e.CIKIS_YAPAN)===norm_(name));return {name:name,count:own.length,total:own.reduce((s,e)=>s+n_(e.CIKIS_AD),0),items:[...new Set(own.map(e=>e.MALZEME_ADI).filter(Boolean))],last:own.length?own.map(e=>e.KULLANIM_TARIHI).sort().pop():''};});
-  return {rangeDays:days,none:cards.filter(x=>x.count===0),cards:cards};
+/* ===================== PLANLI BAKIM REÇETE ===================== */
+function recipeList_(u, p) {
+  p = p || {};
+  const s = depotBook_().getSheetByName(CFG.sheets.recipes); if (!s || s.getLastRow() < 2) return [];
+  const st = stock_();
+  const all = !p.period || norm_(p.period) === 'TUMU';
+  return objects_(CFG.sheets.recipes).map(o => {
+    const code = s_(o.PARCA_KODU), mid = s_(o.MALZEME_ID || o.STOK_ID);
+    const item = st.find(i => (mid && i.id === mid) || (code && norm_(i.code) === norm_(code)));
+    return {
+      id:'R' + o._row, machine:s_(o.MAKINE), period:s_(o.PERIYOT),
+      itemId:item ? item.id : mid, code:item ? item.code : code,
+      name:s_(o.MALZEME || o.MALZEME_ADI || (item && item.name)),
+      qty:n_(o.STANDART_ADET || o.MIKTAR), unit:item ? item.unit : s_(o.BIRIM),
+      shelf:item ? item.shelf : s_(o.RAF_NO), stock:item ? item.stock : 0,
+      active:o.AKTIF_PASIF === undefined ? true : !/(PASIF)/.test(norm_(o.AKTIF_PASIF)),
+      found:!!item
+    };
+  }).filter(x => x.active && x.machine && (x.code || x.itemId)
+      && (!p.machine || x.machine === p.machine) && (all || norm_(x.period) === norm_(p.period)))
+    .map(x => Object.assign(x, {ready:x.found && x.qty > 0 && x.stock >= x.qty}));
 }
-function movementAnalysis_(u,p) {
-  requireRole_(u,['MEK_ADMIN','ISG_ADMIN','YONETICI']); const range=p.range||'year', now=new Date(), since=range==='all'?new Date(0):range==='30d'?new Date(Date.now()-30*86400000):range==='3m'?new Date(Date.now()-90*86400000):new Date(now.getFullYear(),0,1);
-  const depot=u.role==='MEK_ADMIN'?'MEKANIK':u.role==='ISG_ADMIN'?'ISG':norm_(p.depot||'TUMU'), exits=objects_(CFG.sheets.outgoing).filter(o=>parseDate_(o.KULLANIM_TARIHI)>=since&&(depot==='TUMU'||norm_(o.DEPO)===depot)); const st=stock_();
-  const m={}; exits.forEach(e=>{const k=e.STOK_ID||e.PARCA_KODU;if(!m[k])m[k]={itemId:e.STOK_ID,code:e.PARCA_KODU,name:e.MALZEME_ADI,depot:e.DEPO,frequency:0,total:0,machines:{}};m[k].frequency++;m[k].total+=n_(e.CIKIS_AD);const mac=e.KULLANILACAK_MAKINE_BOLUM||'BELİRTİLMEDİ';m[k].machines[mac]=(m[k].machines[mac]||0)+n_(e.CIKIS_AD);});
-  const rows=Object.values(m).sort((a,b)=>b.total-a.total), grand=rows.reduce((s,x)=>s+x.total,0); let cum=0; rows.forEach(x=>{cum+=x.total;const ratio=grand?cum/grand:0;x.abc=ratio<=.8?'A':ratio<=.95?'B':'C';const item=st.find(i=>i.id===x.itemId||i.code===x.code);x.min=item?item.min:0;x.stock=item?item.stock:0;const months=Math.max(1,(now-since)/2629800000);x.velocity=x.total/months;x.suggestion=!!item&&x.velocity>item.min;});
-  return {rows:rows,range:range,depot:p.depot||'Tümü'};
+function recipeSave_(u, p) {
+  requireRole_(u, ['MEK_ADMIN','YONETICI']);
+  const period = String(p.period || '').trim().toLocaleUpperCase('tr-TR');
+  if (!p.machine || CFG.periods.indexOf(period) < 0 || !Array.isArray(p.items) || !p.items.length) throw new Error('Makine, periyot ve reçete kalemleri zorunludur.');
+  const items = p.items.map(row => {
+    const item = item_(row.itemId || row.code);
+    if (item.depot !== 'MEKANIK') throw new Error('Reçeteye yalnız mekanik parça eklenebilir.');
+    const qty = n_(row.qty); if (qty <= 0) throw new Error(item.code + ' için standart adet 0’dan büyük olmalıdır.');
+    return {item:item, qty:qty};
+  });
+  const s = ensureHeaders_(CFG.sheets.recipes, HEADERS.recipes);
+  const activeCol = headerCol_(CFG.sheets.recipes, ['AKTİF/PASİF']);
+  const old = objects_(CFG.sheets.recipes).filter(x => s_(x.MAKINE) === p.machine && norm_(x.PERIYOT) === norm_(period));
+  if (activeCol) old.forEach(x => s.getRange(x._row, activeCol).setValue('PASİF'));
+  else old.map(x => x._row).sort((a,b) => b - a).forEach(r => s.deleteRow(r));
+  items.forEach(x => {
+    append_(CFG.sheets.recipes, HEADERS.recipes, {
+      MAKINE:p.machine, PERIYOT:period, MALZEME_ID:x.item.id, STOK_ID:x.item.id, PARCA_KODU:x.item.code,
+      MALZEME:x.item.name, MALZEME_ADI:x.item.name, STANDART_ADET:x.qty, MIKTAR:x.qty, BIRIM:x.item.unit,
+      RAF_NO:x.item.shelf, AKTIF_PASIF:'AKTİF', GUNCELLEYEN:u.name, GUNCELLEME_TARIHI:now_()
+    });
+  });
+  log_(u, 'RECETE_KAYDET', p.machine + ' ' + period, {count:items.length});
+  return {saved:true, count:items.length};
 }
-function parseDate_(v) { const d=new Date(v); return isNaN(d)?new Date(0):d; }
-function log_(u,action,source,detail) { append_(CFG.sheets.log,HEADERS.log,{TARIH:now_(),KULLANICI:u.name,ROL:u.role,ISLEM:action,KAYNAK_ID:source,DETAY:JSON.stringify(detail||{})}); }
+function recipeBulkCheckout_(u, p) {
+  if (!p.period || norm_(p.period) === 'TUMU') throw new Error('Toplu düşüm için tek bir periyot seçin.');
+  const rows = recipeList_(u, {machine:p.machine, period:p.period});
+  if (!rows.length) throw new Error('Reçete bulunamadı.');
+  const missing = rows.filter(x => !x.ready);
+  if (missing.length) throw new Error('Eksik stok / adet: ' + missing.map(x => x.code).join(', '));
+  const ids = rows.map(r => writeExit_(u, item_(r.itemId || r.code), r.qty, p.machine, 'PLANLI BAKIM', '', ''));
+  log_(u, 'RECETE_TOPLU_CIKIS', p.machine + ' ' + p.period, {ids:ids});
+  return {completed:true, ids:ids, autoLogout:u.role === 'OP'};
+}
 
-function KURULUM_V8_7() {
-  const ss=depotBook_();
-  ensureHeaders_(CFG.sheets.stock,HEADERS.stock); ensureHeaders_(CFG.sheets.incoming,HEADERS.incoming); ensureHeaders_(CFG.sheets.outgoing,HEADERS.outgoing); ensureApprovalHeaders_(); ensureHeaders_(CFG.sheets.recipes,HEADERS.recipes); ensureHeaders_(CFG.sheets.log,HEADERS.log);
-  const stock=ss.getSheetByName(CFG.sheets.stock); if(stock.getMaxRows()>1){
-    setStockFormulas_(stock,2);
-    stock.getRange(2,13,Math.max(1,stock.getMaxRows()-1),4).fillDown();
-    stock.getRange(2,21,Math.max(1,stock.getMaxRows()-1),1).fillDown();
-    stock.getRange(2,20,Math.max(1,stock.getMaxRows()-1),2).setNumberFormat('#,##0.00');
-  }
-  const incoming=ss.getSheetByName(CFG.sheets.incoming); if(incoming.getMaxRows()>1)incoming.getRange(2,12,Math.max(1,incoming.getMaxRows()-1),2).setNumberFormat('#,##0.00');
-  return 'V8.7 hazır. Mevcut mimari ve E-Tablo sütunları korundu; Depo Onayı Gerekli akışı eklendi: '+[CFG.sheets.stock,CFG.sheets.incoming,CFG.sheets.outgoing,CFG.sheets.approvals,CFG.sheets.recipes,CFG.sheets.log].join(', ');
+/* ===================== ANALİZ ===================== */
+function ppeAnalysis_(u, p) {
+  requireRole_(u, ['ISG_ADMIN','YONETICI']);
+  const days = p.range === '3m' ? 90 : (p.range === 'month' ? Math.max(1, new Date().getDate()) : 30);
+  const since = new Date(Date.now() - days * 86400000);
+  const personnel = users_().filter(x => x.role === 'OP').map(x => x.name);
+  const exits = outs_().filter(o => o.depot === 'ISG' && parseDate_(o.date) >= since);
+  const cards = personnel.map(name => {
+    const own = exits.filter(e => norm_(e.person) === norm_(name));
+    return {name:name, count:own.length, total:own.reduce((s,e) => s + e.qty, 0), items:[...new Set(own.map(e => e.name).filter(Boolean))], last:own.length ? own.map(e => e.date).sort().pop() : ''};
+  });
+  return {rangeDays:days, none:cards.filter(x => x.count === 0), cards:cards};
 }
-function KURULUM_V8(){ return KURULUM_V8_7(); }
-function KURULUM_V7(){ return KURULUM_V8_7(); }
+function movementAnalysis_(u, p) {
+  requireRole_(u, ['MEK_ADMIN','ISG_ADMIN','YONETICI']);
+  const range = p.range || 'year', now = new Date();
+  const since = range === 'all' ? new Date(0) : range === '30d' ? new Date(Date.now() - 30*86400000) : range === '3m' ? new Date(Date.now() - 90*86400000) : new Date(now.getFullYear(), 0, 1);
+  const depot = u.role === 'MEK_ADMIN' ? 'MEKANIK' : u.role === 'ISG_ADMIN' ? 'ISG' : norm_(p.depot || 'TUMU');
+  const exits = outs_().filter(o => parseDate_(o.date) >= since && (depot === 'TUMU' || o.depot === depot));
+  const st = stock_(); const m = {};
+  exits.forEach(e => {
+    const k = e.code || e.name;
+    if (!m[k]) m[k] = {itemId:e.itemId, code:e.code, name:e.name, depot:e.depot, unit:e.unit, frequency:0, total:0, machines:{}};
+    m[k].frequency++; m[k].total += e.qty;
+    const mac = e.machine || 'BELİRTİLMEDİ'; m[k].machines[mac] = (m[k].machines[mac] || 0) + e.qty;
+  });
+  const rows = Object.values(m).sort((a,b) => b.total - a.total), grand = rows.reduce((s,x) => s + x.total, 0); let cum = 0;
+  rows.forEach(x => {
+    cum += x.total; const ratio = grand ? cum / grand : 0;
+    x.abc = ratio <= .8 ? 'A' : ratio <= .95 ? 'B' : 'C';
+    const item = st.find(i => norm_(i.code) === norm_(x.code));
+    x.min = item ? item.min : 0; x.stock = item ? item.stock : 0;
+    x.velocity = x.total / Math.max(1, (now - since) / 2629800000); x.suggestion = !!item && x.velocity > item.min;
+  });
+  return {rows:rows, range:range, depot:p.depot || 'Tümü'};
+}
+function log_(u, action, source, detail) {
+  try { append_(CFG.sheets.log, HEADERS.log, {TARIH:now_(), KULLANICI:u.name, ROL:u.role, ISLEM:action, KAYNAK_ID:source, DETAY:JSON.stringify(detail || {})}); } catch (e) {}
+}
+
+/* ===================== KURULUM / TEST ===================== */
+function KURULUM_V8() {
+  Object.keys(HEADERS).forEach(k => ensureHeaders_(CFG.sheets[k], HEADERS[k]));
+  const stock = sh_(CFG.sheets.stock), idCol = headerCol_(CFG.sheets.stock, ['ID']) || 1;
+  for (let r = 2; r <= stock.getLastRow(); r++) { if (stock.getRange(r, idCol).getValue()) setStockFormulas_(stock, r); }
+  ['BİRİM FİYAT','TOPLAM FİYAT'].forEach(n => { const c = headerCol_(CFG.sheets.stock, [n]); if (c && stock.getMaxRows() > 1) stock.getRange(2, c, stock.getMaxRows() - 1, 1).setNumberFormat('#,##0.00'); });
+  sessionSecret_();
+  return 'V8.7-ONAY2 hazır.';
+}
+function KURULUM_V8_7() { return KURULUM_V8(); }
+function KURULUM_V7() { return KURULUM_V8(); }
+
+function RECETE_TAMAMLA() {
+  const R = CFG.sheets.recipes, s = sh_(R), st = stock_();
+  const cId = headerCol_(R, ['MALZEME ID']), cName = headerCol_(R, ['MALZEME']);
+  const report = [];
+  objects_(R).forEach(o => {
+    const code = s_(o.PARCA_KODU); if (!code) return;
+    const item = st.find(i => norm_(i.code) === norm_(code));
+    if (!item) { report.push('Satır ' + o._row + ': "' + code + '" STOK_KARTLARI\'nda yok'); return; }
+    if (cId && !o.MALZEME_ID) s.getRange(o._row, cId).setValue(item.id);
+    if (cName && !o.MALZEME) s.getRange(o._row, cName).setValue(item.name);
+    if (!n_(o.STANDART_ADET)) report.push('Satır ' + o._row + ': ' + code + ' için STANDART ADET boş');
+  });
+  Logger.log(report.length ? report.join('\n') : 'Reçete tamam, eksik yok.');
+  return report;
+}
+function TEST_KULLANICILAR() {
+  const list = users_().map(u => u.name + ' → ' + u.role + ' (PIN ' + u.pin.length + ' hane)');
+  Logger.log(list.length ? list.join('\n') : 'Kullanıcı bulunamadı! VERİ J/K/L sütunlarını kontrol et.');
+  return list;
+}
+function TEST_SUTUNLAR() {
+  const show = (sheet, names) => { const o = {}; names.forEach(n => { const c = headerCol_(sheet, [n]); o[n] = c ? colLetter_(c) : 'YOK'; }); return o; };
+  const out = {
+    STOK_KARTLARI:show(CFG.sheets.stock, ['ID','PARÇA KODU','MALZEME TÜRÜ','MALZEME DEPO ŞEKLİ','RAF','MAKİNE','MİN STOK','GİREN','ÇIKAN','ANLIK STOK','DURUM','AKTİF/PASİF','BİRİM FİYAT','TOPLAM FİYAT']),
+    GIRIS_HAREKETLERI:show(CFG.sheets.incoming, ['KAYIT NO','TARİH','PARÇA KODU','ADET','BİRİM','YAPAN','İŞLEM TÜRÜ']),
+    CIKIS_HAREKETLERI:show(CFG.sheets.outgoing, ['KAYIT NO','TARİH','ID','PARÇA KODU','MALZEME','OPERATÖR','MAKİNE','ADET','BİRİM','ÇIKIŞ TÜRÜ','ONAY','ONAYLAYAN','TALEP NO']),
+    ONAY_HAVUZU:show(CFG.sheets.approvals, ['TALEP NO','TARİH','OPERATÖR','ID','MALZEME','MAKİNE','ADET','DURUM','ONAYLAYAN','ONAY TARİHİ']),
+    PLANLI_BAKIM_RECETE:show(CFG.sheets.recipes, ['MAKİNE','PERİYOT','MALZEME ID','PARÇA KODU','MALZEME','STANDART ADET'])
+  };
+  Logger.log(JSON.stringify(out, null, 2));
+  return out;
+}
+function TEST_HAREKETLER() {
+  const rows = recentMovements_({name:'TEST', role:'YONETICI'}).slice(0, 5);
+  Logger.log(rows.length ? JSON.stringify(rows, null, 2) : 'Çıkış hareketi bulunamadı.');
+  return rows;
+}
+/* V8.7 — Editörde çalıştır: Depo Onayı Gerekli işaretli kartları listeler. */
+function TEST_DEPO_ONAYI() {
+  const list = stock_().filter(x => x.depotApproval).map(x => x.id + ' | ' + x.code + ' | ' + x.name);
+  Logger.log(list.length ? list.join('\n') : 'Depo Onayı Gerekli işaretli parça yok.');
+  return list;
+}
 </script>
 </head>
 <body>
@@ -1339,7 +1581,7 @@ function newItemModal(){
 function editItemModal(item){const selected=new Set(String(item.usage||'').split('|').map(norm)),depotApproval=needsDepotApprovalUi(item),usageHtml=REGISTRATION_USAGE_UI.map(x=>`<label><input type="checkbox" name="editUsageOption" value="${esc(x)}" ${selected.has(norm(x))?'checked':''}><span>${esc(x)}</span></label>`).join('');modal('Stok Kartını Düzenle',`<form id="editItemForm" class="form-grid"><input type="hidden" name="id" value="${esc(item.id)}">${field('Parça kodu',`<input name="code" value="${esc(item.code)}" required>`)}${field('Malzeme adı',`<input name="name" value="${esc(item.name)}" required>`)}${field('Kategori',`<input name="category" list="editTypes" value="${esc(item.category)}" required><datalist id="editTypes">${opts(state.data.lists.types)}</datalist>`)}${field('Firma',`<input name="company" list="editCompanies" value="${esc(item.company)}"><datalist id="editCompanies">${opts(state.data.lists.companies)}</datalist>`)}${field('Birim',`<select name="unit">${opts(state.data.lists.units,item.unit)}</select>`)}<div class="field form-span-2"><span>Kullanım Şekli · Çoklu seçim</span><div class="usage-grid">${usageHtml}</div><small>Mevcut değerler “ | ” ayıracına göre işaretlenmiştir.</small></div><div class="field form-span-2"><span>Depo Onayı</span><select name="depotApproval"><option value="Gereksiz" ${depotApproval?'':'selected'}>Gereksiz</option><option value="Gerekli" ${depotApproval?'selected':''}>Gerekli</option></select><small>Mevcut kullanım değerine göre otomatik seçilir.</small></div>${field('Raf',`<input name="shelf" list="editShelves" value="${esc(item.shelf)}" required><datalist id="editShelves">${opts(state.data.lists.shelves)}</datalist>`)}${field('Makine',`<select name="machine" ${item.depot==='ISG'||/SARF/.test(norm(item.type))?'disabled':''}><option value="">Ortak kullanım</option>${opts(state.data.lists.machines,item.machine)}</select>`)}${field('Minimum stok',`<input name="min" type="number" min="0" value="${item.min}" required>`)}${field('Birim fiyat',`<input name="unitPrice" type="number" min="0" step="0.01" value="${item.unitPrice||0}" required>`)}${field('Durum',`<select name="active"><option value="AKTİF">AKTİF</option><option value="PASİF">PASİF</option></select>`)}</form>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="item-update-save">Değişiklikleri Kaydet</button>`);}
 
 function renderMovements(){const q=norm(state.movQuery||'');const rows=(state.data.movements||[]).filter(x=>(state.user.role==='YONETICI'||(state.user.role==='MEK_ADMIN'&&x.depot==='MEKANIK')||(state.user.role==='ISG_ADMIN'&&x.depot==='ISG'))&&(!q||norm([x.person,x.name,x.code,x.machine,x.source,x.depot].join(' ')).includes(q))).slice(0,200);$('#content').innerHTML=`<section class="panel table-panel print-area"><div class="toolbar"><div class="search">${ic('search','ic-sm')}<input id="movSearch" placeholder="Personel, malzeme, parça kodu, makine veya kaynak ara..." value="${esc(state.movQuery||'')}"></div><span class="meta-inline">${rows.length} kayıt</span></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Tarih</th><th>Çıkış Yapan</th><th>Malzeme</th><th>Depo</th><th>Makine / Bölüm</th><th class="num-col">Miktar</th><th>Kaynak</th></tr></thead><tbody>${rows.length?rows.map(x=>`<tr><td class="num">${fmt(x.date)}</td><td><b>${esc(x.person)}</b></td><td><b>${esc(x.name)}</b><small class="mono">${esc(x.code)}</small></td><td><span class="depot ${x.depot.toLowerCase()}">${x.depot==='ISG'?'İSG':'Mekanik'}</span></td><td>${esc(x.machine)}</td><td class="big num-col">${num(x.qty)} <small>${esc(x.unit)}</small></td><td><span class="badge neutral">${esc(x.source)}</span></td></tr>`).join(''):'<tr><td colspan="7"><div class="empty">Kriterlere uyan hareket kaydı bulunamadı.</div></td></tr>'}</tbody></table></div></section>`;}
-function renderApprovals(){const rows=[...(state.data.approvals||[])].map(x=>({...x,_st:approvalStatus(x)})).sort((a,b)=>(a._st==='BEKLIYOR'?0:1)-(b._st==='BEKLIYOR'?0:1));$('#content').innerHTML=`<section class="approval-kpis">${kpi('Bekleyen',rows.filter(x=>x._st==='BEKLIYOR').length,'Depocu veya yönetici kararı bekleyen','clock','orange')}${kpi('Onaylanan',rows.filter(x=>x._st==='ONAYLANDI').length,'Stoktan düşülen talepler','checkCircle','green')}${kpi('Reddedilen',rows.filter(x=>x._st==='REDDEDILDI').length,'Stok değişmeyen talepler','close','red')}</section><section class="panel"><div class="panel-head"><div><h2>Depocu / Yönetici Onay Havuzu</h2><p>Depo onayı gereken veya açık bakım kaydı bulunmayan çıkış talepleri</p></div><span class="meta-inline">${rows.length} talep</span></div><div class="approval-list">${rows.length?rows.map(x=>`<article><div class="approval-id"><span>${esc(x.id||'—')}</span><small>${x.date?fmt(x.date):'Tarih yok'}</small><span class="depot ${(x.depot||'MEKANIK').toLowerCase()}">${norm(x.depot)==='ISG'?'İSG':'Mekanik'}</span>${x.depotApproval?'<span class="badge warning">Depo Onayı</span>':''}</div><div><b>${esc(x.name||'Eksik Talep Kaydı')}</b><p>${x.code?`<span class="mono">${esc(x.code)}</span> · `:''}${esc(x.machine||'—')}${x.qty?` · <strong>${num(x.qty)} ${esc(x.unit||'AD')}</strong>`:''}</p><small>${esc(x.requester||'Operatör yok')} — ${esc(x.reason||'')}</small></div><span class="badge ${x._st==='BEKLIYOR'?'warning':x._st==='ONAYLANDI'?'success':'danger'}">${esc(x._st)}</span>${x._st==='BEKLIYOR'?`<div class="approval-buttons"><button class="btn reject" data-approval="REDDET" data-id="${esc(x.id)}">${x.incomplete?'Reddet / Kapat':'Reddet'}</button>${x.incomplete?'':`<button class="btn approve" data-approval="ONAYLA" data-id="${esc(x.id)}">Onayla</button>`}</div>`:''}</article>`).join(''):'<div class="empty">Onay havuzunda bekleyen veya sonuçlanmış talep yok.</div>'}</div></section>`;}
+function renderApprovals(){const rows=[...(state.data.approvals||[])].map(x=>({...x,_st:approvalStatus(x),_dep:(norm(x.depot)==='ISG'||/ISG|KKD/.test(norm((x.machine||'')+' '+(x.itemId||''))))?'ISG':'MEKANIK'})).sort((a,b)=>(a._st==='BEKLIYOR'?0:1)-(b._st==='BEKLIYOR'?0:1));const oldGas=state.mode!=='demo'&&state.data?.apiVersion!=='V8.7-ONAY2';$('#content').innerHTML=`${oldGas?`<div class="approval-warning" style="margin-bottom:16px"><b>${ic('alert','ic-sm')}</b><p><b>Google Apps Script (Kod.gs) eski sürümde çalışıyor!</b> Yeni kayıtların <b>ONAY_HAVUZU</b> tablosuna eksiksiz yazılması için <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs</b>’yi kopyalayın, Apps Script’e yapıştırıp kaydedin ve <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> adımlarını uygulayın (URL değişmez).</p></div>`:''}<section class="approval-kpis">${kpi('Bekleyen',rows.filter(x=>x._st==='BEKLIYOR').length,'Depocu veya yönetici kararı bekleyen','clock','orange')}${kpi('Onaylanan',rows.filter(x=>x._st==='ONAYLANDI').length,'Stoktan düşülen talepler','checkCircle','green')}${kpi('Reddedilen',rows.filter(x=>x._st==='REDDEDILDI').length,'Stok değişmeyen talepler','close','red')}</section><section class="panel"><div class="panel-head"><div><h2>Depocu / Yönetici Onay Havuzu</h2><p>Depo onayı gereken veya açık bakım kaydı bulunmayan çıkış talepleri</p></div><span class="meta-inline">${rows.length} talep</span></div><div class="approval-list">${rows.length?rows.map(x=>`<article><div class="approval-id"><span>${esc(x.id||'—')}</span><small>${x.date?fmt(x.date):'Tarih yok'}</small><span class="depot ${x._dep.toLowerCase()}">${x._dep==='ISG'?'İSG':'Mekanik'}</span>${x.depotApproval?'<span class="badge warning">Depo Onayı</span>':''}</div><div><b>${esc(x.name||'Eksik Talep Kaydı')}</b><p>${x.code?`<span class="mono">${esc(x.code)}</span> · `:''}${esc(x.machine||'—')}${x.qty?` · <strong>${num(x.qty)} ${esc(x.unit||'AD')}</strong>`:''}</p><small>${esc(x.requester||'Operatör yok')} — ${esc(x.reason||'')}</small></div><span class="badge ${x._st==='BEKLIYOR'?'warning':x._st==='ONAYLANDI'?'success':'danger'}">${esc(x._st)}</span>${x._st==='BEKLIYOR'?`<div class="approval-buttons"><button class="btn reject" data-approval="REDDET" data-id="${esc(x.id)}">${x.incomplete?'Reddet / Kapat':'Reddet'}</button>${x.incomplete?'':`<button class="btn approve" data-approval="ONAYLA" data-id="${esc(x.id)}">Onayla</button>`}</div>`:''}</article>`).join(''):'<div class="empty">Onay havuzunda bekleyen veya sonuçlanmış talep yok.</div>'}</div></section>`;}
 
 const RECIPE_PERIODS=['AYLIK','3 AYLIK','6 AYLIK','YILLIK'];
 function isAllRecipePeriods(period){return norm(period)==='TUMU';}
@@ -1363,7 +1605,7 @@ function analysisDetail(itemId){const x=state.analysis.rows.find(i=>i.itemId===i
 function renderLabels(){const mech=state.data.stock.filter(x=>x.depot==='MEKANIK'),isg=state.data.stock.filter(x=>x.depot==='ISG');$('#content').innerHTML=`<section class="label-hero"><div><span class="meta-inline" style="color:var(--orange)">Sabit Dolap Kodu</span><h2>İSG-DOLAP</h2><p>Tüm İSG ekipmanlarını tek ekranda açan sabit QR etiketi. Dolap kapağına yapıştırmanız yeterlidir.</p><div class="button-row" style="margin-top:12px"><button class="btn primary" data-action="print-cabinet">${ic('print','ic-sm')} İSG Dolap Etiketini Yazdır</button><button class="btn ghost" data-action="open-qr-terminal">${ic('qr','ic-sm')} Bağımsız QR Terminali</button><button class="btn ghost" data-action="download-qr-terminal">${ic('download','ic-sm')} QR HTML İndir</button></div></div><div class="label-preview cabinet-label">${qrSvg('ISG-DOLAP')}<b>İSG DOLABI</b><small>QR okut · PIN gir · KKD seç</small></div></section><section class="panel"><div class="panel-head"><div><h2>Mekanik parça etiketleri</h2><p>Yazdırmak istediğiniz raf etiketlerini işaretleyin</p></div><div class="button-row"><button class="btn ghost" data-action="labels-toggle-all">Tümünü Seç</button><button class="btn primary" data-action="print-selected">${ic('print','ic-sm')} Seçilenleri Yazdır</button></div></div><div class="label-select">${mech.map(x=>`<label><input type="checkbox" value="${x.id}"><span class="qr-thumb">${qrSvg(x.id)}</span><div><b>${esc(x.name)}</b><small class="mono">${esc(x.code)} · Raf ${esc(x.shelf)}</small></div><em>${num(x.stock)} ${esc(x.unit)}</em></label>`).join('')}</div></section>${state.user.role==='YONETICI'||state.user.role==='ISG_ADMIN'?`<section class="panel"><div class="panel-head"><div><h2>İSG kartları</h2><p>Tek tek etiket yerine sabit dolap QR etiketi önerilir</p></div><span class="meta-inline">${isg.length} ekipman</span></div><div class="product-strip">${isg.map(x=>`<button class="isg-item" data-item="${x.id}"><span>${ic('shield','ic-sm')}</span><div><b>${esc(x.name)}</b><small>${num(x.stock)} ${esc(x.unit)}</small></div></button>`).join('')}</div></section>`:''}`;}
 function printLabels(items,title='MEKANİK DEPO QR ETİKETLERİ'){const win=window.open('','_blank');if(!win)return toast('Yazdırma penceresi engellendi.','error');win.document.write(`<!doctype html><meta charset="utf-8"><title>${esc(title)}</title><style>body{font-family:Arial;margin:20px}.sheet{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.l{border:2px solid #111;border-radius:10px;padding:10px;display:grid;grid-template-columns:100px 1fr;align-items:center;break-inside:avoid}.l svg{width:90px}.l b{display:block;font-size:15px}.l strong{font-size:12px}.l small{display:block;margin-top:5px}@media print{body{margin:0}.l{page-break-inside:avoid}}</style><h2>${esc(title)}</h2><div class="sheet">${items.map(x=>`<div class="l">${qrSvg(x.id||x.code||'ISG-DOLAP')}<div><b>${esc(x.name||'İSG DOLABI')}</b><strong>${esc(x.id||x.code||'ISG-DOLAP')}</strong><small>${esc(x.code&&x.id?x.code:'')}</small><small>${esc(x.shelf||'Tek Sabit QR')}</small></div></div>`).join('')}</div>`);win.document.close();setTimeout(()=>win.print(),300);}
 
-function renderConnection(){const code=$('#gasCode').textContent.trim();$('#content').innerHTML=`<section class="connection-grid"><article class="panel"><div class="panel-head"><div><h2>Bağlantı Modu</h2><p>GitHub Pages yayınında Doğrudan GAS (/exec), yerel sunucuda /api/gas önerilir</p></div><span class="connection ${state.mode}"><i></i>${state.mode.toUpperCase()}</span></div><div class="mode-cards">${[['proxy','Güvenli /api/gas','GAS adresi ve proxy anahtarı sunucuda gizli kalır; V8 kayıt akışı etkindir.'],['direct','Tek HTML / Doğrudan','GitHub Pages veya tek HTML için Apps Script ALLOW_DIRECT=true ile kullanın.'],['demo','Demo / Yerel','Gerçek tabloya yazmaz; tüm ekranlar test edilir.']].map(([m,t,d])=>`<label class="${state.mode===m?'selected':''}"><input type="radio" name="mode" value="${m}" ${state.mode===m?'checked':''}><span><b>${t}</b><small>${d}</small></span></label>`).join('')}</div>${field('Apps Script /exec adresi',`<input id="directUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan mod dışında tarayıcıya açılmaz.')}<div class="button-row"><button class="btn ghost" data-action="test-connection">Bağlantıyı Test Et</button><button class="btn primary" data-action="save-connection">Ayarları Kaydet</button></div></article><article class="panel"><div class="panel-head"><div><h2>Bağımsız Tek HTML Dosyaları</h2><p>Tam yönetim paneli ve sahaya özel bağımsız QR çıkış terminali</p></div><span class="ic" style="color:var(--orange)">${ic('download','ic-lg')}</span></div><div class="download-card"><b>1. Ana Yönetim Paneli (Tek HTML)</b><p>CSS, JavaScript ve QR üreticisi tek dosyada. Demo veya canlı Google Sheets bağlantısı ile çalışır.</p><button class="btn primary large" data-action="download-html">${ic('download','ic-sm')} Ana Panel HTML İndir</button></div><div class="download-card" style="margin-top:12px"><b>2. Bağımsız Depo QR Terminali (Tek HTML)</b><p>Depodaki QR kodu okutulduğunda önce OP şifresini sorar, eşleşen parçayı açar; Depo Onayı Gerekli ise Depocu onayı ister, değilse doğrudan stoktan düşer.</p><div class="button-row"><button class="btn primary" data-action="download-qr-terminal">${ic('download','ic-sm')} QR Terminali İndir</button><button class="btn ghost" data-action="open-qr-terminal">${ic('qr','ic-sm')} Terminali Dene</button></div></div><div class="security-list"><p><span>${ic('check','ic-sm')}</span> Rol ve depo kapsamı hem arayüzde hem Kod.gs’de doğrulanır</p><p><span>${ic('check','ic-sm')}</span> PIN yerine imzalı, süreli oturum belirteci kullanılır</p><p><span>${ic('check','ic-sm')}</span> Bağımsız QR terminali <span class="mono">./qr-terminal.html</span> ve <span class="mono">?qr=KOD</span> destekler</p></div></article></section><section class="panel code-panel"><div class="panel-head"><div><h2>Google Apps Script · Kod.gs</h2><p>Arıza Formu, onayHavuzu, planliBakimRecete, kkdAnaliz, hareketAnaliz ve anında Depocu PIN onayı dahil</p></div><button class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kodu Kopyala</button></div><pre><code>${esc(code)}</code></pre></section>`;}
+function renderConnection(){const code=$('#gasCode').textContent.trim();const gasOk=state.mode==='demo'||state.data?.apiVersion==='V8.7-ONAY2';$('#content').innerHTML=`<section class="connection-grid"><article class="panel"><div class="panel-head"><div><h2>Bağlantı Modu</h2><p>GitHub Pages yayınında Doğrudan GAS (/exec), yerel sunucuda /api/gas önerilir</p></div><span class="connection ${state.mode}"><i></i>${state.mode.toUpperCase()}</span></div><div class="mode-cards">${[['proxy','Güvenli /api/gas','GAS adresi ve proxy anahtarı sunucuda gizli kalır; V8 kayıt akışı etkindir.'],['direct','Tek HTML / Doğrudan','GitHub Pages veya tek HTML için Apps Script ALLOW_DIRECT=true ile kullanın.'],['demo','Demo / Yerel','Gerçek tabloya yazmaz; tüm ekranlar test edilir.']].map(([m,t,d])=>`<label class="${state.mode===m?'selected':''}"><input type="radio" name="mode" value="${m}" ${state.mode===m?'checked':''}><span><b>${t}</b><small>${d}</small></span></label>`).join('')}</div>${field('Apps Script /exec adresi',`<input id="directUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan mod dışında tarayıcıya açılmaz.')}<div class="button-row"><button class="btn ghost" data-action="test-connection">Bağlantıyı Test Et</button><button class="btn primary" data-action="save-connection">Ayarları Kaydet</button></div></article><article class="panel"><div class="panel-head"><div><h2>Bağımsız Tek HTML Dosyaları</h2><p>Tam yönetim paneli ve sahaya özel bağımsız QR çıkış terminali</p></div><span class="ic" style="color:var(--orange)">${ic('download','ic-lg')}</span></div><div class="download-card"><b>1. Ana Yönetim Paneli (Tek HTML)</b><p>CSS, JavaScript ve QR üreticisi tek dosyada. Demo veya canlı Google Sheets bağlantısı ile çalışır.</p><button class="btn primary large" data-action="download-html">${ic('download','ic-sm')} Ana Panel HTML İndir</button></div><div class="download-card" style="margin-top:12px"><b>2. Bağımsız Depo QR Terminali (Tek HTML)</b><p>Depodaki QR kodu okutulduğunda önce OP şifresini sorar, eşleşen parçayı açar; Depo Onayı Gerekli ise Depocu onayı ister, değilse doğrudan stoktan düşer.</p><div class="button-row"><button class="btn primary" data-action="download-qr-terminal">${ic('download','ic-sm')} QR Terminali İndir</button><button class="btn ghost" data-action="open-qr-terminal">${ic('qr','ic-sm')} Terminali Dene</button></div></div><div class="security-list"><p><span>${ic('check','ic-sm')}</span> Rol ve depo kapsamı hem arayüzde hem Kod.gs’de doğrulanır</p><p><span>${ic('check','ic-sm')}</span> PIN yerine imzalı, süreli oturum belirteci kullanılır</p><p><span>${ic('check','ic-sm')}</span> Bağımsız QR terminali <span class="mono">./qr-terminal.html</span> ve <span class="mono">?qr=KOD</span> destekler</p></div></article></section><section class="panel code-panel"><div class="panel-head"><div><h2>Google Apps Script · Kod.gs ${gasOk?'<span class="badge success">Güncel (V8.7-ONAY2)</span>':'<span class="badge danger">Eski Sürüm Bağlı — Güncelleme Gerekli</span>'}</h2><p>Kodu kopyalayıp Apps Script’te kaydettikten sonra <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> yapın (mevcut /exec adresiniz değişmez).</p></div><button class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kodu Kopyala</button></div><pre><code>${esc(code)}</code></pre></section>`;}
 
 let cameraStream=null,cameraTimer=null;
 async function openScanner(){modal('QR Kodunu Okut',`<div class="camera"><video id="cameraVideo" playsinline muted></video><div class="camera-frame"></div></div><p class="camera-help">Kamera izni verin ve kodu çerçeveye hizalayın. Desteklenmiyorsa kodu elle girin.</p>${field('Manuel kod','<input id="scanManual" placeholder="RUL-6205 veya ISG-DOLAP">')}`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="scan-manual-go">Devam Et</button>`);try{cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});const v=$('#cameraVideo');v.srcObject=cameraStream;await v.play();if('BarcodeDetector'in window){const det=new BarcodeDetector({formats:['qr_code']});cameraTimer=setInterval(async()=>{try{const codes=await det.detect(v);if(codes[0]?.rawValue){handleQr(codes[0].rawValue);}}catch{}},500);}}catch(e){toast('Kamera açılamadı; kodu elle girebilirsiniz.','error');}}
