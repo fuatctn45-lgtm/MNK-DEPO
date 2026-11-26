@@ -1,0 +1,1345 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="description" content="Mekanik ve İSG depoları için rol bazlı QR stok yönetimi">
+<meta property="og:title" content="Mekanik + İSG Depo 2027 · V8.7">
+<meta property="og:description" content="Mekanik ve İSG depoları için rol bazlı QR stok yönetimi">
+<title>Mekanik + İSG Depo 2027 · V8.7</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --orange:#ea580c;--orange-hover:#c2410c;--orange2:#f97316;--orange-soft:#fff7ed;--orange-border:#fed7aa;
+  --navy:#0f172a;--navy2:#1e293b;--navy3:#334155;
+  --ink:#0f172a;--ink2:#334155;--muted:#64748b;--muted2:#94a3b8;
+  --line:#e2e8f0;--line-soft:#f1f5f9;--bg:#f4f6f9;--surface:#ffffff;--surface-alt:#f8fafc;
+  --green:#15803d;--green-soft:#ecfdf5;--green-border:#bbf7d0;
+  --red:#b91c1c;--red-soft:#fef2f2;--red-border:#fecaca;
+  --blue:#1d4ed8;--blue-soft:#eff6ff;--blue-border:#bfdbfe;
+  --yellow:#b45309;--yellow-soft:#fffbeb;--yellow-border:#fde68a;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.04);--shadow:0 10px 28px rgba(15,23,42,.08);--shadow-lg:0 24px 64px rgba(15,23,42,.24);
+  --radius:12px;--radius-sm:8px;--radius-lg:16px;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --font-sans:"Plus Jakarta Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-mono:"JetBrains Mono","Cascadia Code",Consolas,monospace;
+  font-family:var(--font-sans);color:var(--ink);background:var(--bg);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{font-size:15px;line-height:1.5;color:var(--ink)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{text-wrap:balance;letter-spacing:-.025em}
+small{color:var(--muted)}
+code,pre,.mono{font-family:var(--font-mono)}
+.num,.kpi strong,.data-table .big,.stock-number b,.ready-summary b,.critical-list strong,.donut span{font-variant-numeric:tabular-nums}
+.ic{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;vertical-align:middle}
+.ic svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;display:block}
+.ic-sm svg{width:15px;height:15px}
+.ic-lg svg{width:22px;height:22px}
+.busy{cursor:progress}
+.loader{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.18);backdrop-filter:blur(2px)}
+.busy .loader{display:grid;place-items:center}
+.loader span{width:42px;height:42px;border:3px solid rgba(255,255,255,.35);border-top-color:var(--orange);border-radius:50%;animation:spin .65s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Login */
+.login{min-height:100vh;display:grid;grid-template-columns:minmax(480px,1.15fr) minmax(400px,.85fr);background:var(--surface)}
+.login-art{position:relative;overflow:hidden;padding:48px 56px;color:#f8fafc;background:radial-gradient(circle at 82% 18%,rgba(234,88,12,.22),transparent 46%),linear-gradient(160deg,#0b1220 0%,#0f172a 58%,#162133 100%);display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid rgba(255,255,255,.06)}
+.art-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(148,163,184,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,.07) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(ellipse 85% 75% at 50% 40%,black 30%,transparent 100%);pointer-events:none}
+.login-brand,.brand{display:flex;align-items:center;gap:12px;position:relative;z-index:1}
+.brand-mark{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:var(--orange);color:#fff;font-size:19px;font-weight:800;letter-spacing:-.04em;flex-shrink:0}
+.login-brand div,.brand div{display:flex;flex-direction:column}
+.login-brand b{font-size:16px;font-weight:700;letter-spacing:-.01em;color:#fff}
+.login-brand small{color:#94a3b8;font-size:12px;margin-top:2px}
+.login-copy{position:relative;z-index:1;max-width:560px}
+.login-kicker{font-size:13px;font-weight:600;color:#fb923c;letter-spacing:.01em}
+.login-copy h1{font-size:clamp(40px,4.6vw,62px);line-height:1.06;letter-spacing:-.04em;font-weight:800;margin:14px 0 18px;color:#fff}
+.login-copy p{font-size:16.5px;line-height:1.65;max-width:480px;color:#cbd5e1}
+.login-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;position:relative;z-index:1;padding-top:28px;border-top:1px solid rgba(148,163,184,.18);max-width:520px}
+.login-stats div{display:flex;flex-direction:column;gap:4px}
+.login-stats b{font-size:30px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.login-stats span{font-size:13px;color:#94a3b8}
+.login-form{display:grid;place-items:center;padding:48px 40px 64px;position:relative;background:var(--surface)}
+.login-form form{width:min(410px,100%)}
+.login-form .kicker{font-size:13px;font-weight:600;color:var(--orange)}
+.login-form h2{font-size:30px;font-weight:800;margin:8px 0 10px;color:var(--ink)}
+.login-form form>p{color:var(--muted);font-size:14.5px;line-height:1.55;margin-bottom:24px}
+.login-form>footer{position:absolute;bottom:20px;color:var(--muted2);font-size:12.5px}
+.pin-wrap{position:relative}
+.pin-wrap input{font-family:var(--font-mono);font-size:22px;letter-spacing:.26em;padding-right:48px;height:50px}
+.pin-wrap button{position:absolute;right:6px;top:5px;border:0;background:transparent;width:40px;height:40px;border-radius:8px;color:var(--muted);display:grid;place-items:center}
+.pin-wrap button:hover{background:var(--line-soft);color:var(--ink)}
+.login-mode{margin-top:16px;text-align:center;color:var(--muted);font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px}
+.login-mode i,.connection i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;flex-shrink:0}
+.login-mode i.demo,.connection.demo i{background:#d97706}
+.login-mode i.proxy,.connection.proxy i{background:#16a34a}
+.login-mode i.direct,.connection.direct i{background:#2563eb}
+details{margin-top:14px;background:var(--surface-alt);border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px;color:var(--muted)}
+details summary{cursor:pointer;font-weight:600;color:var(--ink);font-size:13.5px;user-select:none}
+details p{margin-top:8px;font-size:13.5px}
+.demo-pins{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.demo-pins button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 12px;text-align:left;display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--ink);transition:border-color .15s var(--ease),background .15s var(--ease)}
+.demo-pins button:hover{border-color:var(--orange);background:var(--orange-soft)}
+.demo-pins button b{color:var(--orange);font-family:var(--font-mono);font-weight:700}
+.login-conn-body{margin-top:12px;display:flex;flex-direction:column;gap:12px}
+.login-conn-body .field{margin-bottom:0}
+.login-conn-body .button-row{justify-content:space-between}
+.wide{width:100%}
+
+/* App Shell & Top Navigation */
+#app{min-height:100vh;display:flex;flex-direction:column}
+.sidebar{position:sticky;z-index:40;top:0;left:0;right:0;width:100%;background:var(--navy);color:#f8fafc;display:flex;flex-direction:column;border-bottom:1px solid rgba(255,255,255,.08)}
+.nav-top{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:10px 28px;min-height:56px}
+.nav-right{display:flex;align-items:center;gap:12px;margin-left:auto}
+.brand{padding:0;border:0;flex-shrink:0}
+.brand .brand-mark{width:34px;height:34px;font-size:17px;border-radius:9px}
+.brand b{font-size:15.5px;font-weight:700;letter-spacing:-.01em;color:#fff;white-space:nowrap}
+.brand small{font-size:11.5px;color:#94a3b8;margin-top:1px;white-space:nowrap}
+.sidebar .connection{background:transparent;border:0;color:#cbd5e1;padding:0 6px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:7px}
+.sidebar .nav-refresh{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#f8fafc;padding:7px 12px;height:36px;font-size:13px}
+.sidebar .nav-refresh:hover{background:rgba(255,255,255,.14);transform:none}
+.sidebar nav{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;align-items:center;gap:2px;padding:0 24px;background:rgba(15,23,42,.5);border-top:1px solid rgba(255,255,255,.07)}
+.sidebar nav::-webkit-scrollbar{display:none}
+.nav-item{border:0;background:transparent;color:#94a3b8;text-align:left;display:inline-flex;align-items:center;gap:8px;padding:11px 14px;border-radius:0;position:relative;font-size:13.5px;font-weight:600;white-space:nowrap;flex-shrink:0;transition:color .15s var(--ease),background .15s var(--ease)}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.04)}
+.nav-item.active{color:#fff;font-weight:700}
+.nav-item.active:after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:2.5px;background:var(--orange);border-radius:2px 2px 0 0}
+.nav-item.active .ic{color:#fb923c}
+.nav-item em{margin-left:2px;background:var(--orange);color:#fff;font-style:normal;font-size:11.5px;font-weight:700;min-width:19px;height:19px;padding:0 6px;display:grid;place-items:center;border-radius:6px;font-variant-numeric:tabular-nums}
+.side-foot{margin-top:0;border-left:1px solid rgba(255,255,255,.12);padding-left:14px;display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:8px;background:rgba(234,88,12,.22);border:1px solid rgba(234,88,12,.45);color:#fdba74;display:grid;place-items:center;font-weight:700;font-size:14px;flex-shrink:0}
+.side-foot>div:nth-child(2){min-width:0;display:flex;flex-direction:column;max-width:180px}
+.side-foot b{font-size:13.5px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.side-foot small{font-size:11.5px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.side-foot .icon-btn{color:#94a3b8;width:36px;height:36px;display:grid;place-items:center;border-radius:8px}
+.side-foot .icon-btn:hover{color:#fff;background:rgba(255,255,255,.1)}
+.mobile-menu{display:none;color:#fff;width:38px;height:38px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06)}
+
+/* Main Workspace & Page Header */
+.main{margin-left:0;width:100%;flex:1;min-height:0;display:flex;flex-direction:column}
+.topbar{padding:18px 28px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px}
+.topbar-left{display:flex;flex-direction:column;gap:3px;min-width:0}
+.crumb{font-size:12.5px;color:var(--muted);font-weight:500}
+.topbar h1{font-size:23px;font-weight:800;color:var(--ink);line-height:1.2}
+.topbar p{font-size:13.5px;color:var(--muted)}
+.top-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+#content{width:100%;max-width:none;padding:24px 28px 48px;margin:0}
+
+/* Surfaces, Buttons, Controls */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:22px 24px}
+.panel+.panel{margin-top:20px}
+.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+.panel-head h2{font-size:17.5px;font-weight:700;color:var(--ink)}
+.panel-head p{font-size:13.5px;color:var(--muted);margin-top:3px}
+.meta-inline{font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap}
+.btn{border:1px solid transparent;border-radius:var(--radius-sm);padding:9px 16px;min-height:40px;font-weight:600;font-size:13.5px;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;flex-shrink:0;transition:background .15s var(--ease),border-color .15s var(--ease),color .15s var(--ease),transform .15s var(--ease)}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn.primary{background:var(--orange);color:#fff;border-color:var(--orange)}
+.btn.primary:hover:not(:disabled){background:var(--orange-hover);border-color:var(--orange-hover)}
+.btn.ghost{background:var(--surface);border-color:var(--line);color:var(--ink)}
+.btn.ghost:hover:not(:disabled){background:var(--surface-alt);border-color:#cbd5e1}
+.btn.white{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.22)}
+.btn.white:hover:not(:disabled){background:rgba(255,255,255,.18)}
+.btn.large{padding:11px 20px;min-height:46px;font-size:14.5px;font-weight:700}
+.btn.approve{background:var(--green);color:#fff}
+.btn.approve:hover:not(:disabled){background:#166534}
+.btn.reject{background:var(--surface);border-color:var(--red-border);color:var(--red)}
+.btn.reject:hover:not(:disabled){background:var(--red-soft)}
+.icon-btn{border:0;background:transparent;width:36px;height:36px;display:inline-grid;place-items:center;border-radius:8px;color:var(--muted);transition:background .15s var(--ease),color .15s var(--ease)}
+.icon-btn:hover{background:var(--line-soft);color:var(--ink)}
+.link{border:0;background:transparent;color:var(--orange);font-weight:600;font-size:13.5px;padding:4px 0;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.link:hover{color:var(--orange-hover);text-decoration:underline}
+.notice{padding:13px 16px;border-radius:var(--radius-sm);background:var(--yellow-soft);border:1px solid var(--yellow-border);color:var(--yellow);font-size:13.5px;margin-bottom:14px}
+.empty{padding:36px 20px;text-align:center;color:var(--muted);background:var(--surface-alt);border:1px dashed #cbd5e1;border-radius:var(--radius-sm);font-size:14px}
+.empty.good{color:var(--green);background:var(--green-soft);border-color:var(--green-border)}
+.connection{font-size:12.5px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+
+/* KPI Strip & Dashboard */
+.kpi-grid,.approval-kpis,.ppe-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:20px}
+.approval-kpis,.ppe-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow-sm)}
+.kpi-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.kpi small{font-size:13px;font-weight:600;color:var(--muted)}
+.kpi-icon{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;background:var(--orange-soft);color:var(--orange);flex-shrink:0}
+.kpi.blue .kpi-icon{background:var(--blue-soft);color:var(--blue)}
+.kpi.red .kpi-icon{background:var(--red-soft);color:var(--red)}
+.kpi.green .kpi-icon{background:var(--green-soft);color:var(--green)}
+.kpi strong{font-size:32px;font-weight:800;letter-spacing:-.035em;line-height:1.05;color:var(--ink)}
+.kpi p{font-size:13px;color:var(--muted)}
+.split{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,1fr);gap:20px;margin-bottom:20px;align-items:stretch}
+.critical-list{display:flex;flex-direction:column}
+.critical-list button{border:0;border-top:1px solid var(--line-soft);background:transparent;padding:13px 10px;margin:0 -10px;border-radius:8px;display:grid;grid-template-columns:1fr minmax(90px,130px) auto;gap:16px;text-align:left;align-items:center;transition:background .15s var(--ease)}
+.critical-list button:first-child{border-top:0}
+.critical-list button:hover{background:var(--surface-alt)}
+.critical-list .crit-info{display:flex;flex-direction:column;gap:3px;min-width:0}
+.critical-list .crit-info b{font-size:14.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.critical-list .crit-info small{font-size:12.5px;color:var(--muted)}
+.crit-meter{display:flex;flex-direction:column;gap:5px}
+.crit-bar{height:6px;background:var(--line-soft);border-radius:3px;overflow:hidden}
+.crit-bar i{display:block;height:100%;background:var(--red);border-radius:3px}
+.crit-meter small{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.critical-list strong{font-size:16px;font-weight:700;color:var(--red);text-align:right;white-space:nowrap}
+.critical-list strong small{font-size:12px;font-weight:500;color:var(--muted)}
+.donut-wrap{display:flex;align-items:center;justify-content:space-between;gap:28px;padding:10px 4px}
+.donut{width:152px;height:152px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--orange) calc(var(--p)*1%),var(--blue) 0);position:relative;flex-shrink:0}
+.donut:after{content:"";position:absolute;inset:22px;background:var(--surface);border-radius:50%}
+.donut span{z-index:1;display:flex;flex-direction:column;align-items:center;font-size:28px;font-weight:800;line-height:1.1;color:var(--ink)}
+.donut span small{font-size:11.5px;font-weight:600;color:var(--muted);margin-top:2px}
+.legend{flex:1;display:flex;flex-direction:column;gap:0}
+.legend p{display:grid;grid-template-columns:10px 1fr auto;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line-soft);font-size:14px;color:var(--ink2)}
+.legend p:last-child{border-bottom:0}
+.legend p b{font-variant-numeric:tabular-nums;font-size:15px;color:var(--ink)}
+.legend i{width:9px;height:9px;border-radius:3px}
+.legend i.orange{background:var(--orange)}
+.legend i.blue{background:var(--blue)}
+.legend i.red{background:var(--red)}
+.quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.quick button{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:15px 16px;display:flex;align-items:center;gap:13px;text-align:left;transition:border-color .15s var(--ease),background .15s var(--ease)}
+.quick button:hover{border-color:var(--orange-border);background:var(--orange-soft)}
+.quick button>b{width:40px;height:40px;border-radius:9px;background:var(--surface-alt);border:1px solid var(--line);color:var(--orange);display:grid;place-items:center;flex-shrink:0}
+.quick button:hover>b{background:var(--surface);border-color:var(--orange-border)}
+.quick span{display:flex;flex-direction:column;font-weight:700;font-size:14px;color:var(--ink)}
+.quick small{font-size:12.5px;font-weight:500;color:var(--muted);margin-top:2px}
+
+/* Operator QR */
+.qr-hero{border-radius:var(--radius-lg);background:radial-gradient(circle at 86% 24%,rgba(234,88,12,.25),transparent 42%),linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:#f8fafc;padding:34px 40px;display:flex;align-items:center;justify-content:space-between;gap:24px;overflow:hidden;position:relative;border:1px solid rgba(255,255,255,.08)}
+.qr-hero>div{position:relative;z-index:1}
+.qr-kicker{font-size:13px;font-weight:600;color:#fb923c}
+.qr-hero h2{font-size:32px;font-weight:800;margin:8px 0 10px;color:#fff}
+.qr-hero p{color:#cbd5e1;max-width:520px;font-size:15px}
+.qr-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.scan-visual{width:200px;display:grid;place-items:center;flex-shrink:0}
+.scan-frame{width:144px;height:144px;position:relative;display:grid;place-items:center;color:rgba(255,255,255,.32)}
+.scan-frame i{position:absolute;width:30px;height:30px;border-color:#fb923c;border-style:solid;border-radius:2px}
+.scan-frame i:nth-child(1){left:0;top:0;border-width:3px 0 0 3px}
+.scan-frame i:nth-child(2){right:0;top:0;border-width:3px 3px 0 0}
+.scan-frame i:nth-child(3){left:0;bottom:0;border-width:0 0 3px 3px}
+.scan-frame i:nth-child(4){right:0;bottom:0;border-width:0 3px 3px 0}
+.scan-frame span{position:absolute;width:118px;height:2px;background:linear-gradient(90deg,transparent,#fb923c,transparent);animation:scan 2.2s ease-in-out infinite}
+@keyframes scan{0%,100%{transform:translateY(-48px)}50%{transform:translateY(48px)}}
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0 20px}
+.choice-grid>button{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:18px 20px;display:grid;grid-template-columns:46px 1fr auto;align-items:center;gap:15px;text-align:left;box-shadow:var(--shadow-sm);transition:border-color .15s var(--ease),background .15s var(--ease)}
+.choice-grid>button:hover:not(:disabled){border-color:var(--orange-border);background:var(--orange-soft)}
+.choice-icon{width:46px;height:46px;border-radius:10px;background:var(--orange-soft);color:var(--orange);display:grid;place-items:center;flex-shrink:0}
+.choice-icon.blue{background:var(--blue-soft);color:var(--blue)}
+.choice-grid b{font-size:15.5px;font-weight:700;color:var(--ink)}
+.choice-grid p{font-size:13px;color:var(--muted);margin-top:3px}
+.choice-grid em{font-style:normal;color:var(--orange);font-size:13px;font-weight:700;white-space:nowrap}
+.product-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:10px}
+.product-strip button{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:12px 14px;text-align:left;display:flex;align-items:center;gap:12px;transition:border-color .15s var(--ease),background .15s var(--ease)}
+.product-strip button:hover{border-color:#cbd5e1;background:var(--surface-alt)}
+.product-strip button>span{width:36px;height:36px;border-radius:8px;background:var(--orange-soft);color:var(--orange);display:grid;place-items:center;flex-shrink:0}
+.product-strip button.isg-item>span{background:var(--blue-soft);color:var(--blue)}
+.product-strip div{display:flex;flex-direction:column;min-width:0;flex:1}
+.product-strip b{font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.product-strip small{font-size:12.5px;margin-top:2px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* Toolbars & High-Density Tables */
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.table-panel .toolbar{padding-bottom:16px;border-bottom:1px solid var(--line)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;padding:3px;background:var(--surface-alt);gap:2px}
+.seg button{border:0;background:transparent;padding:7px 14px;border-radius:6px;color:var(--muted);font-size:13px;font-weight:600;white-space:nowrap;transition:background .15s var(--ease),color .15s var(--ease)}
+.seg button:hover{color:var(--ink)}
+.seg button.active{background:var(--surface);color:var(--ink);font-weight:700;box-shadow:0 1px 3px rgba(15,23,42,.08)}
+.search{height:40px;border:1px solid var(--line);border-radius:var(--radius-sm);display:flex;align-items:center;gap:8px;padding:0 12px;flex:1;min-width:220px;background:var(--surface);transition:border-color .15s var(--ease),box-shadow .15s var(--ease)}
+.search:focus-within{border-color:var(--orange);box-shadow:0 0 0 3px rgba(234,88,12,.14)}
+.search .ic{color:var(--muted2)}
+.search input{border:0;outline:0;width:100%;font-size:14px;background:transparent}
+.toolbar select,.field-inline select{height:40px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface);padding:0 12px;color:var(--ink);font-size:13.5px}
+.table-scroll{overflow:auto;border:1px solid var(--line);border-radius:10px}
+.data-table{width:100%;border-collapse:collapse;min-width:920px;background:var(--surface)}
+.data-table th{font-size:12px;font-weight:700;color:var(--muted);text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);background:var(--surface-alt);white-space:nowrap;position:sticky;top:0;z-index:1}
+.data-table th.num-col,.data-table td.num-col{text-align:right}
+.data-table td{padding:11px 12px;border-bottom:1px solid var(--line-soft);font-size:13.5px;vertical-align:middle;color:var(--ink2)}
+.data-table tbody tr:last-child td{border-bottom:0}
+.data-table tbody tr{transition:background .12s var(--ease)}
+.data-table tbody tr[data-item],.data-table tbody tr[data-analysis-item],.data-table tbody tr[data-recipe-machine]{cursor:pointer}
+.data-table tbody tr:hover{background:#f8fafc}
+.data-table td>b{display:block;font-size:14px;font-weight:600;color:var(--ink)}
+.data-table td>small{display:block;margin-top:2px;font-size:12.5px;color:var(--muted)}
+.data-table .big{font-size:14.5px;font-weight:700;color:var(--ink);white-space:nowrap}
+.data-table .big small{display:inline;font-size:12px;font-weight:500;color:var(--muted)}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap;border:1px solid transparent}
+.badge.success{background:var(--green-soft);color:var(--green);border-color:var(--green-border)}
+.badge.danger{background:var(--red-soft);color:var(--red);border-color:var(--red-border)}
+.badge.warning{background:var(--yellow-soft);color:var(--yellow);border-color:var(--yellow-border)}
+.badge.neutral{background:var(--surface-alt);color:var(--ink2);border-color:var(--line)}
+.depot{font-size:12px;font-weight:700;border-radius:6px;padding:3px 8px;display:inline-block;white-space:nowrap}
+.depot.mekanik{background:var(--orange-soft);color:var(--orange)}
+.depot.isg{background:var(--blue-soft);color:var(--blue)}
+.table-foot{display:flex;justify-content:space-between;align-items:center;padding-top:12px;font-size:13px;color:var(--muted)}
+.stock-table{table-layout:fixed;min-width:1120px}
+.stock-table th:nth-child(1){width:7.5%}
+.stock-table th:nth-child(2){width:20%}
+.stock-table th:nth-child(3){width:7.5%}
+.stock-table th:nth-child(4){width:20%}
+.stock-table th:nth-child(5){width:7%}
+.stock-table th:nth-child(6){width:5.5%}
+.stock-table th:nth-child(7){width:5.5%}
+.stock-table th:nth-child(8){width:5.5%}
+.stock-table th:nth-child(9){width:7%}
+.stock-table th:nth-child(10){width:14.5%}
+.stock-table td:nth-child(2),.stock-table td:nth-child(10){overflow-wrap:anywhere}
+.usage-text{font-size:13px;color:var(--ink2);line-height:1.45}
+.usage-text .usage-approval{color:var(--red);font-weight:700}
+.usage-empty{color:var(--muted2)}
+
+/* Approvals */
+.approval-list{display:flex;flex-direction:column}
+.approval-list article{display:grid;grid-template-columns:155px 1fr auto auto;align-items:center;gap:18px;padding:16px 4px;border-top:1px solid var(--line-soft)}
+.approval-list article:first-child{border-top:0}
+.approval-id{display:flex;flex-direction:column;gap:4px}
+.approval-id span{font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--ink)}
+.approval-id small{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.approval-list article>div:nth-child(2) b{font-size:15px;font-weight:700;color:var(--ink)}
+.approval-list article>div:nth-child(2) p,.approval-list article>div:nth-child(2) small{font-size:13px;color:var(--muted);margin-top:3px;display:block}
+.approval-buttons{display:flex;gap:8px}
+
+/* Maintenance Master-Detail */
+.maintenance-top{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px;box-shadow:var(--shadow-sm)}
+.maintenance-top>div:first-child{display:flex;gap:14px;flex-wrap:wrap}
+.maintenance-top .field{min-width:240px;margin-bottom:0}
+.maintenance-actions{display:flex;gap:8px;flex-wrap:wrap}
+.maintenance-grid{display:grid;grid-template-columns:minmax(380px,.95fr) minmax(0,1.35fr);gap:20px;align-items:start}
+.recipe-machines-panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm)}
+.recipe-machines-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.recipe-machines-head>div{display:flex;flex-direction:column;gap:3px}
+.recipe-machines-head b{font-size:16px;font-weight:700;color:var(--ink)}
+.recipe-machines-head small{font-size:13px;color:var(--muted)}
+.recipe-machine-scroll{max-height:540px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.recipe-machine-table{min-width:460px}
+.recipe-machine-table tbody tr.selected{background:var(--orange-soft)}
+.recipe-machine-table tbody tr.selected td{color:var(--ink);font-weight:600}
+.recipe-machine-order{width:54px;font-family:var(--font-mono);font-size:12.5px;color:var(--muted)}
+.recipe-machine-name{font-size:14px;font-weight:600;color:var(--ink)}
+.recipe-machine-count{width:72px;font-weight:700;color:var(--orange);font-variant-numeric:tabular-nums}
+.recipe-period-tags{font-size:12px;color:var(--muted)}
+.recipe-machine-status{display:inline-flex;align-items:center;font-size:12px;font-weight:600;padding:3px 8px;border-radius:6px;white-space:nowrap}
+.recipe-machine-status.ready{background:var(--green-soft);color:var(--green)}
+.recipe-machine-status.missing{background:var(--red-soft);color:var(--red)}
+.recipe-machines-empty{padding:24px;text-align:center;color:var(--muted);background:var(--surface-alt);border:1px dashed #cbd5e1;border-radius:9px;font-size:13.5px}
+.ready-summary{text-align:right;flex-shrink:0}
+.ready-summary b{display:block;font-size:26px;font-weight:800;color:var(--ink);line-height:1.1}
+.ready-summary small{font-size:12.5px;color:var(--muted)}
+.recipe-list>div{display:grid;grid-template-columns:36px 1fr 110px 110px 84px;gap:14px;align-items:center;padding:13px 6px;border-top:1px solid var(--line-soft)}
+.recipe-list>div:first-child{border-top:0}
+.recipe-no{width:30px;height:30px;border-radius:7px;background:var(--surface-alt);border:1px solid var(--line);display:grid;place-items:center;font-family:var(--font-mono);font-weight:700;font-size:12px;color:var(--muted)}
+.recipe-list div>div{display:flex;flex-direction:column;min-width:0}
+.recipe-list div>div b{font-size:14px;font-weight:600;color:var(--ink)}
+.recipe-list div>div small{font-size:12.5px;color:var(--muted);margin-top:2px}
+.recipe-list>.recipe-period-group{display:flex;align-items:center;justify-content:space-between;grid-template-columns:none;margin:14px 0 0;padding:8px 12px;border:1px solid var(--orange-border);border-radius:8px;background:var(--orange-soft);color:var(--orange);font-size:13px;font-weight:700}
+.recipe-list>.recipe-period-group:first-child{margin-top:0}
+.recipe-list>.recipe-period-group small{color:var(--orange);font-size:12px;font-weight:600}
+.recipe-list>.recipe-period-group+div{border-top:0}
+.recipe-list p{display:flex;flex-direction:column;gap:2px}
+.recipe-list p small{font-size:11.5px;color:var(--muted)}
+.recipe-list p b{font-size:14px;color:var(--ink);font-variant-numeric:tabular-nums}
+.recipe-edit-row{display:grid;grid-template-columns:1fr 96px 40px;gap:8px;margin-bottom:8px}
+.recipe-edit-row select,.recipe-edit-row input{height:42px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:0 10px;font-size:14px;background:var(--surface)}
+.recipe-edit-row button,.add-line{border:1px dashed #cbd5e1;background:var(--surface-alt);border-radius:var(--radius-sm);color:var(--muted)}
+.add-line{width:100%;padding:11px;color:var(--orange);font-weight:600;font-size:13.5px}
+.add-line:hover{border-color:var(--orange);background:var(--orange-soft)}
+
+/* PPE & Analytics */
+.filters{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 18px;justify-content:space-between;box-shadow:var(--shadow-sm)}
+.field-inline{display:flex;align-items:center;gap:8px}
+.field-inline span{font-size:13px;font-weight:600;color:var(--muted)}
+.alert-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.alert-cards article{background:var(--surface);border:1px solid var(--red-border);border-radius:10px;padding:14px 16px;display:flex;gap:12px;align-items:center}
+.alert-cards article>span{width:34px;height:34px;border-radius:8px;background:var(--red-soft);color:var(--red);display:grid;place-items:center;flex-shrink:0}
+.alert-cards b{font-size:14px;font-weight:700;color:var(--ink)}
+.alert-cards p{font-size:12.5px;color:var(--red);margin-top:2px}
+.analysis-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:20px;margin-bottom:20px;align-items:stretch}
+.bar-list{display:flex;flex-direction:column;gap:4px}
+.bar-list button{border:0;background:transparent;width:100%;display:grid;grid-template-columns:28px 1fr;gap:10px;text-align:left;padding:8px 8px;border-radius:8px;transition:background .15s var(--ease)}
+.bar-list button:hover{background:var(--surface-alt)}
+.bar-list button>em{font-style:normal;font-family:var(--font-mono);font-weight:700;font-size:13px;color:var(--muted2);padding-top:2px}
+.bar-list button>div{display:grid;grid-template-columns:1fr auto;position:relative;padding-bottom:11px;gap:6px}
+.bar-list span{display:flex;flex-direction:column;min-width:0}
+.bar-list b{font-size:14px;font-weight:600;color:var(--ink)}
+.bar-list small{font-size:12px;color:var(--muted);margin-top:2px}
+.bar-list strong{font-size:13.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.bar-list i{position:absolute;bottom:0;left:0;height:5px;border-radius:3px;background:var(--orange)}
+.abc-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.abc{padding:14px;border-radius:10px;border:1px solid var(--line);display:grid;grid-template-columns:auto 1fr;align-items:center;gap:2px 10px;background:var(--surface)}
+.abc b,.abc-dot{width:30px;height:30px;border-radius:7px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:13.5px;grid-row:1/3;font-family:var(--font-mono)}
+.abc span{font-weight:700;font-size:14px;color:var(--ink)}
+.abc small{font-size:12px;color:var(--muted)}
+.abc.A{border-color:var(--red-border);background:var(--red-soft)}.abc.A b,.abc-dot.A{background:var(--red)}
+.abc.B{border-color:var(--yellow-border);background:var(--yellow-soft)}.abc.B b,.abc-dot.B{background:#d97706}
+.abc.C{border-color:var(--green-border);background:var(--green-soft)}.abc.C b,.abc-dot.C{background:var(--green)}
+.suggestions{margin-top:20px;padding-top:18px;border-top:1px solid var(--line-soft)}
+.suggestions h3{font-size:14.5px;font-weight:700;margin-bottom:10px;color:var(--ink)}
+.suggestions button{border:1px solid var(--orange-border);background:var(--orange-soft);border-radius:9px;padding:11px 13px;width:100%;display:grid;grid-template-columns:24px 1fr auto;gap:10px;align-items:center;text-align:left;margin-bottom:8px;transition:background .15s var(--ease)}
+.suggestions button:hover{background:#ffedd5}
+.suggestions button>span{color:var(--orange)}
+.suggestions b{font-size:13.5px;font-weight:700;color:var(--ink)}
+.suggestions small{display:block;font-size:12px;color:var(--ink2);margin-top:2px;font-variant-numeric:tabular-nums}
+.suggestions em{font-style:normal;font-size:12px;font-weight:700;color:var(--orange);white-space:nowrap}
+.machine-dist>div{display:grid;grid-template-columns:1fr 1.2fr 52px;gap:12px;align-items:center;margin:14px 0}
+.machine-dist span{display:flex;flex-direction:column}
+.machine-dist span b{font-size:14px;color:var(--ink)}
+.machine-dist span small{font-size:12px;color:var(--muted)}
+.machine-dist div{height:8px;background:var(--line-soft);border-radius:4px;overflow:hidden}
+.machine-dist i{display:block;height:100%;background:var(--orange);border-radius:4px}
+.machine-dist strong{font-size:13.5px;text-align:right;font-variant-numeric:tabular-nums}
+.smart-note{margin-top:16px;padding:14px 16px;background:var(--orange-soft);border:1px solid var(--orange-border);border-radius:9px;color:#9a3412;font-size:13.5px}
+.smart-note p{font-size:12.5px;margin-top:4px}
+
+/* Labels & Connection */
+.label-hero{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:26px 32px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:28px;box-shadow:var(--shadow-sm)}
+.label-hero>div:first-child{max-width:500px}
+.label-hero h2{font-size:28px;font-weight:800;margin:6px 0 8px}
+.label-hero p{color:var(--muted);font-size:14.5px;margin-bottom:18px}
+.label-preview{width:248px;border:2px solid var(--navy);border-radius:10px;padding:14px;display:grid;grid-template-columns:92px 1fr;gap:4px 10px;align-items:center;background:#fff;flex-shrink:0}
+.label-preview svg{width:88px;grid-row:1/3}
+.label-preview b{font-size:15px;font-weight:800;color:var(--ink)}
+.label-preview small{font-size:12px;color:var(--muted)}
+.label-select{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.label-select label{border:1px solid var(--line);border-radius:10px;padding:11px 13px;display:grid;grid-template-columns:18px 46px 1fr auto;gap:10px;align-items:center;cursor:pointer;transition:border-color .15s var(--ease),background .15s var(--ease)}
+.label-select label:hover{border-color:#cbd5e1;background:var(--surface-alt)}
+.label-select label:has(input:checked){border-color:var(--orange);background:var(--orange-soft)}
+.label-select input{width:16px;height:16px;accent-color:var(--orange);margin:0}
+.qr-thumb svg{width:44px;display:block;border-radius:4px}
+.label-select div{display:flex;flex-direction:column;min-width:0}
+.label-select b{font-size:13.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.label-select small{font-size:12px;color:var(--muted);margin-top:2px}
+.label-select em{font-size:12.5px;font-style:normal;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.connection-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:20px;margin-bottom:20px;align-items:stretch}
+.mode-cards{display:grid;gap:9px;margin-bottom:16px}
+.mode-cards label{border:1px solid var(--line);border-radius:10px;padding:13px 14px;display:flex;gap:11px;align-items:flex-start;cursor:pointer;transition:border-color .15s var(--ease),background .15s var(--ease)}
+.mode-cards label:hover{border-color:#cbd5e1}
+.mode-cards label.selected{border-color:var(--orange);background:var(--orange-soft)}
+.mode-cards input{accent-color:var(--orange);margin-top:3px}
+.mode-cards span{display:flex;flex-direction:column}
+.mode-cards b{font-size:14px;font-weight:700;color:var(--ink)}
+.mode-cards small{font-size:12.5px;color:var(--muted);margin-top:3px}
+.button-row{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.download-card{padding:20px;border-radius:10px;background:var(--surface-alt);border:1px solid var(--line)}
+.download-card b{font-size:15.5px;font-weight:700;color:var(--ink)}
+.download-card p{font-size:13.5px;line-height:1.55;color:var(--muted);margin:8px 0 16px}
+.security-list{margin-top:18px;display:flex;flex-direction:column;gap:9px}
+.security-list p{font-size:13.5px;color:var(--ink2);display:flex;align-items:flex-start;gap:8px}
+.security-list span{color:var(--green);margin-top:2px}
+.code-panel pre{max-height:520px;overflow:auto;background:#0b1220;color:#e2e8f0;border:1px solid #1e293b;border-radius:10px;padding:18px;white-space:pre;font-size:12.5px;line-height:1.6}
+
+/* Forms, Details, Modals, Toasts */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field>span{font-size:12.5px;font-weight:600;color:var(--ink2)}
+.field input,.field select,.field textarea{width:100%;height:42px;border:1px solid #cbd5e1;border-radius:var(--radius-sm);padding:0 12px;outline:0;background:var(--surface);font-size:14.5px;color:var(--ink);transition:border-color .15s var(--ease),box-shadow .15s var(--ease)}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(234,88,12,.14)}
+.field small{font-size:12px;color:var(--muted)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.qty{display:grid;grid-template-columns:42px 1fr 42px}
+.qty input{border-radius:0;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.qty button{border:1px solid #cbd5e1;background:var(--surface-alt);font-size:18px;font-weight:600}
+.qty button:hover{background:var(--line-soft)}
+.qty button:first-child{border-radius:8px 0 0 8px;border-right:0}
+.qty button:last-child{border-radius:0 8px 8px 0;border-left:0}
+.rule-note{display:flex;gap:10px;padding:12px 14px;border-radius:9px;margin-top:8px;border:1px solid transparent}
+.rule-note b{font-size:13px;white-space:nowrap}
+.rule-note span{font-size:13px;line-height:1.45}
+.rule-note.ok{background:var(--green-soft);border-color:var(--green-border);color:var(--green)}
+.rule-note.warn{background:var(--yellow-soft);border-color:var(--yellow-border);color:var(--yellow)}
+.item-summary{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px}
+.item-summary>div{display:flex;flex-direction:column;min-width:0}
+.item-summary>div b{font-size:15px;font-weight:700;color:var(--ink)}
+.item-summary>div small{font-size:12.5px;color:var(--muted)}
+.item-summary>strong{margin-left:auto;font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.item-detail-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+.item-detail-head h2{font-size:22px;font-weight:800;margin:8px 0 4px}
+.item-detail-head p{font-size:13px;color:var(--muted)}
+.stock-number{text-align:right;flex-shrink:0}
+.stock-number small,.stock-number span{display:block;font-size:12.5px;color:var(--muted)}
+.stock-number b{font-size:40px;font-weight:800;line-height:1.05;color:var(--ink)}
+.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}
+.detail-grid div{padding:12px 13px;background:var(--surface-alt);border:1px solid var(--line-soft);border-radius:9px;display:flex;flex-direction:column}
+.detail-grid small{font-size:12px;color:var(--muted)}
+.detail-grid b{font-size:14px;font-weight:700;color:var(--ink);margin-top:4px;font-variant-numeric:tabular-nums}
+.modal-actions-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.modal-actions-grid button{border:1px solid var(--line);background:var(--surface);padding:11px 14px;border-radius:9px;font-size:13.5px;font-weight:600;text-align:left;display:flex;align-items:center;gap:9px;color:var(--ink);transition:border-color .15s var(--ease),background .15s var(--ease)}
+.modal-actions-grid button:hover{border-color:var(--orange-border);background:var(--orange-soft);color:var(--orange)}
+.approval-warning{background:var(--red-soft);border:1px solid var(--red-border);border-radius:10px;padding:14px 16px;display:flex;gap:12px;align-items:center;color:var(--red)}
+.approval-warning>b{width:34px;height:34px;border-radius:8px;background:var(--red);color:#fff;display:grid;place-items:center;flex-shrink:0}
+.approval-warning p{font-size:13.5px;line-height:1.45}
+.tabs-mini{display:flex;margin:16px 0;border-bottom:1px solid var(--line)}
+.tabs-mini button{flex:1;border:0;border-bottom:2px solid transparent;padding:10px;background:transparent;color:var(--muted);font-size:13.5px;font-weight:600;margin-bottom:-1px}
+.tabs-mini button.active{color:var(--orange);border-color:var(--orange);font-weight:700}
+.cabinet-head{display:flex;gap:14px;padding:14px;background:var(--blue-soft);border:1px solid var(--blue-border);border-radius:10px;align-items:center}
+.qr-mini svg{width:64px;display:block;border-radius:5px}
+.cabinet-head b{font-size:14.5px;color:var(--ink)}
+.cabinet-head p{font-size:12.5px;color:var(--ink2);margin-top:3px}
+.cabinet-list{margin:14px 0;max-height:270px;overflow:auto;border:1px solid var(--line);border-radius:9px}
+.cabinet-list label{display:grid;grid-template-columns:18px 1fr auto;gap:10px;align-items:center;padding:11px 13px;border-bottom:1px solid var(--line-soft);cursor:pointer}
+.cabinet-list label:last-child{border-bottom:0}
+.cabinet-list label:hover{background:var(--surface-alt)}
+.cabinet-list input{accent-color:var(--orange)}
+.cabinet-list span{display:flex;flex-direction:column;font-size:14px;font-weight:600;color:var(--ink)}
+.cabinet-list small{font-size:12px;color:var(--muted);margin-top:2px;font-weight:500}
+.cabinet-list em{font-style:normal;font-size:12px;color:var(--green);font-weight:700}
+.camera{height:300px;background:#0b1220;border-radius:12px;overflow:hidden;position:relative}
+.camera video{width:100%;height:100%;object-fit:cover}
+.camera-frame{position:absolute;width:184px;height:184px;border:2.5px solid var(--orange);border-radius:10px;inset:50% auto auto 50%;transform:translate(-50%,-50%);box-shadow:0 0 0 999px rgba(15,23,42,.45)}
+.camera-help{font-size:13px;color:var(--muted);margin:10px 0 14px}
+#modalRoot{position:fixed;z-index:1000}
+.modal-back{position:fixed;inset:0;background:rgba(15,23,42,.56);display:grid;place-items:center;padding:20px;backdrop-filter:blur(5px)}
+.modal{width:min(640px,100%);max-height:92vh;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);display:flex;flex-direction:column;animation:pop .16s var(--ease)}
+@keyframes pop{from{transform:scale(.97);opacity:0}}
+.modal>header{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--line)}
+.modal>header h3{font-size:17.5px;font-weight:700;color:var(--ink)}
+.modal-body{padding:22px;overflow:auto}
+.modal>footer{padding:14px 22px;border-top:1px solid var(--line);background:var(--surface-alt);border-radius:0 0 var(--radius-lg) var(--radius-lg);display:flex;justify-content:flex-end;gap:8px}
+.toasts,#toasts{position:fixed;z-index:5000;right:22px;bottom:22px;display:flex;flex-direction:column;gap:8px}
+.toast{min-width:290px;max-width:440px;background:var(--navy);color:#f8fafc;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 15px;display:flex;gap:10px;align-items:center;box-shadow:var(--shadow);animation:slide .18s var(--ease)}
+.toast b{width:24px;height:24px;border-radius:6px;background:var(--green);display:grid;place-items:center;flex-shrink:0;color:#fff}
+.toast.error b{background:var(--red)}
+.toast span{font-size:13.5px;line-height:1.4}
+@keyframes slide{from{transform:translateY(10px);opacity:0}}
+.form-span-2{grid-column:1/-1}
+.usage-grid{display:flex;flex-wrap:wrap;gap:7px}
+.usage-grid label{display:inline-flex;align-items:center;gap:7px;height:36px;border:1px solid var(--line);border-radius:8px;padding:0 11px;background:var(--surface);font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer}
+.usage-grid label:has(input:checked){border-color:var(--orange);background:var(--orange-soft);color:var(--orange-hover)}
+.usage-grid input{width:16px!important;height:16px!important;min-width:16px;flex:0 0 16px;margin:0;padding:0;accent-color:var(--orange)}
+.usage-grid input:disabled+span{opacity:.45}
+.machine-options label{display:flex;align-items:center;justify-content:flex-start;gap:7px;min-height:36px;border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--surface);font-size:13px;font-weight:500;line-height:1.3;text-align:left;cursor:pointer}
+.machine-options label:has(input:checked){border-color:var(--orange);background:var(--orange-soft);color:var(--orange-hover)}
+.machine-options input{width:16px!important;height:16px!important;min-width:16px;flex:0 0 16px;margin:0;padding:0;accent-color:var(--orange)}
+.machine-options label span{min-width:0;white-space:normal;overflow-wrap:anywhere}
+.machine-picker{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--surface-alt)}
+.machine-picker[hidden]{display:none}
+.machine-picker-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.machine-picker-head b{font-size:13px;font-weight:700;color:var(--ink)}
+.machine-picker-head small{font-size:12px}
+.machine-search{width:100%;height:38px;border:1px solid var(--line);border-radius:8px;padding:0 11px;margin-bottom:9px;font-size:14px;background:var(--surface)}
+.machine-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;max-height:230px;overflow:auto;padding-right:3px}
+.auto-field input{background:var(--surface-alt);color:var(--muted)}
+.created-qr{display:grid;grid-template-columns:120px 1fr;gap:18px;align-items:center;padding:16px;border:1px solid var(--orange-border);border-radius:12px;background:var(--orange-soft)}
+.created-qr svg{width:120px;border-radius:6px}
+.created-qr h3{font-size:18px;margin-bottom:4px;font-family:var(--font-mono)}
+.created-qr p{font-size:13.5px;color:var(--ink2);margin:4px 0}
+.price-preview{font-weight:700;color:var(--orange)!important;font-variant-numeric:tabular-nums}
+
+/* Responsive */
+@media(max-width:1180px){
+  .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .split,.analysis-grid,.connection-grid,.maintenance-grid{grid-template-columns:1fr}
+  .quick{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:860px){
+  .login{grid-template-columns:1fr}
+  .login-art{display:none}
+  .login-form{min-height:100vh;padding:32px 20px 56px}
+  .nav-top{padding:8px 16px;min-height:52px}
+  .sidebar nav{display:none;flex-direction:column;align-items:stretch;padding:8px 12px 12px;overflow:visible}
+  .sidebar.open nav{display:flex}
+  .nav-item{border-radius:8px;padding:10px 12px}
+  .nav-item.active{background:rgba(234,88,12,.16)}
+  .nav-item.active:after{display:none}
+  .mobile-menu{display:inline-grid;place-items:center}
+  .sidebar .connection,.side-foot>div:nth-child(2){display:none}
+  .side-foot{border-left:0;padding-left:0}
+  .topbar{padding:14px 16px;flex-wrap:wrap}
+  .topbar p,.crumb{display:none}
+  #content{padding:16px 16px 36px}
+  .qr-hero{padding:24px}
+  .scan-visual{display:none}
+  .choice-grid{grid-template-columns:1fr}
+  .maintenance-top{align-items:stretch;gap:12px;flex-direction:column}
+  .maintenance-top>div:first-child{flex-direction:column}
+  .maintenance-top .field{min-width:0}
+  .approval-kpis,.ppe-summary{grid-template-columns:1fr 1fr}
+  .approval-list article{grid-template-columns:1fr}
+  .recipe-list>div{grid-template-columns:32px 1fr 84px}
+  .recipe-list>div p:nth-of-type(2){display:none}
+  .label-hero{flex-direction:column;align-items:flex-start}
+  .detail-grid{grid-template-columns:1fr 1fr}
+  .form-grid{grid-template-columns:1fr}
+  .critical-list button{grid-template-columns:1fr auto}
+  .crit-meter{display:none}
+}
+@media(max-width:540px){
+  .kpi-grid,.approval-kpis,.ppe-summary,.quick,.abc-summary{grid-template-columns:1fr}
+  .qr-hero h2{font-size:25px}
+  .qr-actions{flex-direction:column}
+  .choice-grid>button{grid-template-columns:44px 1fr}
+  .choice-grid em{display:none}
+  .sidebar .nav-refresh{display:none}
+  .panel{padding:16px}
+  .label-preview{width:100%}
+  .donut-wrap{flex-direction:column;align-items:stretch}
+  .donut{margin:0 auto}
+  .machine-options{grid-template-columns:1fr}
+  .created-qr{grid-template-columns:1fr}
+}
+@media print{
+  .sidebar,.topbar,.toolbar,.btn,.panel:not(.print-area),#toasts,#modalRoot{display:none!important}
+  .main{margin:0}
+  .print-area{display:block!important;border:0;box-shadow:none;padding:0}
+  .print-area .table-scroll{border:0}
+  .print-area .data-table{min-width:0;font-size:11px}
+  #content{padding:0}
+  .data-table th,.data-table td{padding:7px}
+}
+</style>
+<script type="text/plain" id="gasCode">/*
+ * MEKANİK + İSG DEPO V8.7 — Google Apps Script backend
+ * Script Properties:
+ *   DEPOT_SPREADSHEET_ID : MEKANİK DEPO-2027 spreadsheet id
+ *   FAULT_SPREADSHEET_ID : Arıza Formu spreadsheet id
+ *   PROXY_TOKEN          : long random secret, same as GAS_PROXY_TOKEN on server
+ *   SESSION_SECRET       : long random secret for signed sessions
+ *   ALLOW_DIRECT         : true only when the downloaded standalone HTML must call GAS directly
+ *
+ * Deploy as Web app: Execute as me; access limited as required by your Workspace.
+ */
+
+const CFG = Object.freeze({
+  sheets: {
+    data: 'VERİ', stock: 'STOK_KARTLARI', incoming: 'GIRIS_HAREKETLERI',
+    outgoing: 'CIKIS_HAREKETLERI', approvals: 'ONAY_HAVUZU',
+    recipes: 'PLANLI_BAKIM_RECETE', log: 'LOG', faults: 'Açık Arizalar'
+  },
+  spreadsheetId: '1AtCrVmav8bIQno5aeP-sFtS3L90KwdipMpZtFeP1KT4',
+  sessionHours: 8,
+  roles: ['OP', 'MEK_ADMIN', 'ISG_ADMIN', 'YONETICI'],
+  periods: ['AYLIK', '3 AYLIK', '6 AYLIK', 'YILLIK']
+});
+
+const HEADERS = Object.freeze({
+  stock: ['ID','DEPO','MALZEME TİPİ','PARÇA KODU','MALZEME ADI','KATEGORİ','FİRMA','BİRİM','MALZEME DEPO ŞEKLİ','RAF NO','MAKİNE PARÇAY','MİN STOK','GİREN','ÇIKAN','ANLIK STOK','DURUM','AKTİF/PASİF','OLUŞTURAN','TARİH','BİRİM FİYAT','TOPLAM FİYAT'],
+  incoming: ['ID','STOK ID','PARÇA KODU','MALZEME ADI','DEPO','MİKTAR','BİRİM','İŞLEM TÜRÜ','YAPAN','TARİH','AÇIKLAMA','BİRİM FİYAT','TOPLAM FİYAT'],
+  outgoing: ['ID','STOK ID','ÇIKIŞ YAPAN','KULLANILACAK MAKİNE/BÖLÜM','PARÇA KODU','MALZEME ADI','KATEGORİ','DEPO','BİRİM','ÇIKIŞ AD','KULLANIM TARİHİ','KAYNAK','ONAYLAYAN'],
+  approvals: ['ID','TALEP TARİHİ','TALEP EDEN','STOK ID','PARÇA KODU','MALZEME ADI','MAKİNE','MİKTAR','BİRİM','DEPO','NEDEN','DURUM','KARAR VEREN','KARAR TARİHİ'],
+  recipes: ['ID','MAKİNE','PERİYOT','STOK ID','PARÇA KODU','MALZEME ADI','MİKTAR','BİRİM','RAF NO','AKTİF/PASİF','GÜNCELLEYEN','GÜNCELLEME TARİHİ'],
+  log: ['TARİH','KULLANICI','ROL','İŞLEM','KAYNAK ID','DETAY']
+});
+
+function doGet(e) {
+  const action = String((e && e.parameter && e.parameter.action) || 'health');
+  if (action !== 'health') return json_({ok:false, error:'GET yalnız sağlık kontrolü içindir.'});
+  return json_({ok:true, service:'MEKANIK_ISG_DEPO_V8_7', time:new Date().toISOString()});
+}
+
+function doPost(e) {
+  try {
+    const body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    verifyTransport_(body);
+    const result = route_(body.action, body.payload || {}, body.session || '');
+    return json_({ok:true, data:result});
+  } catch (err) {
+    return json_({ok:false, error:String(err && err.message || err)});
+  }
+}
+
+function route_(action, p, token) {
+  if (action === 'health') return {service:'MEKANIK_ISG_DEPO_V8_7', time:new Date().toISOString()};
+  if (action === 'auth') return authenticate_(p.pin);
+  // Turkish endpoint aliases kept for the existing integration contract.
+  if (action === 'onayHavuzu') action = p.operation === 'create' ? 'approvalCreate' : p.operation === 'decide' ? 'approvalDecide' : 'approvalList';
+  if (action === 'planliBakimRecete') action = p.operation === 'save' ? 'recipeSave' : p.operation === 'bulkCheckout' ? 'recipeBulkCheckout' : 'recipeList';
+  if (action === 'kkdAnaliz') action = 'ppeAnalysis';
+  if (action === 'hareketAnaliz') action = 'movementAnalysis';
+  const user = verifySession_(token);
+  const read = {
+    bootstrap: () => bootstrap_(user),
+    stockList: () => filteredStock_(user),
+    approvalList: () => approvalList_(user),
+    recipeList: () => recipeList_(user, p),
+    ppeAnalysis: () => ppeAnalysis_(user, p),
+    movementAnalysis: () => movementAnalysis_(user, p)
+  };
+  if (read[action]) return read[action]();
+  const write = {
+    checkout: () => checkout_(user, p),
+    stockIn: () => stockIn_(user, p),
+    stockCount: () => stockCount_(user, p),
+    itemCreate: () => itemCreate_(user, p),
+    itemUpdate: () => itemUpdate_(user, p),
+    approvalCreate: () => approvalCreate_(user, p),
+    approvalDecide: () => approvalDecide_(user, p),
+    recipeSave: () => recipeSave_(user, p),
+    recipeBulkCheckout: () => recipeBulkCheckout_(user, p)
+  };
+  if (!write[action]) throw new Error('Bilinmeyen işlem: ' + action);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try { return write[action](); } finally { lock.releaseLock(); }
+}
+
+function verifyTransport_(body) {
+  const props = PropertiesService.getScriptProperties();
+  const expected = props.getProperty('PROXY_TOKEN') || '';
+  const direct = String(props.getProperty('ALLOW_DIRECT') || '').toLowerCase() === 'true';
+  if (expected && body._proxyToken === expected) return;
+  if (direct) return;
+  throw new Error('Güvenli /api/gas aracısı dışında doğrudan erişim kapalı.');
+}
+
+function depotBook_() {
+  const id = PropertiesService.getScriptProperties().getProperty('DEPOT_SPREADSHEET_ID') || CFG.spreadsheetId;
+  return id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActive();
+}
+function faultBook_() {
+  const id = PropertiesService.getScriptProperties().getProperty('FAULT_SPREADSHEET_ID');
+  if (!id) throw new Error('FAULT_SPREADSHEET_ID tanımlı değil.');
+  return SpreadsheetApp.openById(id);
+}
+function sh_(name) {
+  const s = depotBook_().getSheetByName(name);
+  if (!s) throw new Error(name + ' sayfası bulunamadı.');
+  return s;
+}
+function ensureSheet_(name, headers) {
+  const ss = depotBook_(); let s = ss.getSheetByName(name);
+  if (!s) s = ss.insertSheet(name);
+  if (!s.getLastRow()) s.getRange(1,1,1,headers.length).setValues([headers]).setFontWeight('bold').setBackground('#f97316').setFontColor('#fff');
+  return s;
+}
+function ensureHeaders_(name, headers) {
+  const s = ensureSheet_(name, headers);
+  const last = Math.max(1, s.getLastColumn());
+  const existing = s.getRange(1,1,1,last).getDisplayValues()[0].map(norm_);
+  let col = last;
+  headers.forEach(h => {
+    if (existing.indexOf(norm_(h)) < 0) {
+      col++;
+      s.getRange(1,col).setValue(h).setFontWeight('bold').setBackground('#f97316').setFontColor('#fff');
+      existing.push(norm_(h));
+    }
+  });
+  return s;
+}
+function values_(name) {
+  const s = sh_(name), lastRow = s.getLastRow(), lastCol = s.getLastColumn();
+  return lastRow && lastCol ? s.getRange(1,1,lastRow,lastCol).getDisplayValues() : [];
+}
+function objects_(name) {
+  const v = values_(name); if (v.length < 2) return [];
+  const h = v[0].map(norm_);
+  return v.slice(1).filter(r => r.some(Boolean)).map((r,i) => {
+    const o = {_row:i+2}; h.forEach((k,j) => o[k] = r[j]); return o;
+  });
+}
+function append_(name, headers, obj) {
+  const s = ensureHeaders_(name, headers);
+  const row = headers.map(h => obj[norm_(h)] === undefined ? '' : obj[norm_(h)]);
+  s.appendRow(row); return s.getLastRow();
+}
+function mirrorLegacy_(name, obj) {
+  const s = depotBook_().getSheetByName(name); if (!s || !s.getLastColumn()) return;
+  const headers = s.getRange(1,1,1,s.getLastColumn()).getDisplayValues()[0];
+  const row = headers.map(h => obj[norm_(h)] === undefined ? '' : obj[norm_(h)]);
+  s.appendRow(row);
+}
+function norm_(s) {
+  return String(s == null ? '' : s).trim().toLocaleUpperCase('tr-TR')
+    .replace(/İ/g,'I').replace(/Ş/g,'S').replace(/Ğ/g,'G').replace(/Ü/g,'U').replace(/Ö/g,'O').replace(/Ç/g,'C')
+    .replace(/[^A-Z0-9]+/g,'_').replace(/^_|_$/g,'');
+}
+function n_(v) { const x = Number(String(v || 0).replace(',','.')); return isFinite(x) ? x : 0; }
+function uid_(prefix) { return prefix + '-' + Utilities.getUuid().slice(0,8).toUpperCase(); }
+function now_() { return Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Europe/Istanbul', 'yyyy-MM-dd HH:mm:ss'); }
+function json_(obj) { return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON); }
+
+function role_(v) {
+  const x = norm_(v);
+  if (x === 'YONETICI' || x === 'ADMIN' || x.indexOf('YONET') >= 0 || x.indexOf('SEF') >= 0 || x.indexOf('TAM_YETKI') >= 0) return 'YONETICI';
+  if (x === 'MEK_ADMIN' || x.indexOf('MEKANIK') >= 0 || x.indexOf('DEPOCU') >= 0) return 'MEK_ADMIN';
+  if (x === 'ISG_ADMIN' || x.indexOf('ISG') >= 0) return 'ISG_ADMIN';
+  if (x === 'OP' || x.indexOf('OPERAT') >= 0 || x.indexOf('OPARAT') >= 0 || x.indexOf('BAKIM') >= 0) return 'OP';
+  return '';
+}
+function users_() {
+  const v = values_(CFG.sheets.data); if (v.length < 2) return [];
+  const h = v[0].map(norm_);
+  const ix = (...names) => { for (const name of names) { const i=h.indexOf(norm_(name)); if(i>=0)return i; } return -1; };
+  let nameI=ix('BAKIM OPERATÖR','BAKIM OPARATÖR','PERSONEL','AD SOYAD'), pinI=ix('ŞİFRE','PIN','ŞİFRE / PIN','GİRİŞ PIN','PAROLA'), roleI=ix('YETKİ','ROL'), activeI=ix('AKTİF/PASİF','DURUM');
+  if (nameI < 0 || pinI < 0 || roleI < 0) {
+    // Backward-compatible positional layouts: J:L or K:M.
+    nameI = nameI < 0 ? (v[0].length >= 12 ? 9 : 10) : nameI;
+    pinI = pinI < 0 ? nameI + 1 : pinI; roleI = roleI < 0 ? nameI + 2 : roleI;
+  }
+  return v.slice(1).map((r,i)=>({row:i+2,name:String(r[nameI]||'').trim(),pin:String(r[pinI]||'').replace(/\s+/g,'').trim(),role:role_(r[roleI]),active:activeI<0?true:!/(PASIF|HAYIR|^0$|^FALSE$)/.test(norm_(r[activeI]))})).filter(x=>x.name&&x.pin&&x.role&&x.active);
+}
+function authenticate_(pin) {
+  pin = String(pin || '').replace(/\s+/g,'').trim(); if (!/^\d{4,8}$/.test(pin)) throw new Error('PIN 4-8 rakam olmalıdır.');
+  const u = users_().find(x => constantTime_(x.pin, pin));
+  if (!u) throw new Error('PIN geçersiz veya kullanıcı pasif.');
+  const safe = {name:u.name, role:u.role};
+  log_(safe,'OTURUM_ACILDI','',{});
+  return {user:safe, session:signSession_(safe)};
+}
+function signSession_(u) {
+  const props=PropertiesService.getScriptProperties(); let secret=props.getProperty('SESSION_SECRET');
+  if (!secret) { secret=Utilities.getUuid()+Utilities.getUuid(); props.setProperty('SESSION_SECRET',secret); }
+  const data=Utilities.base64EncodeWebSafe(JSON.stringify({name:u.name,role:u.role,exp:Date.now()+CFG.sessionHours*3600000}));
+  const sig=Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature(data,secret));
+  return data+'.'+sig;
+}
+function verifySession_(token) {
+  const parts=String(token||'').split('.'); if(parts.length!==2) throw new Error('Oturum gerekli.');
+  const secret=PropertiesService.getScriptProperties().getProperty('SESSION_SECRET')||'';
+  const sig=Utilities.base64EncodeWebSafe(Utilities.computeHmacSha256Signature(parts[0],secret));
+  if(!constantTime_(sig,parts[1])) throw new Error('Oturum imzası geçersiz.');
+  const p=JSON.parse(Utilities.newBlob(Utilities.base64DecodeWebSafe(parts[0])).getDataAsString());
+  if(!p.exp || Date.now()>p.exp || CFG.roles.indexOf(p.role)<0) throw new Error('Oturum süresi doldu.');
+  return {name:p.name,role:p.role};
+}
+function constantTime_(a,b) { a=String(a);b=String(b); let d=a.length^b.length; for(let i=0;i<Math.max(a.length,b.length);i++) d|=(a.charCodeAt(i)||0)^(b.charCodeAt(i)||0); return d===0; }
+function requireRole_(u, roles) { if(roles.indexOf(u.role)<0) throw new Error('Bu işlem için yetkiniz yok.'); }
+function canDepot_(u,depot) { return u.role==='YONETICI'||u.role==='OP'||(u.role==='MEK_ADMIN'&&depot==='MEKANIK')||(u.role==='ISG_ADMIN'&&depot==='ISG'); }
+function managerByPin_(pin) { const u=users_().find(x=>constantTime_(x.pin,String(pin||''))&&x.role==='YONETICI'); return u ? {name:u.name,role:u.role} : null; }
+function depotApproverByPin_(pin, depot) { const clean=String(pin||'').replace(/\s+/g,'').trim(); const u=users_().find(x=>constantTime_(x.pin,clean)&&(x.role==='YONETICI'||(depot==='ISG'?x.role==='ISG_ADMIN':x.role==='MEK_ADMIN'))); return u ? {name:u.name,role:u.role} : null; }
+function isDepotApproverRole_(role, depot) { return role==='YONETICI'||(depot==='ISG'?role==='ISG_ADMIN':role==='MEK_ADMIN'); }
+
+function stock_() {
+  return objects_(CFG.sheets.stock).map(o=>({
+    id:o.ID, depot: /ISG/.test(norm_(o.DEPO||o.KATEGORI)) ? 'ISG':'MEKANIK', type:o.MALZEME_TIPI||'', code:o.PARCA_KODU||'',
+    name:o.MALZEME_ADI||o.URUN_ACIKLAMASI||'', category:o.KATEGORI||'', company:o.FIRMA||'', unit:o.BIRIM||'AD',
+    usage:o.MALZEME_DEPO_SEKLI||'', shelf:o.RAF_NO||o.RAF||'', machine:o.MAKINE_PARCAY||o.MAKINE||'', min:n_(o.MIN_STOK||o.SIPARIS_NOKTASI), unitPrice:n_(o.BIRIM_FIYAT), totalPrice:n_(o.TOPLAM_FIYAT),
+    incoming:n_(o.GIREN), outgoing:n_(o.CIKAN), stock:n_(o.ANLIK_STOK), active:!/(PASIF|HAYIR|0)/.test(norm_(o.AKTIF_PASIF)), row:o._row
+  })).filter(x=>x.id&&x.active);
+}
+function filteredStock_(u) { return stock_().filter(x=>canDepot_(u,x.depot)); }
+function bootstrap_(u) {
+  return {
+    user:u, stock:filteredStock_(u), approvals:u.role==='OP'?[]:approvalList_(u), recipes:recipeList_(u,{}),
+    movements:recentMovements_(u), lists:dataLists_(), serverTime:now_(), capabilities:capabilities_(u)
+  };
+}
+function recentMovements_(u) {
+  if (u.role === 'OP') return [];
+  return objects_(CFG.sheets.outgoing).map(o=>({id:o.ID,date:o.KULLANIM_TARIHI,person:o.CIKIS_YAPAN,itemId:o.STOK_ID,code:o.PARCA_KODU,name:o.MALZEME_ADI,depot:norm_(o.DEPO)==='ISG'?'ISG':'MEKANIK',qty:n_(o.CIKIS_AD),unit:o.BIRIM,machine:o.KULLANILACAK_MAKINE_BOLUM,source:o.KAYNAK})).filter(x=>canDepot_(u,x.depot)).slice(-200).reverse();
+}
+function capabilities_(u) {
+  return {mechanical:['MEK_ADMIN','YONETICI'].indexOf(u.role)>=0, isg:['ISG_ADMIN','YONETICI'].indexOf(u.role)>=0, operator:u.role==='OP', full:u.role==='YONETICI'};
+}
+function dataLists_() {
+  const v=values_(CFG.sheets.data); if(!v.length)return {};
+  const h=v[0].map(norm_); const get=(...names)=>{let i=-1;for(const n of names){i=h.indexOf(norm_(n));if(i>=0)break;}if(i<0)return[];return [...new Set(v.slice(1).map(r=>String(r[i]||'').trim()).filter(Boolean))];};
+  return {types:get('MALZEME TÜR','KATEGORİ'),companies:get('FİRMA BİLGİLERİ','FİRMA'),units:get('BİRİM'),usage:get('MALZEME DEPO ŞEKLİ'),shelves:get('RAF NO','RAFNO'),machines:get('MAKİNE ADI','MAKİNE')};
+}
+function item_(id) { const x=stock_().find(i=>i.id===id||i.code===id); if(!x)throw new Error('Stok kartı bulunamadı.'); return x; }
+function needsDepotApproval_(item) { return norm_(item && item.usage).indexOf('DEPO_ONAYI_GEREKLI') >= 0; }
+
+function checkout_(u,p) {
+  const item=item_(p.itemId||p.code); const qty=n_(p.qty); if(qty<=0)throw new Error('Miktar 0’dan büyük olmalıdır.');
+  if(!canDepot_(u,item.depot))throw new Error('Bu depoya erişim yetkiniz yok.');
+  if(item.stock<qty)throw new Error('Yetersiz stok. Mevcut: '+item.stock+' '+item.unit);
+  const isIsg=item.depot==='ISG', isConsumable=!item.machine||/(SARF|ORTAK)/.test(norm_(item.type+' '+item.usage));
+  const machine=isIsg ? (p.machine||'PERSONEL KKD') : (isConsumable ? String(p.machine||'').trim() : item.machine);
+  if(!isIsg&&!machine)throw new Error('Kullanılacak makine/bölüm seçilmelidir.');
+  if(needsDepotApproval_(item)&&!isDepotApproverRole_(u.role,item.depot)) {
+    if(p.depotApproverPin) {
+      const depocu=depotApproverByPin_(p.depotApproverPin,item.depot);
+      if(!depocu)throw new Error('Depocu PIN geçersiz veya bu depo için yetkisiz.');
+      const id=writeExit_(u,item,qty,machine,'DEPO ONAYI',depocu.name,{exitType:'DEPO ONAYI',approval:'ONAYLANDI'});
+      log_(u,'STOK_CIKIS_DEPO_ONAYLI',id,{item:item.id,qty:qty,machine:machine,approver:depocu.name});
+      return {completed:true,depotApproved:true,approver:depocu.name,id:id,remaining:item.stock-qty,autoLogout:u.role==='OP'};
+    }
+    if(p.promptDepotApproval&&!p.sendApproval) {
+      return {depotApprovalRequired:true,message:'Bu parça için Depo Onayı Gerekli.'};
+    }
+    const request=approvalCreate_(u,{itemId:item.id,qty:qty,machine:machine,reason:'Depo Onayı Gerekli',depotApproval:true});
+    return {pending:true,depotApproval:true,id:request.id,message:'Depocu onayına istek gönderildi. Talep No: '+request.id,autoLogout:u.role==='OP'};
+  }
+  let approver='';
+  if(!p.qrTerminal&&!isIsg&&!isConsumable&&!hasActiveMaintenance_(machine)) {
+    const manager=managerByPin_(p.managerPin);
+    if(manager) approver=manager.name;
+    else if(p.sendApproval) return approvalCreate_(u,{itemId:item.id,qty:qty,machine:machine,reason:'Açık arıza veya planlı bakım kaydı bulunamadı'});
+    else return {approvalRequired:true,message:'Bu makinede açık arıza veya planlı bakım kaydı bulunamadı — Yönetici Onayı Gerekli'};
+  }
+  const id=writeExit_(u,item,qty,machine,p.source||'QR',approver);
+  log_(u,'STOK_CIKIS',id,{item:item.id,qty:qty,machine:machine,approver:approver});
+  return {completed:true,id:id,remaining:item.stock-qty,autoLogout:u.role==='OP'};
+}
+function hasActiveMaintenance_(machine) {
+  const s=faultBook_().getSheetByName(CFG.sheets.faults); if(!s)return false;
+  const v=s.getDataRange().getDisplayValues(); if(v.length<2)return false;
+  const h=v[0].map(norm_), mi=findIndex_(h,['MAKİNE','MAKINE ADI','EKİPMAN']), si=findIndex_(h,['DURUM','STATÜ','STATUS']), ti=findIndex_(h,['TÜR','KAYIT TÜRÜ','BAKIM TÜRÜ']);
+  return v.slice(1).some(r=>norm_(r[mi])===norm_(machine)&&!/(KAPALI|TAMAMLANDI|IPTAL)/.test(norm_(r[si]))&&(/(ARIZA|PLANLI BAKIM)/.test(norm_((ti>=0?r[ti]:'')+' '+r.join(' ')))));
+}
+function findIndex_(headers,names){for(const n of names){const i=headers.indexOf(norm_(n));if(i>=0)return i;}return 0;}
+function appendExistingHeaders_(name,baseHeaders,obj) {
+  const s=ensureSheet_(name,baseHeaders), headers=s.getRange(1,1,1,s.getLastColumn()).getDisplayValues()[0];
+  s.appendRow(headers.map(h=>obj[norm_(h)]===undefined?'':obj[norm_(h)])); return s.getLastRow();
+}
+function writeExit_(u,item,qty,machine,source,approver,approvalInfo) {
+  approvalInfo=approvalInfo||{};
+  const id=uid_('CIK'), row={ID:id,STOK_ID:item.id,CIKIS_YAPAN:u.name,CIKIS_YAPAN_PERSONEL:u.name,KULLANILACAK_MAKINE_BOLUM:machine,KULLANILACAK_MAKINE:machine,URUN_KODU:item.code,PARCA_KODU:item.code,URUN_ACIKLAMASI:item.name,MALZEME_ADI:item.name,KATEGORI:item.category,DEPO:item.depot,BIRIM:item.unit,CIKIS_AD:qty,KULLANIM_TARIHI:now_(),KAYNAK:source,CIKIS_TURU:approvalInfo.exitType||'',ONAY:approvalInfo.approval||'',ONAYLAYAN:approver,TALEP_NO:approvalInfo.requestId||''};
+  appendExistingHeaders_(CFG.sheets.outgoing,HEADERS.outgoing,row); mirrorLegacy_('DEPOCIK',row); return id;
+}
+
+function approvalCreate_(u,p) {
+  const item=item_(p.itemId), depotApproval=!!p.depotApproval||needsDepotApproval_(item);
+  if(item.depot!=='MEKANIK'&&!depotApproval)throw new Error('Onay havuzu yalnız mekanik depo veya Depo Onayı Gerekli parçalar içindir.');
+  const qty=n_(p.qty); if(qty<=0||qty>item.stock)throw new Error('Talep miktarı geçersiz.');
+  const id=uid_('ONAY'), reason=depotApproval?'Depo Onayı Gerekli':(p.reason||'Yönetici onayı gerekli');
+  append_(CFG.sheets.approvals,HEADERS.approvals,{ID:id,TALEP_TARIHI:now_(),TALEP_EDEN:u.name,STOK_ID:item.id,PARCA_KODU:item.code,MALZEME_ADI:item.name,MAKINE:p.machine||item.machine,MIKTAR:qty,BIRIM:item.unit,DEPO:item.depot,NEDEN:reason,DURUM:'BEKLIYOR'});
+  log_(u,'ONAY_TALEBI',id,{item:item.id,qty:qty,depotApproval:depotApproval}); return {pending:true,depotApproval:depotApproval,id:id,message:depotApproval?'Depocu onayına istek gönderildi. Talep No: '+id:'Talep onay havuzuna gönderildi. Talep No: '+id,autoLogout:u.role==='OP'};
+}
+function approvalList_(u) {
+  requireRole_(u,['MEK_ADMIN','YONETICI','ISG_ADMIN']);
+  const stock=stock_();
+  return objects_(CFG.sheets.approvals).map(o=>{const item=stock.find(i=>i.id===o.STOK_ID);return {id:o.ID,date:o.TALEP_TARIHI,requester:o.TALEP_EDEN,itemId:o.STOK_ID,code:o.PARCA_KODU,name:o.MALZEME_ADI,machine:o.MAKINE,qty:n_(o.MIKTAR),unit:o.BIRIM,depot:o.DEPO,status:o.DURUM,reason:o.NEDEN,decider:o.KARAR_VEREN,depotApproval:!!item&&needsDepotApproval_(item)||norm_(o.NEDEN).indexOf('DEPO_ONAYI')>=0};}).filter(x=>u.role==='YONETICI'||(u.role==='MEK_ADMIN'&&(x.depot==='MEKANIK'||x.depotApproval))||(u.role==='ISG_ADMIN'&&x.depot==='ISG'));
+}
+function approvalDecide_(u,p) {
+  requireRole_(u,['MEK_ADMIN','ISG_ADMIN','YONETICI']);
+  const list=objects_(CFG.sheets.approvals), a=list.find(x=>x.ID===p.id); if(!a)throw new Error('Talep bulunamadı.'); if(norm_(a.DURUM)!=='BEKLIYOR')throw new Error('Talep daha önce sonuçlanmış.');
+  if(!isDepotApproverRole_(u.role,norm_(a.DEPO)==='ISG'?'ISG':'MEKANIK'))throw new Error('Bu deponun talebini onaylama yetkiniz yok.');
+  const decision=norm_(p.decision)==='ONAYLA'?'ONAYLANDI':'REDDEDILDI'; let exitId='';
+  if(decision==='ONAYLANDI') {
+    const item=item_(a.STOK_ID), qty=n_(a.MIKTAR), depotApproval=needsDepotApproval_(item)||norm_(a.NEDEN).indexOf('DEPO_ONAYI')>=0;
+    if(item.stock<qty)throw new Error('Onay anında stok yetersiz.');
+    exitId=writeExit_({name:a.TALEP_EDEN,role:'OP'},item,qty,a.MAKINE,depotApproval?'DEPO ONAYI':'ONAY_HAVUZU',u.name,depotApproval?{exitType:'DEPO ONAYI',approval:'ONAYLANDI',requestId:a.ID}:{approval:'ONAYLANDI',requestId:a.ID});
+  }
+  const s=sh_(CFG.sheets.approvals), h=s.getRange(1,1,1,s.getLastColumn()).getDisplayValues()[0].map(norm_);
+  s.getRange(a._row,h.indexOf('DURUM')+1).setValue(decision); s.getRange(a._row,h.indexOf('KARAR_VEREN')+1).setValue(u.name); s.getRange(a._row,h.indexOf('KARAR_TARIHI')+1).setValue(now_());
+  log_(u,'ONAY_KARARI',a.ID,{decision:decision,exitId:exitId}); return {id:a.ID,status:decision,exitId:exitId};
+}
+
+function updateStockPrice_(itemId, unitPrice) {
+  unitPrice=n_(unitPrice); if(unitPrice<0)return;
+  const item=item_(itemId), s=sh_(CFG.sheets.stock), h=s.getRange(1,1,1,s.getLastColumn()).getDisplayValues()[0].map(norm_);
+  const j=h.indexOf('BIRIM_FIYAT'); if(j>=0)s.getRange(item.row,j+1).setValue(unitPrice);
+}
+function stockIn_(u,p) {
+  const item=item_(p.itemId); requireRole_(u,item.depot==='ISG'?['ISG_ADMIN','YONETICI']:['MEK_ADMIN','YONETICI']);
+  const qty=n_(p.qty), unitPrice=n_(p.unitPrice); if(qty<=0)throw new Error('Giriş miktarı geçersiz.'); if(unitPrice<0)throw new Error('Birim fiyat negatif olamaz.'); const id=uid_('GRS');
+  const row={ID:id,STOK_ID:item.id,PARCA_KODU:item.code,URUN_KODU:item.code,MALZEME_ADI:item.name,URUN_ACIKLAMASI:item.name,DEPO:item.depot,MIKTAR:qty,GIRIS_AD:qty,BIRIM:item.unit,ISLEM_TURU:p.entryType||'GIRIS',YAPAN:u.name,DEPO_GIRIS_YAPAN:u.name,TARIH:now_(),GIRIS_TARIHI:now_(),ACIKLAMA:p.note||'',BIRIM_FIYAT:unitPrice,TOPLAM_FIYAT:qty*unitPrice};
+  append_(CFG.sheets.incoming,HEADERS.incoming,row); mirrorLegacy_('DEPOGRS',row); updateStockPrice_(item.id,unitPrice);
+  log_(u,'STOK_GIRIS',id,{item:item.id,qty:qty,unitPrice:unitPrice}); return {id:id,newStock:item.stock+qty};
+}
+function stockCount_(u,p) {
+  const item=item_(p.itemId); requireRole_(u,item.depot==='ISG'?['ISG_ADMIN','YONETICI']:['MEK_ADMIN','YONETICI']);
+  const actual=n_(p.actual), delta=actual-item.stock; const id=uid_('SAY');
+  const row={ID:id,STOK_ID:item.id,PARCA_KODU:item.code,URUN_KODU:item.code,MALZEME_ADI:item.name,URUN_ACIKLAMASI:item.name,DEPO:item.depot,MIKTAR:delta,GIRIS_AD:delta,BIRIM:item.unit,ISLEM_TURU:'SAYIM_DUZELTME',YAPAN:u.name,DEPO_GIRIS_YAPAN:u.name,TARIH:now_(),GIRIS_TARIHI:now_(),ACIKLAMA:'Sayım: '+actual};
+  append_(CFG.sheets.incoming,HEADERS.incoming,row); mirrorLegacy_('DEPOGRS',row);
+  log_(u,'STOK_SAYIM',id,{item:item.id,old:item.stock,actual:actual}); return {id:id,newStock:actual};
+}
+const REGISTRATION_USAGE=['Kritik Malzeme','Planlı Bakım','Sarf','İSG','Tekli Makine','Çoklu Makine','Depo Onayı Gerekli'];
+function usageList_(value) {
+  const raw=Array.isArray(value)?value:String(value||'').split('|');
+  return [...new Set(raw.map(v=>REGISTRATION_USAGE.find(x=>norm_(x)===norm_(v))).filter(Boolean))];
+}
+function machineList_(p) {
+  const raw=Array.isArray(p.machines)?p.machines:String(p.machine||'').split('|');
+  return [...new Set(raw.map(String).map(x=>x.trim()).filter(Boolean))];
+}
+function nextStockCode_(depot) {
+  const prefix=depot==='ISG'?'ISG':'MEK', ids=stock_().map(x=>String(x.id||'')); let max=0;
+  ids.forEach(id=>{const m=id.match(new RegExp('^'+prefix+'-(\\d+)$'));if(m)max=Math.max(max,Number(m[1]));});
+  let code; do { max++; code=prefix+'-'+String(max).padStart(6,'0'); } while(ids.indexOf(code)>=0); return code;
+}
+function setStockFormulas_(sheet,row) {
+  const sep=depotBook_().getSpreadsheetLocale().toLowerCase().indexOf('tr')===0?';':',';
+  sheet.getRange(row,13).setFormula('=IF(A'+row+'=""'+sep+'""'+sep+'SUMIF(GIRIS_HAREKETLERI!B:B'+sep+'A'+row+sep+'GIRIS_HAREKETLERI!F:F))');
+  sheet.getRange(row,14).setFormula('=IF(A'+row+'=""'+sep+'""'+sep+'SUMIF(CIKIS_HAREKETLERI!B:B'+sep+'A'+row+sep+'CIKIS_HAREKETLERI!J:J))');
+  sheet.getRange(row,15).setFormula('=IF(A'+row+'=""'+sep+'""'+sep+'M'+row+'-N'+row+')');
+  sheet.getRange(row,16).setFormula('=IF(A'+row+'=""'+sep+'""'+sep+'IF(O'+row+'<=L'+row+sep+'"EKSİK"'+sep+'"TAM"))');
+  sheet.getRange(row,21).setFormula('=IF(A'+row+'=""'+sep+'""'+sep+'O'+row+'*T'+row+')');
+}
+function itemCreate_(u,p) {
+  const usage=usageList_(p.usage), machines=machineList_(p), single=usage.indexOf('Tekli Makine')>=0, multiple=usage.indexOf('Çoklu Makine')>=0;
+  if(!usage.length)throw new Error('En az bir kullanım şekli seçilmelidir.');
+  if(single&&multiple)throw new Error('Tekli Makine ve Çoklu Makine birlikte seçilemez.');
+  const needsMachine=usage.some(x=>['Kritik Malzeme','Planlı Bakım','Tekli Makine','Çoklu Makine'].indexOf(x)>=0);
+  if(needsMachine&&!machines.length)throw new Error('Seçilen kullanım şekli için makine seçilmelidir.');
+  if(single&&machines.length!==1)throw new Error('Tekli Makine için yalnız bir makine seçilmelidir.');
+  if(multiple&&machines.length<2)throw new Error('Çoklu Makine için en az iki makine seçilmelidir.');
+  const depot=usage.indexOf('İSG')>=0?'ISG':'MEKANIK'; requireRole_(u,depot==='ISG'?['ISG_ADMIN','YONETICI']:['MEK_ADMIN','YONETICI']);
+  if(!p.code||!p.name||!p.category||!p.company||!p.unit||!p.shelf)throw new Error('Malzeme türü, kod, açıklama, raf, firma ve birim zorunludur.');
+  const qty=n_(p.initial), min=n_(p.min), unitPrice=n_(p.unitPrice); if(qty<=0)throw new Error('Stok miktarı 0’dan büyük olmalıdır.'); if(min<0||unitPrice<0)throw new Error('Sipariş noktası ve birim fiyat negatif olamaz.');
+  const existing=stock_().find(x=>norm_(x.code)===norm_(p.code));
+  if(existing){
+    requireRole_(u,existing.depot==='ISG'?['ISG_ADMIN','YONETICI']:['MEK_ADMIN','YONETICI']);
+    const entry=stockIn_(u,{itemId:existing.id,qty:qty,unitPrice:unitPrice,entryType:'GIRIS',note:'Yeni malzeme formu: mevcut parça koduna giriş'});
+    log_(u,'MEVCUT_KARTA_GIRIS',existing.id,{entryId:entry.id,qty:qty}); return {id:existing.id,existing:true,entryId:entry.id,newStock:entry.newStock};
+  }
+  const type=depot==='ISG'?'İSG MALZEME':(!needsMachine&&usage.every(x=>x==='Sarf')?'SARF / ORTAK KULLANIM':'MAKİNE PARÇASI');
+  const id=nextStockCode_(depot), machine=needsMachine?machines.join(' | '):'';
+  const stockRow=append_(CFG.sheets.stock,HEADERS.stock,{ID:id,DEPO:depot,MALZEME_TIPI:type,PARCA_KODU:String(p.code).trim(),MALZEME_ADI:String(p.name).trim(),KATEGORI:p.category,FIRMA:p.company,BIRIM:p.unit,MALZEME_DEPO_SEKLI:usage.join(' | '),RAF_NO:p.shelf,MAKINE_PARCAY:machine,MIN_STOK:min,GIREN:0,CIKAN:0,ANLIK_STOK:0,DURUM:'EKSİK',AKTIF_PASIF:'AKTİF',OLUSTURAN:u.name,TARIH:now_(),BIRIM_FIYAT:unitPrice,TOPLAM_FIYAT:0});
+  const stockSheet=sh_(CFG.sheets.stock); setStockFormulas_(stockSheet,stockRow);
+  const first={ID:uid_('GRS'),STOK_ID:id,PARCA_KODU:p.code,URUN_KODU:p.code,MALZEME_ADI:p.name,URUN_ACIKLAMASI:p.name,DEPO:depot,MIKTAR:qty,GIRIS_AD:qty,BIRIM:p.unit,ISLEM_TURU:'ILK_STOK',YAPAN:u.name,DEPO_GIRIS_YAPAN:u.name,TARIH:now_(),GIRIS_TARIHI:now_(),ACIKLAMA:'Yeni stok kartı ilk girişi',BIRIM_FIYAT:unitPrice,TOPLAM_FIYAT:qty*unitPrice};
+  append_(CFG.sheets.incoming,HEADERS.incoming,first); mirrorLegacy_('DEPOGRS',first);
+  log_(u,'KART_OLUSTUR',id,{code:p.code,usage:usage,machines:machines,initial:qty,unitPrice:unitPrice}); return {id:id,existing:false,entryId:first.ID};
+}
+function itemUpdate_(u,p) {
+  const item=item_(p.id); requireRole_(u,item.depot==='ISG'?['ISG_ADMIN','YONETICI']:['MEK_ADMIN','YONETICI']);
+  if (p.code && stock_().some(x=>x.id!==item.id&&norm_(x.code)===norm_(p.code))) throw new Error('Parça kodu başka bir kartta kullanılıyor.');
+  const allowed=['PARÇA KODU','MALZEME ADI','KATEGORİ','FİRMA','BİRİM','MALZEME DEPO ŞEKLİ','RAF NO','MAKİNE PARÇAY','MİN STOK','AKTİF/PASİF','BİRİM FİYAT'];
+  const s=sh_(CFG.sheets.stock), h=s.getRange(1,1,1,s.getLastColumn()).getDisplayValues()[0];
+  const map={code:'PARÇA KODU',name:'MALZEME ADI',category:'KATEGORİ',company:'FİRMA',unit:'BİRİM',usage:'MALZEME DEPO ŞEKLİ',shelf:'RAF NO',machine:'MAKİNE PARÇAY',min:'MİN STOK',active:'AKTİF/PASİF',unitPrice:'BİRİM FİYAT'};
+  Object.keys(map).forEach(k=>{if(p[k]!==undefined){const j=h.map(norm_).indexOf(norm_(map[k]));if(j>=0&&allowed.indexOf(map[k])>=0)s.getRange(item.row,j+1).setValue(p[k]);}});
+  log_(u,'KART_GUNCELLE',item.id,p); return {id:item.id};
+}
+
+function recipeList_(u,p) {
+  const rows=objects_(CFG.sheets.recipes).map(o=>({id:o.ID,machine:o.MAKINE,period:o.PERIYOT,itemId:o.STOK_ID,code:o.PARCA_KODU,name:o.MALZEME_ADI,qty:n_(o.MIKTAR),unit:o.BIRIM,shelf:o.RAF_NO,active:!/(PASIF|HAYIR|0)/.test(norm_(o.AKTIF_PASIF))})).filter(x=>x.active);
+  const st=stock_(); return rows.filter(x=>(!p.machine||x.machine===p.machine)&&(!p.period||norm_(x.period)===norm_(p.period))).map(x=>{const item=st.find(i=>i.id===x.itemId);return Object.assign(x,{stock:item?item.stock:0,ready:!!item&&item.stock>=x.qty});});
+}
+function recipeSave_(u,p) {
+  requireRole_(u,['MEK_ADMIN','YONETICI']); if(!p.machine||CFG.periods.indexOf(norm_(p.period))<0||!Array.isArray(p.items)||!p.items.length)throw new Error('Makine, periyot ve reçete kalemleri zorunludur.');
+  const s=ensureSheet_(CFG.sheets.recipes,HEADERS.recipes), existing=objects_(CFG.sheets.recipes).filter(x=>x.MAKINE===p.machine&&norm_(x.PERIYOT)===norm_(p.period));
+  existing.forEach(x=>s.getRange(x._row,HEADERS.recipes.indexOf('AKTİF/PASİF')+1).setValue('PASİF'));
+  p.items.forEach(row=>{const item=item_(row.itemId);if(item.depot!=='MEKANIK')throw new Error('Reçeteye yalnız mekanik parça eklenebilir.');append_(CFG.sheets.recipes,HEADERS.recipes,{ID:uid_('BOM'),MAKINE:p.machine,PERIYOT:norm_(p.period),STOK_ID:item.id,PARCA_KODU:item.code,MALZEME_ADI:item.name,MIKTAR:n_(row.qty),BIRIM:item.unit,RAF_NO:item.shelf,AKTIF_PASIF:'AKTİF',GUNCELLEYEN:u.name,GUNCELLEME_TARIHI:now_()});});
+  log_(u,'RECETE_KAYDET',p.machine+' '+p.period,{count:p.items.length}); return {saved:p.items.length};
+}
+function recipeBulkCheckout_(u,p) {
+  const rows=recipeList_(u,{machine:p.machine,period:p.period}); if(!rows.length)throw new Error('Reçete bulunamadı.'); const missing=rows.filter(x=>!x.ready); if(missing.length)throw new Error('Eksik stok: '+missing.map(x=>x.code).join(', '));
+  const ids=[]; rows.forEach(r=>{const item=item_(r.itemId);ids.push(writeExit_(u,item,r.qty,p.machine,'PLANLI_BAKIM_SET',''));});
+  log_(u,'RECETE_TOPLU_CIKIS',p.machine+' '+p.period,{ids:ids}); return {completed:true,ids:ids,autoLogout:u.role==='OP'};
+}
+
+function ppeAnalysis_(u,p) {
+  requireRole_(u,['ISG_ADMIN','YONETICI']); const days=p.range==='3m'?90:(p.range==='month'?Math.max(1,new Date().getDate()):30), since=new Date(Date.now()-days*86400000);
+  const personnel=users_().filter(x=>x.active&&x.role==='OP').map(x=>x.name), exits=objects_(CFG.sheets.outgoing).filter(o=>norm_(o.DEPO)==='ISG'&&parseDate_(o.KULLANIM_TARIHI)>=since);
+  const cards=personnel.map(name=>{const own=exits.filter(e=>norm_(e.CIKIS_YAPAN)===norm_(name));return {name:name,count:own.length,total:own.reduce((s,e)=>s+n_(e.CIKIS_AD),0),items:[...new Set(own.map(e=>e.MALZEME_ADI).filter(Boolean))],last:own.length?own.map(e=>e.KULLANIM_TARIHI).sort().pop():''};});
+  return {rangeDays:days,none:cards.filter(x=>x.count===0),cards:cards};
+}
+function movementAnalysis_(u,p) {
+  requireRole_(u,['MEK_ADMIN','ISG_ADMIN','YONETICI']); const range=p.range||'year', now=new Date(), since=range==='all'?new Date(0):range==='30d'?new Date(Date.now()-30*86400000):range==='3m'?new Date(Date.now()-90*86400000):new Date(now.getFullYear(),0,1);
+  const depot=u.role==='MEK_ADMIN'?'MEKANIK':u.role==='ISG_ADMIN'?'ISG':norm_(p.depot||'TUMU'), exits=objects_(CFG.sheets.outgoing).filter(o=>parseDate_(o.KULLANIM_TARIHI)>=since&&(depot==='TUMU'||norm_(o.DEPO)===depot)); const st=stock_();
+  const m={}; exits.forEach(e=>{const k=e.STOK_ID||e.PARCA_KODU;if(!m[k])m[k]={itemId:e.STOK_ID,code:e.PARCA_KODU,name:e.MALZEME_ADI,depot:e.DEPO,frequency:0,total:0,machines:{}};m[k].frequency++;m[k].total+=n_(e.CIKIS_AD);const mac=e.KULLANILACAK_MAKINE_BOLUM||'BELİRTİLMEDİ';m[k].machines[mac]=(m[k].machines[mac]||0)+n_(e.CIKIS_AD);});
+  const rows=Object.values(m).sort((a,b)=>b.total-a.total), grand=rows.reduce((s,x)=>s+x.total,0); let cum=0; rows.forEach(x=>{cum+=x.total;const ratio=grand?cum/grand:0;x.abc=ratio<=.8?'A':ratio<=.95?'B':'C';const item=st.find(i=>i.id===x.itemId||i.code===x.code);x.min=item?item.min:0;x.stock=item?item.stock:0;const months=Math.max(1,(now-since)/2629800000);x.velocity=x.total/months;x.suggestion=!!item&&x.velocity>item.min;});
+  return {rows:rows,range:range,depot:p.depot||'Tümü'};
+}
+function parseDate_(v) { const d=new Date(v); return isNaN(d)?new Date(0):d; }
+function log_(u,action,source,detail) { append_(CFG.sheets.log,HEADERS.log,{TARIH:now_(),KULLANICI:u.name,ROL:u.role,ISLEM:action,KAYNAK_ID:source,DETAY:JSON.stringify(detail||{})}); }
+
+function KURULUM_V8_7() {
+  const ss=depotBook_();
+  ensureHeaders_(CFG.sheets.stock,HEADERS.stock); ensureHeaders_(CFG.sheets.incoming,HEADERS.incoming); ensureHeaders_(CFG.sheets.outgoing,HEADERS.outgoing); ensureHeaders_(CFG.sheets.approvals,HEADERS.approvals); ensureHeaders_(CFG.sheets.recipes,HEADERS.recipes); ensureHeaders_(CFG.sheets.log,HEADERS.log);
+  const stock=ss.getSheetByName(CFG.sheets.stock); if(stock.getMaxRows()>1){
+    setStockFormulas_(stock,2);
+    stock.getRange(2,13,Math.max(1,stock.getMaxRows()-1),4).fillDown();
+    stock.getRange(2,21,Math.max(1,stock.getMaxRows()-1),1).fillDown();
+    stock.getRange(2,20,Math.max(1,stock.getMaxRows()-1),2).setNumberFormat('#,##0.00');
+  }
+  const incoming=ss.getSheetByName(CFG.sheets.incoming); if(incoming.getMaxRows()>1)incoming.getRange(2,12,Math.max(1,incoming.getMaxRows()-1),2).setNumberFormat('#,##0.00');
+  return 'V8.7 hazır. Mevcut mimari ve E-Tablo sütunları korundu; Depo Onayı Gerekli akışı eklendi: '+[CFG.sheets.stock,CFG.sheets.incoming,CFG.sheets.outgoing,CFG.sheets.approvals,CFG.sheets.recipes,CFG.sheets.log].join(', ');
+}
+function KURULUM_V8(){ return KURULUM_V8_7(); }
+function KURULUM_V7(){ return KURULUM_V8_7(); }
+</script>
+</head>
+<body>
+<noscript>Bu uygulama için JavaScript etkin olmalıdır.</noscript>
+<script>(() => {
+'use strict';
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+const num=v=>new Intl.NumberFormat('tr-TR',{maximumFractionDigits:2}).format(Number(v)||0);
+const fmt=d=>new Intl.DateTimeFormat('tr-TR',{dateStyle:'short',timeStyle:'short'}).format(new Date(d));
+const norm=s=>String(s||'').trim().toLocaleUpperCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const uid=p=>p+'-'+Math.random().toString(36).slice(2,10).toUpperCase();
+const today=()=>new Date().toISOString();
+
+const ROLE_LABEL={OP:'Bakım Operatörü',MEK_ADMIN:'Mekanik Depo Sorumlusu',ISG_ADMIN:'İSG Depo Sorumlusu',YONETICI:'Tam Yetkili / Bakım Şefi'};
+const ICONS={
+ grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+ qr:'<rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="3" width="6" height="6" rx="1"/><rect x="3" y="15" width="6" height="6" rx="1"/><path d="M15 15h2v2h-2zm4 0h2v2h-2zm-4 4h2v2h-2zm4 0h2v2h-2z"/>',
+ scan:'<path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"/>',
+ boxes:'<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/>',
+ arrows:'<path d="M7 16V4m0 0L3 8m4-4 4 4M17 8v12m0 0 4-4m-4 4-4-4"/>',
+ check:'<path d="M20 6 9 17l-5-5"/>',
+ checkCircle:'<circle cx="12" cy="12" r="9"/><path d="m9 12 2 2 4-4"/>',
+ wrench:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/>',
+ shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>',
+ chart:'<path d="M3 3v18h18"/><path d="M7 15v-4M12 15V8M17 15v-7"/>',
+ tag:'<path d="M12 2H2v10l9.29 9.29a1 1 0 0 0 1.42 0l7.58-7.58a1 1 0 0 0 0-1.42L12 2Z"/><circle cx="7" cy="7" r="1.2"/>',
+ link:'<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+ alert:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/>',
+ clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',
+ search:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+ refresh:'<path d="M21 12a9 9 0 1 1-2.64-6.36L21 8"/><path d="M21 3v5h-5"/>',
+ logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+ menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
+ close:'<path d="M18 6 6 18M6 6l12 12"/>',
+ edit:'<path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>',
+ print:'<path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>',
+ download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+ copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+ eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+ list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+ trend:'<path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/>'
+};
+function ic(name,cls=''){return`<span class="ic ${cls}" aria-hidden="true"><svg viewBox="0 0 24 24">${ICONS[name]||''}</svg></span>`;}
+const NAV=[
+ ['dashboard','grid','Genel Bakış',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
+ ['qr','scan','Operatör QR',['OP','MEK_ADMIN','ISG_ADMIN','YONETICI']],
+ ['stock','boxes','Stok Yönetimi',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
+ ['movements','arrows','Hareketler',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
+ ['approvals','checkCircle','Onay Bekleyenler',['MEK_ADMIN','YONETICI']],
+ ['maintenance','wrench','Planlı Bakım',['OP','MEK_ADMIN','YONETICI']],
+ ['ppe','shield','KKD Analizi',['ISG_ADMIN','YONETICI']],
+ ['analysis','chart','Tüketim & ABC',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
+ ['labels','qr','QR Etiketleri',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
+ ['connection','link','Bağlantı',['YONETICI']]
+];
+const DEMO={
+ users:[
+  {name:'Bakım Operatörü',pin:'1111',role:'OP',active:true},{name:'Mekanik Depo Sorumlusu',pin:'2222',role:'MEK_ADMIN',active:true},
+  {name:'İSG Depo Sorumlusu',pin:'3333',role:'ISG_ADMIN',active:true},{name:'Bakım Şefi',pin:'4444',role:'YONETICI',active:true},
+  {name:'Engin Vardar',pin:'1155',role:'OP',active:true},{name:'Murat Kaya',pin:'1166',role:'OP',active:true},{name:'Ayşe Demir',pin:'1177',role:'OP',active:true}
+ ],
+ stock:[
+  {id:'MEK-0001',depot:'MEKANIK',type:'MAKİNE PARÇASI',code:'RUL-6205',name:'Rulman 6205 2RS',category:'RULMAN',company:'SKF',unit:'AD',usage:'KRİTİK MALZEME',shelf:'A-01',machine:'Kondanser Boru Makinesi',min:8,stock:24,incoming:80,outgoing:56},
+  {id:'MEK-0002',depot:'MEKANIK',type:'MAKİNE PARÇASI',code:'KAY-A42',name:'A42 V Kayışı',category:'KAYIŞ',company:'Optibelt',unit:'AD',usage:'PLANLI BAKIM',shelf:'A-04',machine:'Paketleme Makinesi',min:6,stock:4,incoming:30,outgoing:26},
+  {id:'MEK-0003',depot:'MEKANIK',type:'SARF / ORTAK KULLANIM',code:'YAG-46',name:'Hidrolik Yağ ISO VG 46',category:'YAĞ',company:'Petrol Ofisi',unit:'LİTRE',usage:'BAKIM SARF',shelf:'Y-02',machine:'',min:40,stock:120,incoming:450,outgoing:330},
+  {id:'MEK-0004',depot:'MEKANIK',type:'MAKİNE PARÇASI',code:'SEN-M18',name:'M18 Endüktif Sensör',category:'SENSÖR',company:'Omron',unit:'AD',usage:'KRİTİK MALZEME | Depo Onayı Gerekli',shelf:'E-03',machine:'Dolum Makinesi',min:5,stock:6,incoming:20,outgoing:14},
+  {id:'MEK-0005',depot:'MEKANIK',type:'SARF / ORTAK KULLANIM',code:'WD-40',name:'Çok Amaçlı Sprey 400 ml',category:'KİMYASAL',company:'WD-40',unit:'AD',usage:'BAKIM SARF',shelf:'K-02',machine:'',min:12,stock:18,incoming:60,outgoing:42},
+  {id:'ISG-0001',depot:'ISG',type:'İSG MALZEME',code:'ELD-NIT-L',name:'Nitril Eldiven L',category:'İSG MALZEME',company:'Beybi',unit:'ÇİFT',usage:'İSG / KKD',shelf:'İSG-01',machine:'',min:50,stock:140,incoming:500,outgoing:360},
+  {id:'ISG-0002',depot:'ISG',type:'İSG MALZEME',code:'GOZ-SEF',name:'Şeffaf Koruyucu Gözlük',category:'İSG MALZEME',company:'3M',unit:'AD',usage:'İSG / KKD',shelf:'İSG-02',machine:'',min:15,stock:32,incoming:70,outgoing:38},
+  {id:'ISG-0003',depot:'ISG',type:'İSG MALZEME',code:'MAS-FFP2',name:'FFP2 Toz Maskesi',category:'İSG MALZEME',company:'3M',unit:'AD',usage:'İSG / KKD',shelf:'İSG-03',machine:'',min:40,stock:25,incoming:300,outgoing:275},
+  {id:'ISG-0004',depot:'ISG',type:'İSG MALZEME',code:'KUL-SNR32',name:'Kulak Koruyucu SNR 32',category:'İSG MALZEME',company:'Uvex',unit:'AD',usage:'İSG / KKD',shelf:'İSG-04',machine:'',min:10,stock:16,incoming:40,outgoing:24}
+ ],
+ movements:[], approvals:[{id:'ONAY-D01',date:new Date(Date.now()-3600000).toISOString(),requester:'Engin Vardar',itemId:'MEK-0004',code:'SEN-M18',name:'M18 Endüktif Sensör',machine:'Dolum Makinesi',qty:1,unit:'AD',depot:'MEKANIK',reason:'Açık arıza veya planlı bakım kaydı bulunamadı',status:'BEKLIYOR'}],
+ recipes:[
+  {id:'BOM-01',machine:'Paketleme Makinesi',period:'AYLIK',itemId:'MEK-0002',qty:2},
+  {id:'BOM-02',machine:'Paketleme Makinesi',period:'AYLIK',itemId:'MEK-0001',qty:2},
+  {id:'BOM-03',machine:'Kondanser Boru Makinesi',period:'YILLIK',itemId:'MEK-0001',qty:8},
+  {id:'BOM-04',machine:'Kondanser Boru Makinesi',period:'YILLIK',itemId:'MEK-0003',qty:40}
+ ],
+ activeJobs:['Kondanser Boru Makinesi','Paketleme Makinesi'],
+ lists:{types:['RULMAN','KAYIŞ','SENSÖR','YAĞ','KİMYASAL','İSG MALZEME'],companies:['SKF','Optibelt','Omron','3M','Beybi','Uvex'],units:['AD','ÇİFT','LİTRE','KG','MT'],usage:['BAKIM SARF','PLANLI BAKIM','KRİTİK MALZEME','İSG / KKD'],shelves:['A-01','A-04','E-03','Y-02','K-02','İSG-01','İSG-02','İSG-03','İSG-04'],machines:['Kondanser Boru Makinesi','Paketleme Makinesi','Dolum Makinesi','Kompresör','Kazan Dairesi']}
+};
+DEMO.stock.forEach((x,i)=>{x.unitPrice=[18.5,42,3.25,27,6.5,1.1,8.75,2.4,14][i]||0;x.totalPrice=x.stock*x.unitPrice;});
+for(let i=0;i<56;i++){
+ const item=DEMO.stock[i%DEMO.stock.length], d=new Date(Date.now()-i*3.2*86400000), person=['Engin Vardar','Murat Kaya','Bakım Operatörü'][i%3];
+ DEMO.movements.push({id:'CIK-D'+String(i+1).padStart(3,'0'),date:d.toISOString(),person,itemId:item.id,code:item.code,name:item.name,depot:item.depot,qty:(i%4)+1,unit:item.unit,machine:item.depot==='ISG'?'PERSONEL KKD':(item.machine||DEMO.lists.machines[(i+2)%DEMO.lists.machines.length]),source:i%7===0?'PLANLI_BAKIM_SET':'QR'});
+}
+
+const ORIGINAL_HTML='<!doctype html>\n'+document.documentElement.outerHTML.replace(/<script[^>]*src="\/@vite\/client"[^>]*><\/script>\s*/gi,'');
+const state={user:null,session:'',page:'dashboard',data:null,mode:localStorage.getItem('depo.mode')||'demo',directUrl:localStorage.getItem('depo.directUrl')||'',busy:false,stockFilter:{depot:'TUMU',query:'',status:'TUMU'},movQuery:'',analysis:null,ppe:null,pendingQr:new URLSearchParams(location.search).get('qr')||''};
+
+async function api(action,payload={}){
+ if(state.mode==='demo') return demoApi(action,payload);
+ const endpoint=state.mode==='direct'?state.directUrl:'/api/gas';
+ if(!endpoint)throw Error('Apps Script adresi tanımlı değil.');
+ const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':state.mode==='direct'?'text/plain;charset=utf-8':'application/json'},body:JSON.stringify({action,payload,session:state.session})});
+ const out=await r.json().catch(()=>({ok:false,error:'Sunucu geçerli JSON döndürmedi.'}));
+ if(!r.ok||!out.ok)throw Error(out.error||`HTTP ${r.status}`); return out.data;
+}
+async function demoApi(action,p={}){
+ await new Promise(r=>setTimeout(r,90));
+ if(action==='health')return{service:'DEMO',time:today()};
+ if(action==='auth'){
+  const clean=String(p.pin||'').replace(/\s+/g,'').trim();
+  const u=DEMO.users.find(x=>x.pin===clean&&x.active);if(!u)throw Error('Demo modunda geçersiz PIN (Demo: 1111, 2222, 3333, 4444). Gerçek tablo PIN’iniz için aşağıdan Bağlantı Ayarı’nı seçin.');return{user:{name:u.name,role:u.role},session:'demo-'+u.role};
+ }
+ if(!state.user&&action!=='health')throw Error('Oturum gerekli.');
+ const visibleStock=()=>DEMO.stock.filter(x=>state.user.role==='YONETICI'||state.user.role==='OP'||(state.user.role==='MEK_ADMIN'&&x.depot==='MEKANIK')||(state.user.role==='ISG_ADMIN'&&x.depot==='ISG'));
+ const recipes=()=>DEMO.recipes.map(r=>{const x=DEMO.stock.find(i=>i.id===r.itemId);return{...r,code:x?.code,name:x?.name,unit:x?.unit,shelf:x?.shelf,stock:x?.stock||0,ready:(x?.stock||0)>=r.qty};});
+ if(action==='bootstrap')return{user:state.user,stock:visibleStock(),approvals:DEMO.approvals,recipes:recipes(),movements:DEMO.movements,lists:DEMO.lists,serverTime:today()};
+ if(action==='stockList')return visibleStock(); if(action==='approvalList')return DEMO.approvals; if(action==='recipeList')return recipes().filter(x=>(!p.machine||x.machine===p.machine)&&(!p.period||x.period===p.period));
+ if(action==='checkout'){
+  const x=DEMO.stock.find(i=>i.id===p.itemId||i.code===p.code);if(!x)throw Error('Stok kartı bulunamadı.');const q=Number(p.qty);if(q<=0||q>x.stock)throw Error('Miktar geçersiz veya stok yetersiz.');
+  const consumable=!x.machine||/SARF|ORTAK/.test(norm(x.type+' '+x.usage)), machine=x.depot==='ISG'?(p.machine||'PERSONEL KKD'):(consumable?p.machine:x.machine), depotApproval=needsDepotApprovalUi(x);
+  const isDepotApprover=state.user.role==='YONETICI'||(x.depot==='ISG'?state.user.role==='ISG_ADMIN':state.user.role==='MEK_ADMIN');
+  if(depotApproval&&!isDepotApprover){
+   if(p.depotApproverPin){
+    const clean=String(p.depotApproverPin).replace(/\s+/g,'').trim();
+    const approver=DEMO.users.find(u=>u.pin===clean&&u.active&&(u.role==='YONETICI'||(x.depot==='ISG'?u.role==='ISG_ADMIN':u.role==='MEK_ADMIN')));
+    if(!approver)throw Error('Depocu PIN geçersiz veya bu depo için yetkisiz.');
+    x.stock-=q;x.outgoing+=q;DEMO.movements.unshift({id:uid('CIK'),date:today(),person:state.user.name,itemId:x.id,code:x.code,name:x.name,depot:x.depot,qty:q,unit:x.unit,machine,source:'DEPO ONAYI'});
+    return{completed:true,depotApproved:true,approver:approver.name,remaining:x.stock,autoLogout:state.user.role==='OP'};
+   }
+   if(p.promptDepotApproval&&!p.sendApproval)return{depotApprovalRequired:true,message:'Bu parça için Depo Onayı Gerekli.'};
+   const a={id:uid('ONAY'),date:today(),requester:state.user.name,itemId:x.id,code:x.code,name:x.name,machine,qty:q,unit:x.unit,depot:x.depot,reason:'Depo Onayı Gerekli',status:'BEKLIYOR',depotApproval:true};DEMO.approvals.unshift(a);return{pending:true,depotApproval:true,id:a.id,message:'Depocu onayına istek gönderildi. Talep No: '+a.id,autoLogout:state.user.role==='OP'};
+  }
+  if(!p.qrTerminal&&x.depot==='MEKANIK'&&!consumable&&!DEMO.activeJobs.includes(machine)&&p.managerPin!=='4444'){
+   if(p.sendApproval){const a={id:uid('ONAY'),date:today(),requester:state.user.name,itemId:x.id,code:x.code,name:x.name,machine,qty:q,unit:x.unit,depot:x.depot,reason:'Açık arıza veya planlı bakım kaydı bulunamadı',status:'BEKLIYOR'};DEMO.approvals.unshift(a);return{pending:true,id:a.id,autoLogout:state.user.role==='OP'};}
+   return{approvalRequired:true,message:'Bu makinede açık arıza veya planlı bakım kaydı bulunamadı — Yönetici Onayı Gerekli'};
+  }
+  x.stock-=q;x.outgoing+=q;DEMO.movements.unshift({id:uid('CIK'),date:today(),person:state.user.name,itemId:x.id,code:x.code,name:x.name,depot:x.depot,qty:q,unit:x.unit,machine,source:p.source||'QR'});return{completed:true,remaining:x.stock,autoLogout:state.user.role==='OP'};
+ }
+ if(action==='approvalCreate')return demoApi('checkout',{...p,sendApproval:true});
+ if(action==='approvalDecide'){
+  const a=DEMO.approvals.find(x=>x.id===p.id);if(!a||a.status!=='BEKLIYOR')throw Error('Talep bulunamadı veya sonuçlanmış.');a.status=p.decision==='ONAYLA'?'ONAYLANDI':'REDDEDILDI';a.decider=state.user.name;
+  if(a.status==='ONAYLANDI'){const x=DEMO.stock.find(i=>i.id===a.itemId);if(!x||x.stock<a.qty)throw Error('Onay anında stok yetersiz.');x.stock-=a.qty;x.outgoing+=a.qty;DEMO.movements.unshift({id:uid('CIK'),date:today(),person:a.requester,itemId:x.id,code:x.code,name:x.name,depot:x.depot,qty:a.qty,unit:x.unit,machine:a.machine,source:a.depotApproval?'DEPO ONAYI':'ONAY_HAVUZU'});}return{id:a.id,status:a.status};
+ }
+ if(action==='stockIn'){const x=DEMO.stock.find(i=>i.id===p.itemId);const q=Number(p.qty);if(!x||q<=0)throw Error('Geçersiz giriş.');x.stock+=q;x.incoming+=q;return{id:uid('GRS'),newStock:x.stock};}
+ if(action==='stockCount'){const x=DEMO.stock.find(i=>i.id===p.itemId);if(!x)throw Error('Kart bulunamadı.');x.stock=Number(p.actual);return{id:uid('SAY'),newStock:x.stock};}
+ if(action==='itemCreate'){const usage=String(p.usage||'').split('|').map(x=>x.trim()).filter(Boolean),machines=Array.isArray(p.machines)?p.machines:[],qty=Number(p.initial)||0,unitPrice=Number(p.unitPrice)||0,existing=DEMO.stock.find(x=>norm(x.code)===norm(p.code));if(qty<=0)throw Error('Stok miktarı 0’dan büyük olmalıdır.');if(existing){existing.stock+=qty;existing.incoming+=qty;existing.unitPrice=unitPrice;existing.totalPrice=existing.stock*unitPrice;return{id:existing.id,existing:true,newStock:existing.stock,entryId:uid('GRS')};}const depot=usage.includes('İSG')?'ISG':'MEKANIK',prefix=depot==='ISG'?'ISG':'MEK',nums=DEMO.stock.map(x=>String(x.id).match(new RegExp('^'+prefix+'-(\\d+)$'))).filter(Boolean).map(x=>Number(x[1])),id=prefix+'-'+String((Math.max(0,...nums)+1)).padStart(6,'0'),needs=usage.some(x=>['Kritik Malzeme','Planlı Bakım','Tekli Makine','Çoklu Makine'].includes(x)),type=depot==='ISG'?'İSG MALZEME':needs?'MAKİNE PARÇASI':'SARF / ORTAK KULLANIM',x={id,depot,type,code:p.code,name:p.name,category:p.category,company:p.company,unit:p.unit,usage:usage.join(' | '),shelf:p.shelf,machine:needs?machines.join(' | '):'',min:Number(p.min)||0,stock:qty,incoming:qty,outgoing:0,unitPrice,totalPrice:qty*unitPrice};DEMO.stock.push(x);return{id:x.id,existing:false,entryId:uid('GRS')};}
+ if(action==='itemUpdate'){const x=DEMO.stock.find(i=>i.id===p.id);if(!x)throw Error('Kart bulunamadı.');Object.assign(x,p);return{id:x.id};}
+ if(action==='recipeSave'){DEMO.recipes=DEMO.recipes.filter(x=>!(x.machine===p.machine&&x.period===p.period));p.items.forEach(i=>DEMO.recipes.push({id:uid('BOM'),machine:p.machine,period:p.period,itemId:i.itemId,qty:Number(i.qty)}));return{saved:p.items.length};}
+ if(action==='recipeBulkCheckout'){const rs=recipes().filter(x=>x.machine===p.machine&&x.period===p.period);if(rs.some(x=>!x.ready))throw Error('Reçetede eksik stok var.');for(const r of rs){const x=DEMO.stock.find(i=>i.id===r.itemId);x.stock-=r.qty;x.outgoing+=r.qty;DEMO.movements.unshift({id:uid('CIK'),date:today(),person:state.user.name,itemId:x.id,code:x.code,name:x.name,depot:x.depot,qty:r.qty,unit:x.unit,machine:p.machine,source:'PLANLI_BAKIM_SET'});}return{completed:true,autoLogout:state.user.role==='OP'};}
+ if(action==='ppeAnalysis')return buildPpe(p.range); if(action==='movementAnalysis')return buildAnalysis(p);
+ throw Error('Demo işlemi bulunamadı: '+action);
+}
+function buildPpe(range='30d'){
+ const days=range==='3m'?90:range==='month'?new Date().getDate():30,since=Date.now()-days*86400000,people=DEMO.users.filter(x=>x.role==='OP').map(x=>x.name);
+ const cards=people.map(name=>{const xs=DEMO.movements.filter(m=>m.depot==='ISG'&&m.person===name&&+new Date(m.date)>=since);return{name,count:xs.length,total:xs.reduce((s,x)=>s+x.qty,0),items:[...new Set(xs.map(x=>x.name))],last:xs[0]?.date||''};});return{rangeDays:days,cards,none:cards.filter(x=>!x.count)};
+}
+function buildAnalysis(p={}){
+ const days=p.range==='all'?99999:p.range==='30d'?30:p.range==='3m'?90:365,since=Date.now()-days*86400000,map={};
+ DEMO.movements.filter(x=>+new Date(x.date)>=since&&(p.depot==='Tümü'||!p.depot||x.depot===p.depot)).forEach(x=>{const m=map[x.itemId]||(map[x.itemId]={itemId:x.itemId,code:x.code,name:x.name,depot:x.depot,frequency:0,total:0,machines:{}});m.frequency++;m.total+=x.qty;m.machines[x.machine]=(m.machines[x.machine]||0)+x.qty;});
+ const rows=Object.values(map).sort((a,b)=>b.total-a.total),grand=rows.reduce((s,x)=>s+x.total,0);let c=0;rows.forEach(x=>{c+=x.total;x.abc=c/grand<=.8?'A':c/grand<=.95?'B':'C';const i=DEMO.stock.find(z=>z.id===x.itemId);x.min=i?.min||0;x.stock=i?.stock||0;x.velocity=x.total/Math.max(1,days/30);x.suggestion=x.velocity>x.min;});return{rows};
+}
+
+function allowed(page){return NAV.find(x=>x[0]===page)?.[3].includes(state.user?.role);}
+function defaultPage(){return state.user?.role==='OP'?'qr':'dashboard';}
+function setBusy(v){state.busy=v;document.body.classList.toggle('busy',v);}
+function toast(message,type='ok'){const t=document.createElement('div');t.className='toast '+type;t.innerHTML=`<b>${ic(type==='ok'?'check':'alert','ic-sm')}</b><span>${esc(message)}</span>`;$('#toasts').append(t);setTimeout(()=>t.remove(),4300);}
+function modal(title,body,actions=''){const root=$('#modalRoot');root.innerHTML=`<div class="modal-back"><section class="modal" role="dialog" aria-modal="true"><header><h3>${esc(title)}</h3><button class="icon-btn" data-close aria-label="Kapat">${ic('close')}</button></header><div class="modal-body">${body}</div>${actions?`<footer>${actions}</footer>`:''}</section></div>`;root.hidden=false;setTimeout(()=>root.querySelector('input,select,button')?.focus(),30);}
+function closeModal(){const r=$('#modalRoot');r.hidden=true;r.innerHTML='';stopCamera();}
+function field(label,control,hint=''){return`<label class="field"><span>${label}</span>${control}${hint?`<small>${hint}</small>`:''}</label>`;}
+function opts(values=[],current=''){return values.map(x=>`<option ${String(x)===String(current)?'selected':''}>${esc(x)}</option>`).join('');}
+
+function renderShell(){
+ const app=$('#app');app.innerHTML=`<header class="sidebar"><div class="nav-top"><div class="brand"><span class="brand-mark">M</span><div><b>Mekanik + İSG Depo</b><small>Depo 2027 · V8.7</small></div></div><div class="nav-right"><span class="connection ${state.mode}"><i></i>${state.mode==='demo'?'Demo Modu':state.mode==='proxy'?'Güvenli Bağlantı':'Doğrudan GAS'}</span><button class="btn ghost nav-refresh" data-action="refresh">${ic('refresh','ic-sm')} Yenile</button><div class="side-foot"><div class="avatar">${esc(state.user.name[0])}</div><div><b>${esc(state.user.name)}</b><small>${esc(ROLE_LABEL[state.user.role])}</small></div><button class="icon-btn" data-action="logout" title="Çıkış" aria-label="Çıkış">${ic('logout')}</button></div><button class="icon-btn mobile-menu" data-action="menu" aria-label="Menü">${ic('menu')}</button></div></div><nav id="nav"></nav></header><main class="main"><div class="topbar"><div class="topbar-left"><span class="crumb" id="pageCrumb"></span><h1 id="pageTitle"></h1><p id="pageSub"></p></div><div class="top-actions" id="pageActions"></div></div><div id="content"></div></main>`;
+ renderNav();showPage(state.page,false);
+}
+function renderNav(){const nav=$('#nav');nav.innerHTML=NAV.filter(x=>x[3].includes(state.user.role)).map(([id,icon,label])=>`<button class="nav-item ${state.page===id?'active':''}" data-page="${id}">${ic(icon,'ic-sm')}<span>${esc(label)}</span>${id==='approvals'&&pendingCount()?`<em>${pendingCount()}</em>`:''}</button>`).join('');}
+function pendingCount(){return state.data?.approvals?.filter(x=>norm(x.status)==='BEKLIYOR').length||0;}
+async function bootstrap(){state.data=await api('bootstrap');state.analysis=null;state.ppe=null;}
+function pageActionHtml(p){
+ if(p==='dashboard'&&allowed('qr'))return`<button class="btn primary" data-page="qr">${ic('scan','ic-sm')} Hızlı QR Çıkış</button>`;
+ if(p==='stock')return`<button class="btn primary" data-action="new-item">${ic('plus','ic-sm')} Yeni Stok Kartı</button>`;
+ if(p==='movements')return`<button class="btn ghost" data-action="print-movements">${ic('print','ic-sm')} Yazdır</button>`;
+ if(p==='ppe')return`<button class="btn ghost" data-action="print-ppe">${ic('print','ic-sm')} Raporu Yazdır</button>`;
+ return'';
+}
+async function showPage(page,update=true){if(!allowed(page))page=defaultPage();state.page=page;if(update){renderNav();$$('.sidebar').forEach(x=>x.classList.remove('open'));}const meta=NAV.find(x=>x[0]===page);const title=meta?.[2]||'';$('#pageCrumb').textContent='Mekanik + İSG Depo / '+title;$('#pageTitle').textContent=title;$('#pageSub').textContent=pageSub(page);$('#pageActions').innerHTML=pageActionHtml(page);const fn={dashboard:renderDashboard,qr:renderQr,stock:renderStock,movements:renderMovements,approvals:renderApprovals,maintenance:renderMaintenance,ppe:renderPpe,analysis:renderAnalysis,labels:renderLabels,connection:renderConnection}[page];await fn();}
+function pageSub(p){return {dashboard:'İki deponun canlı durumu, kritik stoklar ve hızlı erişim',qr:'QR okutun, PIN ile doğrulayın ve malzemeyi güvenle stoktan düşün',stock:'Yetkinize göre canlı mekanik ve İSG stok kartları',movements:'Giriş, çıkış ve sayım hareketlerinin tam dökümü',approvals:'Depocu veya yönetici kararı bekleyen malzeme çıkış talepleri',maintenance:'Periyot bazlı bakım reçeteleri ve tek tuşla toplu set çıkışı',ppe:'Aktif personel ile İSG ekipman çıkışlarının dönemsel karşılaştırması',analysis:'Sıklık, miktar, makine dağılımı ve ABC tüketim sınıflandırması',labels:'Mekanik parçalar ve İSG dolabı için yazdırılabilir QR etiketleri',connection:'Güvenli API bağlantısı, Apps Script (Kod.gs) ve tek HTML dışa aktarım'}[p]||'';}
+function kpi(label,value,note,icon,tone='orange'){return`<article class="kpi ${tone}"><div class="kpi-head"><small>${label}</small><span class="kpi-icon">${ic(icon)}</span></div><strong>${value}</strong><p>${note}</p></article>`;}
+function renderDashboard(){
+ const s=state.data.stock, mech=s.filter(x=>x.depot==='MEKANIK'),isg=s.filter(x=>x.depot==='ISG'),low=s.filter(x=>x.stock<=x.min),pending=pendingCount();
+ $('#content').innerHTML=`<section class="kpi-grid">${kpi('Mekanik Stok Kartı',mech.length,`${mech.filter(x=>x.stock>x.min).length} kalem yeterli seviyede`,'wrench','orange')}${kpi('İSG Stok Kartı',isg.length,`${num(isg.reduce((a,x)=>a+x.stock,0))} toplam ekipman adedi`,'shield','blue')}${kpi('Kritik / Eksik',low.length,'Sipariş noktasında veya altında','alert','red')}${kpi('Onay Bekleyen',pending,'Karar bekleyen çıkış talebi','checkCircle','green')}</section><section class="split"><article class="panel"><div class="panel-head"><div><h2>Kritik stoklar</h2><p>Öncelikli tedarik veya ikmal gerektiren kartlar</p></div><button class="link" data-page="stock">Tüm stokları gör →</button></div>${low.length?`<div class="critical-list">${low.map(x=>{const pct=x.min>0?Math.min(100,Math.round((x.stock/x.min)*100)):0;return`<button data-item="${x.id}"><div class="crit-info"><b>${esc(x.name)}</b><small><span class="mono">${esc(x.code)}</span> · Raf ${esc(x.shelf)}</small></div><div class="crit-meter"><div class="crit-bar"><i style="width:${pct}%"></i></div><small>Min ${num(x.min)} ${esc(x.unit)}</small></div><strong>${num(x.stock)} <small>${esc(x.unit)}</small></strong></button>`;}).join('')}</div>`:'<div class="empty good">Tüm stok kalemleri minimum seviyenin üzerinde.</div>'}</article><article class="panel"><div class="panel-head"><div><h2>Depo dağılımı</h2><p>Yetkiniz dahilindeki stok kartı özeti</p></div></div><div class="donut-wrap"><div class="donut" style="--p:${s.length?mech.length/s.length*100:0}"><span>${s.length}<small>Toplam Kart</small></span></div><div class="legend"><p><i class="orange"></i>Mekanik Depo <b>${mech.length}</b></p><p><i class="blue"></i>İSG Depo <b>${isg.length}</b></p><p><i class="red"></i>Eksik / Kritik <b>${low.length}</b></p></div></div></article></section><section class="panel"><div class="panel-head"><div><h2>Hızlı işlemler</h2><p>Rolünüze göre sık kullanılan kısayollar</p></div></div><div class="quick">${allowed('qr')?`<button data-page="qr"><b>${ic('scan')}</b><span>QR Çıkış<small>Operatör malzeme düşümü</small></span></button>`:''}${allowed('stock')?`<button data-action="new-item"><b>${ic('plus')}</b><span>Yeni Stok Kartı<small>Malzeme ve ilk giriş kaydı</small></span></button>`:''}${allowed('maintenance')?`<button data-page="maintenance"><b>${ic('wrench')}</b><span>Bakım Reçetesi<small>Periyodik BOM seti hazırla</small></span></button>`:''}${allowed('labels')?`<button data-page="labels"><b>${ic('qr')}</b><span>QR Etiketleri<small>Yazdırılabilir raf ve dolap QR</small></span></button>`:''}</div></section>`;
+}
+
+function renderQr(){
+ const canAll=state.user.role==='YONETICI'||state.user.role==='OP', stock=state.data.stock;
+ $('#content').innerHTML=`<section class="qr-hero"><div><span class="qr-kicker">Hızlı Çıkış Terminali</span><h2>QR kodunu okutun</h2><p>Ürün raf etiketi veya <b>ISG-DOLAP</b> sabit koduyla yetkili malzeme çıkışını başlatın.</p><div class="qr-actions"><button class="btn primary large" data-action="scan">${ic('scan')} QR Okut</button><button class="btn white large" data-action="manual-qr">Kodu Elle Gir</button><button class="btn white large" data-action="open-qr-terminal">${ic('qr','ic-sm')} Bağımsız QR Terminali</button></div></div><div class="scan-visual"><div class="scan-frame"><i></i><i></i><i></i><i></i><span></span>${ic('qr','ic-lg')}</div></div></section><section class="choice-grid"><button data-action="cabinet" ${!canAll&&state.user.role!=='ISG_ADMIN'?'disabled':''}><span class="choice-icon blue">${ic('shield','ic-lg')}</span><div><b>İSG Dolabı</b><p>Tüm KKD ekipmanlarını tek ekrandan seçip üzerinize düşün.</p></div><em>ISG-DOLAP →</em></button><button data-action="maintenance-pick"><span class="choice-icon">${ic('wrench','ic-lg')}</span><div><b>Planlı Bakım Parça Listesi</b><p>Makine ve periyot seçerek bakım setini topluca hazırlayın.</p></div><em>Listeyi aç →</em></button></section><section class="panel"><div class="panel-head"><div><h2>Hızlı ürün seçimi</h2><p>Kamerasız veya manuel işlem için yetkili stok kartları</p></div><span class="meta-inline">${stock.length} kart</span></div><div class="product-strip">${stock.slice(0,12).map(x=>`<button class="${x.depot==='ISG'?'isg-item':''}" data-checkout="${x.id}"><span>${ic(x.depot==='ISG'?'shield':'wrench','ic-sm')}</span><div><b>${esc(x.name)}</b><small><span class="mono">${esc(x.code)}</span> · ${num(x.stock)} ${esc(x.unit)}</small></div></button>`).join('')}</div></section>`;
+}
+function checkoutModal(item){
+ const isIsg=item.depot==='ISG', consumable=!item.machine||/SARF|ORTAK/.test(norm(item.type+' '+item.usage));
+ modal('Stoktan Düş',`<div class="item-summary"><span class="choice-icon ${isIsg?'blue':''}">${ic(isIsg?'shield':'wrench')}</span><div><b>${esc(item.name)}</b><small><span class="mono">${esc(item.code)}</span> · Raf ${esc(item.shelf)}</small></div><strong>${num(item.stock)} ${esc(item.unit)}</strong></div><form id="checkoutForm"><input type="hidden" name="itemId" value="${esc(item.id)}">${field('Kullanılacak makine / bölüm',consumable&&!isIsg?`<select name="machine" required><option value="">Seçin</option>${opts(state.data.lists.machines)}</select>`:`<input name="machine" value="${esc(isIsg?'PERSONEL KKD':item.machine)}" readonly>`)}${field('Miktar',`<div class="qty"><button type="button" data-qty="-1">−</button><input name="qty" type="number" min="0.01" step="0.01" max="${item.stock}" value="1" required><button type="button" data-qty="1">＋</button></div>`)}<div class="rule-note ${isIsg||consumable?'ok':'warn'}"><b>${isIsg?'Kural C':consumable?'Kural B':'Kural A'}</b><span>${isIsg?'Arıza kontrolü yapılmadan personel üzerine düşer.':consumable?'Ortak kullanım; arıza kaydı aranmaz.':'Makineye özel parça; açık arıza / planlı bakım kontrol edilir.'}</span></div></form>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="submit-checkout">Stoktan Düş</button>`);
+}
+async function submitCheckout(extra={}){const f=$('#checkoutForm');let p;if(f){if(!f.reportValidity())return;p=Object.fromEntries(new FormData(f));p.qty=Number(p.qty);Object.assign(p,extra);}else if(extra.itemId){p={...extra,qty:Number(extra.qty)};}else return;setBusy(true);try{const r=await api('checkout',p);if(r.approvalRequired)return approvalGate(p,r.message);closeModal();await refreshData();const message=r.depotApproval?(r.message||'Depocu onayına istek gönderildi. Talep No: '+r.id):(r.pending?(r.message||'Talep onay havuzuna gönderildi. Talep No: '+r.id):'Çıkış tamamlandı. Kalan: '+num(r.remaining));toast(message,'ok');if(r.autoLogout)setTimeout(logout,700);}catch(e){toast(e.message,'error');}finally{setBusy(false);}}
+function approvalGate(payload,message){modal('Yönetici Onayı Gerekli',`<div class="approval-warning"><b>${ic('alert','ic-sm')}</b><p>${esc(message)}</p></div><div class="tabs-mini"><button class="active" data-gate="pin">Anında PIN</button><button data-gate="pool">Onay Havuzu</button></div><div id="gateBody">${field('Yönetici Onay PIN’i','<input id="managerPin" type="password" inputmode="numeric" maxlength="8" placeholder="••••">','Demo yönetici PIN: 4444')}</div>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="gate-confirm">PIN ile Onayla</button>`);$('#modalRoot').dataset.checkout=JSON.stringify(payload);}
+function cabinetModal(){const items=state.data.stock.filter(x=>x.depot==='ISG');modal('İSG Dolabı · ISG-DOLAP',`<div class="cabinet-head"><div class="qr-mini">${qrSvg('ISG-DOLAP')}</div><div><b>Tek sabit dolap QR kodu</b><p>Ekipman ve adedi seçin; arıza kontrolü olmadan personel üzerine düşer.</p></div></div><div class="cabinet-list">${items.map((x,i)=>`<label><input type="radio" name="cabItem" value="${x.id}" ${i===0?'checked':''}><span>${esc(x.name)}<small><span class="mono">${esc(x.code)}</span> · ${num(x.stock)} ${esc(x.unit)}</small></span><em>${x.stock<=x.min?'Eksik':'Hazır'}</em></label>`).join('')}</div>${field('Adet','<input id="cabQty" type="number" min="1" value="1">')}`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="cabinet-submit">Üzerime Düş</button>`);}
+
+function usageLabelUi(value){const n=norm(value).replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim();if(n.includes('DEPO ONAYI GEREKLI'))return['Depo Onayı Gerekli',true];if(n==='KRITIK MALZEME')return['Kritik Malzeme',false];if(n==='PLANLI BAKIM')return['Planlı Bakım',false];if(n==='SARF'||n==='BAKIM SARF')return['Sarf',false];if(n==='ISG'||n==='ISG / KKD'||n==='ISG KKD')return['İSG',false];if(n==='TEKLI MAKINE')return['Tekli Makine',false];if(n==='COKLU MAKINE')return['Çoklu Makine',false];return[String(value).trim(),false];}
+function usageChipsHtml(value){const parts=String(value||'').split('|').map(x=>x.trim()).filter(Boolean);if(!parts.length)return'<span class="usage-empty">—</span>';return`<span class="usage-text" title="${esc(String(value))}">${parts.map(x=>{const[label,approval]=usageLabelUi(x);return approval?`<span class="usage-approval">${esc(label)}</span>`:esc(label);}).join(' · ')}</span>`;}
+function visibleStock(){return state.data.stock.filter(x=>(state.stockFilter.depot==='TUMU'||x.depot===state.stockFilter.depot)&&(state.stockFilter.status==='TUMU'||(state.stockFilter.status==='EKSİK'?x.stock<=x.min:x.stock>x.min))&&(!state.stockFilter.query||norm([x.code,x.name,x.category,x.usage,x.machine,x.shelf].join(' ')).includes(norm(state.stockFilter.query))));}
+function renderStock(){const rows=visibleStock(),depots=[...new Set(state.data.stock.map(x=>x.depot))];$('#content').innerHTML=`<section class="panel table-panel"><div class="toolbar"><div class="seg">${['TUMU',...depots].map(x=>`<button class="${state.stockFilter.depot===x?'active':''}" data-filter-depot="${x}">${x==='TUMU'?'Tümü':x==='ISG'?'İSG Depo':'Mekanik'}</button>`).join('')}</div><div class="search">${ic('search','ic-sm')}<input id="stockSearch" placeholder="Kod, malzeme, kullanım şekli, makine veya raf ara..." value="${esc(state.stockFilter.query)}"></div><select id="stockStatus"><option value="TUMU">Tüm durumlar</option><option ${state.stockFilter.status==='TAM'?'selected':''}>TAM</option><option ${state.stockFilter.status==='EKSİK'?'selected':''}>EKSİK</option></select></div><div class="table-scroll"><table class="data-table stock-table"><thead><tr><th>Durum</th><th>Parça / Malzeme</th><th>Depo</th><th>Kullanım Şekli</th><th class="num-col">Stok</th><th class="num-col">Min</th><th class="num-col">Giren</th><th class="num-col">Çıkan</th><th>Raf</th><th>Makine</th></tr></thead><tbody>${rows.length?rows.map(x=>`<tr data-item="${x.id}"><td><span class="badge ${x.stock<=x.min?'danger':'success'}">${x.stock<=x.min?'Eksik':'Tam'}</span></td><td><b>${esc(x.name)}</b><small><span class="mono">${esc(x.code)}</span> · ${esc(x.category)}${needsDepotApprovalUi(x)?' · <strong style="color:var(--yellow)">Depo Onayı</strong>':''}</small></td><td><span class="depot ${x.depot.toLowerCase()}">${x.depot==='ISG'?'İSG':'Mekanik'}</span></td><td>${usageChipsHtml(x.usage)}</td><td class="big num-col">${num(x.stock)} <small>${esc(x.unit)}</small></td><td class="big num-col">${num(x.min)}</td><td class="big num-col">${num(x.incoming)}</td><td class="big num-col">${num(x.outgoing)}</td><td><b class="mono">${esc(x.shelf)}</b></td><td>${esc(x.machine||'Ortak kullanım')}</td></tr>`).join(''):'<tr><td colspan="10"><div class="empty">Arama kriterlerine uyan stok kartı bulunamadı.</div></td></tr>'}</tbody></table></div><div class="table-foot"><span>${rows.length} stok kartı listeleniyor</span><span>Detay ve işlem için herhangi bir satıra tıklayın.</span></div></section>`;}
+function itemDetail(item){modal('Stok Kartı',`<div class="item-detail-head"><div><span class="depot ${item.depot.toLowerCase()}">${item.depot==='ISG'?'İSG Depo':'Mekanik Depo'}</span>${needsDepotApprovalUi(item)?' <span class="badge warning">Depo Onayı Gerekli</span>':''}<h2>${esc(item.name)}</h2><p><span class="mono">${esc(item.code)}</span> · ${esc(item.category)} · ${esc(item.usage)}</p></div><div class="stock-number"><small>Anlık Stok</small><b>${num(item.stock)}</b><span>${esc(item.unit)}</span></div></div><div class="detail-grid"><div><small>Raf Konumu</small><b class="mono">${esc(item.shelf)}</b></div><div><small>Makine</small><b>${esc(item.machine||'Ortak kullanım')}</b></div><div><small>Minimum Stok</small><b>${num(item.min)} ${esc(item.unit)}</b></div><div><small>Tedarikçi / Firma</small><b>${esc(item.company||'—')}</b></div><div><small>Birim Fiyat</small><b>${num(item.unitPrice||0)}</b></div><div><small>Toplam Stok Değeri</small><b>${num((item.stock||0)*(item.unitPrice||0))}</b></div></div><div class="modal-actions-grid"><button data-action="stock-in" data-id="${item.id}">${ic('plus','ic-sm')} Adet Ekle</button><button data-action="stock-count" data-id="${item.id}">${ic('list','ic-sm')} Stok Sayımı</button><button data-action="item-edit" data-id="${item.id}">${ic('edit','ic-sm')} Kartı Düzenle</button><button data-action="label-one" data-id="${item.id}">${ic('qr','ic-sm')} QR Etiketi</button></div>`,`<button class="btn ghost" data-close>Kapat</button><button class="btn primary" data-checkout="${item.id}">Stoktan Düş</button>`);}
+const REGISTRATION_USAGE_UI=['Kritik Malzeme','Planlı Bakım','Sarf','İSG','Tekli Makine','Çoklu Makine'];
+function needsDepotApprovalUi(item){return norm(item?.usage||'').includes('DEPO_ONAYI_GEREKLI');}
+function selectedRegistrationUsage(){return $$('[name="usageOption"]:checked').map(x=>x.value);}
+function selectedRegistrationMachines(){return $$('[name="machineOption"]:checked').map(x=>x.value);}
+function registrationNeedsMachine(values=selectedRegistrationUsage()){return values.some(x=>['Kritik Malzeme','Planlı Bakım','Tekli Makine','Çoklu Makine'].includes(x));}
+function updateRegistrationTotal(){const qty=Number($('#itemInitial')?.value)||0,price=Number($('#itemUnitPrice')?.value)||0,total=$('#itemTotal');if(total)total.value=num(qty*price);}
+function filterRegistrationMachines(q=''){q=norm(q);$$('.machine-options label').forEach(x=>x.hidden=!!q&&!norm(x.textContent).includes(q));}
+function syncItemForm(){
+  const usage=selectedRegistrationUsage(),needs=registrationNeedsMachine(usage),box=$('#itemMachineBlock'),machines=selectedRegistrationMachines(); if(!box)return;
+  box.hidden=!needs; if(!needs)$$('[name="machineOption"]').forEach(x=>x.checked=false);
+  const mode=usage.includes('Tekli Makine')?'Yalnız 1 makine':usage.includes('Çoklu Makine')?'En az 2 makine':'Bir veya birden fazla makine';
+  $('#machineRule').textContent=needs?mode+' seçin · '+machines.length+' seçim':'Sadece Sarf/İSG seçildi; makine gerekmez.';
+  updateRegistrationTotal();
+}
+function newItemModal(){
+  const role=state.user.role,isgOnly=role==='ISG_ADMIN',mekOnly=role==='MEK_ADMIN',usageHtml=REGISTRATION_USAGE_UI.map(x=>`<label><input type="checkbox" name="usageOption" value="${esc(x)}" ${isgOnly&&x==='İSG'?'checked disabled':''} ${mekOnly&&x==='İSG'?'disabled':''}><span>${esc(x)}</span></label>`).join('');
+  const machineHtml=(state.data.lists.machines||[]).map(x=>`<label><input type="checkbox" name="machineOption" value="${esc(x)}"><span>${esc(x)}</span></label>`).join('');
+  modal('Yeni Malzeme Kaydı',`<form id="itemForm" class="form-grid">
+    ${field('1. Malzeme Türü',`<select name="category" required><option value="">Seçin</option>${opts(state.data.lists.types)}</select>`)}
+    <div class="field form-span-2"><span>2. Kullanım Şekli · Çoklu seçim</span><div class="usage-grid">${usageHtml}</div><small>Kritik Malzeme ve Planlı Bakım birlikte seçilebilir.</small></div>
+    <div class="field form-span-2"><span>3. Depo Onayı</span><select name="depotApproval"><option value="Gereksiz" selected>Gereksiz</option><option value="Gerekli">Gerekli</option></select><small>Gerekli seçilirse “Depo Onayı Gerekli” kullanım değerine eklenerek gönderilir.</small></div>
+    <div class="field form-span-2 machine-picker" id="itemMachineBlock" hidden><span>4. Makine / Makineler</span><div class="machine-picker-head"><b>VERİ sayfası · I sütunu</b><small id="machineRule"></small></div><input class="machine-search" id="itemMachineSearch" placeholder="Makine ara..."><div class="machine-options">${machineHtml||'<div class="empty">Makine listesi bulunamadı.</div>'}</div></div>
+    ${field('5. Parça Kodu','<input name="code" required maxlength="40" autocomplete="off">','Aynı kod varsa yeni kart açılmaz; mevcut karta giriş yapılır.')}
+    ${field('6. Parça Açıklaması','<input name="name" required maxlength="120">')}
+    ${field('7. Raf No',`<input name="shelf" list="shelves" required><datalist id="shelves">${opts(state.data.lists.shelves)}</datalist>`)}
+    ${field('8. Firma / Tedarikçi',`<input name="company" list="companies" required><datalist id="companies">${opts(state.data.lists.companies)}</datalist>`)}
+    ${field('9. Birim',`<select name="unit" required><option value="">Seçin</option>${opts(state.data.lists.units)}</select>`)}
+    ${field('10. Stok Miktarı','<input name="initial" id="itemInitial" type="number" min="0.01" step="0.01" value="1" required>')}
+    ${field('11. Sipariş Verme Noktası','<input name="min" type="number" min="0" step="0.01" value="0" required>')}
+    ${field('12. Birim Fiyat','<input name="unitPrice" id="itemUnitPrice" type="number" min="0" step="0.01" value="0" required>')}
+    ${field('13. Toplam Fiyat','<input id="itemTotal" class="price-preview" value="0" readonly>','Stok Miktarı × Birim Fiyat · otomatik')}
+    ${field('14. Depoya Giriş Yapan',`<input value="${esc(state.user.name)}" readonly>`, 'Oturum açan kullanıcı · otomatik').replace('class="field"','class="field auto-field"')}
+    ${field('15. Giriş Tarihi / Saati',`<input value="${esc(new Date().toLocaleString('tr-TR'))}" readonly>`, 'Sunucuda kesin tarih/saat kaydedilir.').replace('class="field"','class="field auto-field"')}
+  </form>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="item-save">Kaydı Tamamla</button>`);
+  syncItemForm();
+}
+function editItemModal(item){const selected=new Set(String(item.usage||'').split('|').map(norm)),depotApproval=needsDepotApprovalUi(item),usageHtml=REGISTRATION_USAGE_UI.map(x=>`<label><input type="checkbox" name="editUsageOption" value="${esc(x)}" ${selected.has(norm(x))?'checked':''}><span>${esc(x)}</span></label>`).join('');modal('Stok Kartını Düzenle',`<form id="editItemForm" class="form-grid"><input type="hidden" name="id" value="${esc(item.id)}">${field('Parça kodu',`<input name="code" value="${esc(item.code)}" required>`)}${field('Malzeme adı',`<input name="name" value="${esc(item.name)}" required>`)}${field('Kategori',`<input name="category" list="editTypes" value="${esc(item.category)}" required><datalist id="editTypes">${opts(state.data.lists.types)}</datalist>`)}${field('Firma',`<input name="company" list="editCompanies" value="${esc(item.company)}"><datalist id="editCompanies">${opts(state.data.lists.companies)}</datalist>`)}${field('Birim',`<select name="unit">${opts(state.data.lists.units,item.unit)}</select>`)}<div class="field form-span-2"><span>Kullanım Şekli · Çoklu seçim</span><div class="usage-grid">${usageHtml}</div><small>Mevcut değerler “ | ” ayıracına göre işaretlenmiştir.</small></div><div class="field form-span-2"><span>Depo Onayı</span><select name="depotApproval"><option value="Gereksiz" ${depotApproval?'':'selected'}>Gereksiz</option><option value="Gerekli" ${depotApproval?'selected':''}>Gerekli</option></select><small>Mevcut kullanım değerine göre otomatik seçilir.</small></div>${field('Raf',`<input name="shelf" list="editShelves" value="${esc(item.shelf)}" required><datalist id="editShelves">${opts(state.data.lists.shelves)}</datalist>`)}${field('Makine',`<select name="machine" ${item.depot==='ISG'||/SARF/.test(norm(item.type))?'disabled':''}><option value="">Ortak kullanım</option>${opts(state.data.lists.machines,item.machine)}</select>`)}${field('Minimum stok',`<input name="min" type="number" min="0" value="${item.min}" required>`)}${field('Birim fiyat',`<input name="unitPrice" type="number" min="0" step="0.01" value="${item.unitPrice||0}" required>`)}${field('Durum',`<select name="active"><option value="AKTİF">AKTİF</option><option value="PASİF">PASİF</option></select>`)}</form>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="item-update-save">Değişiklikleri Kaydet</button>`);}
+
+function renderMovements(){const q=norm(state.movQuery||'');const rows=(state.data.movements||[]).filter(x=>(state.user.role==='YONETICI'||(state.user.role==='MEK_ADMIN'&&x.depot==='MEKANIK')||(state.user.role==='ISG_ADMIN'&&x.depot==='ISG'))&&(!q||norm([x.person,x.name,x.code,x.machine,x.source,x.depot].join(' ')).includes(q))).slice(0,200);$('#content').innerHTML=`<section class="panel table-panel print-area"><div class="toolbar"><div class="search">${ic('search','ic-sm')}<input id="movSearch" placeholder="Personel, malzeme, parça kodu, makine veya kaynak ara..." value="${esc(state.movQuery||'')}"></div><span class="meta-inline">${rows.length} kayıt</span></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Tarih</th><th>Çıkış Yapan</th><th>Malzeme</th><th>Depo</th><th>Makine / Bölüm</th><th class="num-col">Miktar</th><th>Kaynak</th></tr></thead><tbody>${rows.length?rows.map(x=>`<tr><td class="num">${fmt(x.date)}</td><td><b>${esc(x.person)}</b></td><td><b>${esc(x.name)}</b><small class="mono">${esc(x.code)}</small></td><td><span class="depot ${x.depot.toLowerCase()}">${x.depot==='ISG'?'İSG':'Mekanik'}</span></td><td>${esc(x.machine)}</td><td class="big num-col">${num(x.qty)} <small>${esc(x.unit)}</small></td><td><span class="badge neutral">${esc(x.source)}</span></td></tr>`).join(''):'<tr><td colspan="7"><div class="empty">Kriterlere uyan hareket kaydı bulunamadı.</div></td></tr>'}</tbody></table></div></section>`;}
+function renderApprovals(){const rows=[...(state.data.approvals||[])].sort((a,b)=>(norm(a.status)==='BEKLIYOR'?0:1)-(norm(b.status)==='BEKLIYOR'?0:1));$('#content').innerHTML=`<section class="approval-kpis">${kpi('Bekleyen',rows.filter(x=>norm(x.status)==='BEKLIYOR').length,'Depocu veya yönetici kararı bekleyen','clock','orange')}${kpi('Onaylanan',rows.filter(x=>norm(x.status)==='ONAYLANDI').length,'Stoktan düşülen talepler','checkCircle','green')}${kpi('Reddedilen',rows.filter(x=>norm(x.status)==='REDDEDILDI').length,'Stok değişmeyen talepler','close','red')}</section><section class="panel"><div class="panel-head"><div><h2>Depocu / Yönetici Onay Havuzu</h2><p>Depo onayı gereken veya açık bakım kaydı bulunmayan çıkış talepleri</p></div><span class="meta-inline">${rows.length} talep</span></div><div class="approval-list">${rows.length?rows.map(x=>`<article><div class="approval-id"><span>${esc(x.id)}</span><small>${x.date?fmt(x.date):''}</small>${x.depotApproval?'<span class="badge warning">Depo Onayı</span>':''}</div><div><b>${esc(x.name)}</b><p><span class="mono">${esc(x.code)}</span> · ${esc(x.machine)} · <strong>${num(x.qty)} ${esc(x.unit)}</strong></p><small>${esc(x.requester)} — ${esc(x.reason||'')}</small></div><span class="badge ${norm(x.status)==='BEKLIYOR'?'warning':norm(x.status)==='ONAYLANDI'?'success':'danger'}">${esc(x.status)}</span>${norm(x.status)==='BEKLIYOR'?`<div class="approval-buttons"><button class="btn reject" data-approval="REDDET" data-id="${x.id}">Reddet</button><button class="btn approve" data-approval="ONAYLA" data-id="${x.id}">Onayla</button></div>`:''}</article>`).join(''):'<div class="empty">Onay havuzunda bekleyen veya sonuçlanmış talep yok.</div>'}</div></section>`;}
+
+const RECIPE_PERIODS=['AYLIK','3 AYLIK','6 AYLIK','YILLIK'];
+function isAllRecipePeriods(period){return norm(period)==='TUMU';}
+function recipeRows(machine,period){const all=isAllRecipePeriods(period);return(state.data.recipes||[]).filter(x=>(!machine||x.machine===machine)&&(!period||all||norm(x.period)===norm(period))).map(r=>{const i=state.data.stock.find(x=>x.id===r.itemId);return{...r,code:r.code||i?.code,name:r.name||i?.name,unit:r.unit||i?.unit,shelf:r.shelf||i?.shelf,stock:i?.stock??r.stock??0,ready:(i?.stock??r.stock??0)>=r.qty};}).sort((a,b)=>all?RECIPE_PERIODS.indexOf(norm(a.period))-RECIPE_PERIODS.indexOf(norm(b.period)):0);}
+function recipeMachineSummaries(){const map=new Map(),stock=state.data.stock||[];(state.data.recipes||[]).forEach(r=>{const machine=String(r.machine||'').trim();if(!machine)return;const key=norm(machine),item=stock.find(x=>x.id===r.itemId),available=item?.stock??r.stock??0,ready=typeof r.ready==='boolean'?r.ready:available>=Number(r.qty||0);if(!map.has(key))map.set(key,{machine,count:0,missing:0,periods:new Set()});const row=map.get(key);row.count++;if(!ready)row.missing++;const period=norm(r.period);if(RECIPE_PERIODS.includes(period))row.periods.add(period);});return[...map.values()].map(x=>({...x,periods:RECIPE_PERIODS.filter(p=>x.periods.has(p))})).sort((a,b)=>a.machine.localeCompare(b.machine,'tr'));}
+function recipeMachineTable(selectedMachine,summaries=recipeMachineSummaries()){if(!summaries.length)return'<div class="recipe-machines-empty">Henüz reçete tanımlanmış makine yok.</div>';return`<div class="recipe-machine-scroll"><table class="data-table recipe-machine-table"><thead><tr><th>#</th><th>Makine</th><th class="num-col">Kalem</th><th>Periyotlar</th><th>Durum</th></tr></thead><tbody>${summaries.map((x,i)=>`<tr class="recipe-machine-row ${norm(x.machine)===norm(selectedMachine)?'selected':''}" data-recipe-machine="${esc(x.machine)}" aria-selected="${norm(x.machine)===norm(selectedMachine)?'true':'false'}" title="${esc(x.machine)}"><td class="recipe-machine-order">${String(i+1).padStart(2,'0')}</td><td class="recipe-machine-name">${esc(x.machine)}</td><td class="recipe-machine-count num-col">${x.count}</td><td><span class="recipe-period-tags">${esc(x.periods.join(' · ')||'—')}</span></td><td><span class="recipe-machine-status ${x.missing?'missing':'ready'}">${x.missing?'Eksik: '+x.missing:'Hazır'}</span></td></tr>`).join('')}</tbody></table></div>`;}
+function recipeMachinesPanel(selectedMachine){const summaries=recipeMachineSummaries();return`<section class="recipe-machines-panel"><div class="recipe-machines-head"><div><b>Reçetesi Olan Makineler</b><small>Satıra tıklayarak sağdaki bakım reçetesini açın.</small></div><span class="meta-inline">${summaries.length} makine</span></div>${recipeMachineTable(selectedMachine,summaries)}</section>`;}
+function syncRecipeMachineSelection(machine){$$('.recipe-machine-row').forEach(x=>{const selected=norm(x.dataset.recipeMachine)===norm(machine);x.classList.toggle('selected',selected);x.setAttribute('aria-selected',selected?'true':'false');});}
+function renderMaintenance(){const listed=state.data.lists.machines||[],recipeMachines=recipeMachineSummaries().map(x=>x.machine),machines=[...new Set([...listed,...recipeMachines])],first=machines[0]||'',period='TÜMÜ',rows=recipeRows(first,period);$('#content').innerHTML=`<section class="maintenance-top"><div>${field('Makine',`<select id="recipeMachine">${opts(machines,first)}</select>`)}${field('Periyot',`<select id="recipePeriod">${opts(['TÜMÜ',...RECIPE_PERIODS],period)}</select>`)}</div><div class="maintenance-actions">${state.user.role!=='OP'?`<button class="btn ghost" data-action="recipe-edit">${ic('edit','ic-sm')} Reçeteyi Düzenle</button>`:''}<button class="btn primary" data-action="recipe-bulk">${ic('check','ic-sm')} Seti Toplu Düş</button></div></section><div class="maintenance-grid">${recipeMachinesPanel(first)}<section class="panel" id="recipePanel">${recipeTable(first,period,rows)}</section></div>`;}
+function recipeRowHtml(x,i,showPeriod=false){return`<div><span class="recipe-no">${String(i+1).padStart(2,'0')}</span><div><b>${esc(x.name)}</b><small><span class="mono">${esc(x.code)}</span> · Raf ${esc(x.shelf)}${showPeriod?` · ${esc(x.period)}`:''}</small></div><p><small>Gerekli</small><b>${num(x.qty)} ${esc(x.unit)}</b></p><p><small>Stok</small><b>${num(x.stock)} ${esc(x.unit)}</b></p><span class="badge ${x.ready?'success':'danger'}">${x.ready?'Hazır':'Eksik'}</span></div>`;}
+function recipeListHtml(rows,period){if(!rows.length)return'<div class="empty">Bu makine ve periyot için tanımlı reçete yok.</div>';if(!isAllRecipePeriods(period))return rows.map((x,i)=>recipeRowHtml(x,i)).join('');let index=0;return RECIPE_PERIODS.map(p=>{const group=rows.filter(x=>norm(x.period)===norm(p));if(!group.length)return'';return`<div class="recipe-period-group"><span>${esc(p)}</span><small>${group.length} kalem</small></div>${group.map(x=>recipeRowHtml(x,index++,true)).join('')}`;}).join('');}
+function recipeTable(machine,period,rows){const all=isAllRecipePeriods(period);return`<div class="panel-head"><div><span class="meta-inline">${esc(period)}</span><h2>${esc(machine)}</h2><p>${rows.length} kalem ${all?'tüm periyotlarda gruplanmış':'standart bakım'} reçetesi</p></div><div class="ready-summary"><b>${rows.filter(x=>x.ready).length}/${rows.length}</b><small>kalem hazır</small></div></div><div class="recipe-list">${recipeListHtml(rows,period)}</div>`;}
+function recipeEditModal(){const machine=$('#recipeMachine').value,period=$('#recipePeriod').value;if(isAllRecipePeriods(period))return toast('Reçeteyi düzenlemek için tek bir periyot seçin.','error');const rows=recipeRows(machine,period);modal('Bakım Reçetesini Düzenle',`<form id="recipeForm"><input type="hidden" name="machine" value="${esc(machine)}"><input type="hidden" name="period" value="${esc(period)}"><div id="recipeEditRows">${rows.map(r=>recipeEditRow(r.itemId,r.qty)).join('')}</div><button type="button" class="add-line" data-action="recipe-line-add">+ Parça ekle</button></form>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="recipe-save">Reçeteyi Kaydet</button>`);}
+function recipeEditRow(id='',qty=1){const parts=state.data.stock.filter(x=>x.depot==='MEKANIK');return`<div class="recipe-edit-row"><select name="itemId" required><option value="">Parça seçin</option>${parts.map(x=>`<option value="${x.id}" ${x.id===id?'selected':''}>${esc(x.code+' · '+x.name+' · '+x.shelf)}</option>`).join('')}</select><input name="qty" type="number" min="0.01" step="0.01" value="${qty}" required><button type="button" data-action="remove-line" aria-label="Sil">×</button></div>`;}
+
+async function renderPpe(){if(!state.ppe)state.ppe=await api('ppeAnalysis',{range:'30d'});const p=state.ppe;$('#content').innerHTML=`<section class="toolbar filters"><div class="seg"><button class="active" data-ppe="30d">Son 30 Gün</button><button data-ppe="month">Bu Ay</button><button data-ppe="3m">Son 3 Ay</button></div><span class="meta-inline">Analiz penceresi: ${p.rangeDays} gün</span></section><section class="ppe-summary">${kpi('Aktif Personel',p.cards.length,'VERİ sayfası aktif kullanıcıları','users','blue')}${kpi('KKD Almayan',p.none.length,`${p.rangeDays} günlük dönemde kayıt yok`,'alert','red')}${kpi('KKD Alan',p.cards.length-p.none.length,'En az bir İSG ekipman çıkışı','checkCircle','green')}</section><section class="panel"><div class="panel-head"><div><h2>Hiç KKD Çekmeyen Personel</h2><p>Seçili dönemde İSG çıkış kaydı bulunmayan aktif personel</p></div><span class="badge ${p.none.length?'danger':'success'}">${p.none.length} kişi</span></div><div class="alert-cards">${p.none.length?p.none.map(x=>`<article><span>${ic('alert','ic-sm')}</span><div><b>${esc(x.name)}</b><p>Seçili dönemde KKD hareketi yok</p></div></article>`).join(''):'<div class="empty good">Tüm aktif personelin seçili dönemde KKD hareketi mevcut.</div>'}</div></section><section class="panel print-area"><div class="panel-head"><div><h2>Personel Bazlı KKD Kullanım Karnesi</h2><p>Son kullanım tarihi, ekipman çeşitleri ve toplam hareket</p></div></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Personel</th><th class="num-col">İşlem</th><th class="num-col">Toplam Miktar</th><th>KKD Çeşitleri</th><th>Son Kullanım</th><th>Durum</th></tr></thead><tbody>${p.cards.map(x=>`<tr><td><b>${esc(x.name)}</b></td><td class="big num-col">${x.count}</td><td class="big num-col">${num(x.total)}</td><td>${esc(x.items.join(', ')||'—')}</td><td class="num">${x.last?fmt(x.last):'—'}</td><td><span class="badge ${x.count?'success':'danger'}">${x.count?'Kullanıyor':'Hareket Yok'}</span></td></tr>`).join('')}</tbody></table></div></section>`;}
+async function renderAnalysis(){if(!state.analysis)state.analysis=await api('movementAnalysis',{range:'year',depot:'Tümü'});const rows=state.analysis.rows||[];$('#content').innerHTML=`<section class="toolbar filters"><div class="field-inline"><span>Dönem</span><select id="anaRange"><option value="30d">Son 30 Gün</option><option value="3m">Son 3 Ay</option><option value="year" selected>Bu Yıl</option><option value="all">Tüm Zamanlar</option></select></div><div class="field-inline"><span>Depo</span><select id="anaDepot"><option>Tümü</option><option value="MEKANIK">Mekanik</option><option value="ISG">İSG</option></select></div><div class="field-inline"><span>Sıralama</span><select id="anaSort"><option value="frequency">İşlem Sıklığı</option><option value="total">Toplam Miktar</option></select></div></section><section class="analysis-grid"><article class="panel"><div class="panel-head"><div><h2>En Çok Hareket Görenler</h2><p>Kronik arıza ve yoğun tüketim göstergesi</p></div></div><div id="analysisBars">${analysisBars(rows,'frequency')}</div></article><article class="panel"><div class="panel-head"><div><h2>ABC Tüketim Sınıfları</h2><p>Kümülatif toplam tüketim payına göre</p></div></div><div class="abc-summary">${['A','B','C'].map(c=>`<div class="abc ${c}"><b>${c}</b><span>${rows.filter(x=>x.abc===c).length} ürün</span><small>${c==='A'?'İlk %80':c==='B'?'Sonraki %15':'Son %5'}</small></div>`).join('')}</div><div class="suggestions"><h3>Akıllı stok önerileri</h3>${rows.filter(x=>x.suggestion).slice(0,4).map(x=>`<button data-analysis-item="${x.itemId}"><span>${ic('trend','ic-sm')}</span><div><b>${esc(x.name)}</b><small>Tüketim hızı ${num(x.velocity)} / ay · Min ${num(x.min)}</small></div><em>Min. Stok Artırılmalı</em></button>`).join('')||'<div class="empty">Mevcut dönem için ek stok önerisi yok.</div>'}</div></article></section><section class="panel"><div class="panel-head"><div><h2>Detaylı tüketim tablosu</h2><p>Makine bazlı dağılımı görmek için herhangi bir satıra tıklayın</p></div><span class="meta-inline">${rows.length} kalem</span></div><div class="table-scroll"><table class="data-table"><thead><tr><th>ABC</th><th>Malzeme</th><th>Depo</th><th class="num-col">İşlem Sıklığı</th><th class="num-col">Toplam Miktar</th><th class="num-col">Aylık Hız</th><th class="num-col">Stok / Min</th><th>Öneri</th></tr></thead><tbody>${rows.map(x=>`<tr data-analysis-item="${x.itemId}"><td><span class="abc-dot ${x.abc}">${x.abc}</span></td><td><b>${esc(x.name)}</b><small class="mono">${esc(x.code)}</small></td><td><span class="depot ${x.depot.toLowerCase()}">${x.depot==='ISG'?'İSG':'Mekanik'}</span></td><td class="big num-col">${x.frequency}</td><td class="big num-col">${num(x.total)}</td><td class="num num-col">${num(x.velocity)}</td><td class="num num-col">${num(x.stock)} / ${num(x.min)}</td><td>${x.suggestion?'<span class="badge warning">Artır</span>':'—'}</td></tr>`).join('')}</tbody></table></div></section>`;}
+function analysisBars(rows,sort){rows=[...rows].sort((a,b)=>b[sort]-a[sort]).slice(0,8);const max=Math.max(1,...rows.map(x=>x[sort]));return`<div class="bar-list">${rows.length?rows.map((x,i)=>`<button data-analysis-item="${x.itemId}"><em>${String(i+1).padStart(2,'0')}</em><div><span><b>${esc(x.name)}</b><small class="mono">${esc(x.code)}</small></span><strong>${num(x[sort])}${sort==='frequency'?' işlem':''}</strong><i style="width:${x[sort]/max*100}%"></i></div></button>`).join(''):'<div class="empty">Bu dönemde hareket kaydı bulunamadı.</div>'}</div>`;}
+function analysisDetail(itemId){const x=state.analysis.rows.find(i=>i.itemId===itemId);if(!x)return;const total=Object.values(x.machines).reduce((a,b)=>a+b,0);modal('Makine Tüketim Dağılımı',`<div class="item-summary"><span class="choice-icon">${ic('chart')}</span><div><b>${esc(x.name)}</b><small><span class="mono">${esc(x.code)}</span> · ${x.frequency} farklı işlem</small></div><strong>${num(x.total)}</strong></div><div class="machine-dist">${Object.entries(x.machines).sort((a,b)=>b[1]-a[1]).map(([m,q])=>`<div><span><b>${esc(m)}</b><small>${num(q)} adet / litre</small></span><div><i style="width:${q/total*100}%"></i></div><strong>%${Math.round(q/total*100)}</strong></div>`).join('')}</div>${x.suggestion?'<div class="smart-note"><b>Min. Stok Artırılmalı</b><p>Bu ürünün aylık tüketim hızı mevcut sipariş noktasının üzerinde seyrediyor.</p></div>':''}`,'<button class="btn primary" data-close>Tamam</button>');}
+
+function renderLabels(){const mech=state.data.stock.filter(x=>x.depot==='MEKANIK'),isg=state.data.stock.filter(x=>x.depot==='ISG');$('#content').innerHTML=`<section class="label-hero"><div><span class="meta-inline" style="color:var(--orange)">Sabit Dolap Kodu</span><h2>İSG-DOLAP</h2><p>Tüm İSG ekipmanlarını tek ekranda açan sabit QR etiketi. Dolap kapağına yapıştırmanız yeterlidir.</p><div class="button-row" style="margin-top:12px"><button class="btn primary" data-action="print-cabinet">${ic('print','ic-sm')} İSG Dolap Etiketini Yazdır</button><button class="btn ghost" data-action="open-qr-terminal">${ic('qr','ic-sm')} Bağımsız QR Terminali</button><button class="btn ghost" data-action="download-qr-terminal">${ic('download','ic-sm')} QR HTML İndir</button></div></div><div class="label-preview cabinet-label">${qrSvg('ISG-DOLAP')}<b>İSG DOLABI</b><small>QR okut · PIN gir · KKD seç</small></div></section><section class="panel"><div class="panel-head"><div><h2>Mekanik parça etiketleri</h2><p>Yazdırmak istediğiniz raf etiketlerini işaretleyin</p></div><div class="button-row"><button class="btn ghost" data-action="labels-toggle-all">Tümünü Seç</button><button class="btn primary" data-action="print-selected">${ic('print','ic-sm')} Seçilenleri Yazdır</button></div></div><div class="label-select">${mech.map(x=>`<label><input type="checkbox" value="${x.id}"><span class="qr-thumb">${qrSvg(x.id)}</span><div><b>${esc(x.name)}</b><small class="mono">${esc(x.code)} · Raf ${esc(x.shelf)}</small></div><em>${num(x.stock)} ${esc(x.unit)}</em></label>`).join('')}</div></section>${state.user.role==='YONETICI'||state.user.role==='ISG_ADMIN'?`<section class="panel"><div class="panel-head"><div><h2>İSG kartları</h2><p>Tek tek etiket yerine sabit dolap QR etiketi önerilir</p></div><span class="meta-inline">${isg.length} ekipman</span></div><div class="product-strip">${isg.map(x=>`<button class="isg-item" data-item="${x.id}"><span>${ic('shield','ic-sm')}</span><div><b>${esc(x.name)}</b><small>${num(x.stock)} ${esc(x.unit)}</small></div></button>`).join('')}</div></section>`:''}`;}
+function printLabels(items,title='MEKANİK DEPO QR ETİKETLERİ'){const win=window.open('','_blank');if(!win)return toast('Yazdırma penceresi engellendi.','error');win.document.write(`<!doctype html><meta charset="utf-8"><title>${esc(title)}</title><style>body{font-family:Arial;margin:20px}.sheet{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.l{border:2px solid #111;border-radius:10px;padding:10px;display:grid;grid-template-columns:100px 1fr;align-items:center;break-inside:avoid}.l svg{width:90px}.l b{display:block;font-size:15px}.l strong{font-size:12px}.l small{display:block;margin-top:5px}@media print{body{margin:0}.l{page-break-inside:avoid}}</style><h2>${esc(title)}</h2><div class="sheet">${items.map(x=>`<div class="l">${qrSvg(x.id||x.code||'ISG-DOLAP')}<div><b>${esc(x.name||'İSG DOLABI')}</b><strong>${esc(x.id||x.code||'ISG-DOLAP')}</strong><small>${esc(x.code&&x.id?x.code:'')}</small><small>${esc(x.shelf||'Tek Sabit QR')}</small></div></div>`).join('')}</div>`);win.document.close();setTimeout(()=>win.print(),300);}
+
+function renderConnection(){const code=$('#gasCode').textContent.trim();$('#content').innerHTML=`<section class="connection-grid"><article class="panel"><div class="panel-head"><div><h2>Bağlantı Modu</h2><p>Üretim ortamında güvenli /api/gas bağlantısı önerilir</p></div><span class="connection ${state.mode}"><i></i>${state.mode.toUpperCase()}</span></div><div class="mode-cards">${[['proxy','Güvenli /api/gas','GAS adresi ve proxy anahtarı sunucuda gizli kalır; V8 kayıt akışı etkindir.'],['direct','Tek HTML / Doğrudan','Yalnız Apps Script ALLOW_DIRECT=true ise kullanın.'],['demo','Demo / Yerel','Gerçek tabloya yazmaz; tüm ekranlar test edilir.']].map(([m,t,d])=>`<label class="${state.mode===m?'selected':''}"><input type="radio" name="mode" value="${m}" ${state.mode===m?'checked':''}><span><b>${t}</b><small>${d}</small></span></label>`).join('')}</div>${field('Apps Script /exec adresi',`<input id="directUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan mod dışında tarayıcıya açılmaz.')}<div class="button-row"><button class="btn ghost" data-action="test-connection">Bağlantıyı Test Et</button><button class="btn primary" data-action="save-connection">Ayarları Kaydet</button></div></article><article class="panel"><div class="panel-head"><div><h2>Bağımsız Tek HTML Dosyaları</h2><p>Tam yönetim paneli ve sahaya özel bağımsız QR çıkış terminali</p></div><span class="ic" style="color:var(--orange)">${ic('download','ic-lg')}</span></div><div class="download-card"><b>1. Ana Yönetim Paneli (Tek HTML)</b><p>CSS, JavaScript ve QR üreticisi tek dosyada. Demo veya canlı Google Sheets bağlantısı ile çalışır.</p><button class="btn primary large" data-action="download-html">${ic('download','ic-sm')} Ana Panel HTML İndir</button></div><div class="download-card" style="margin-top:12px"><b>2. Bağımsız Depo QR Terminali (Tek HTML)</b><p>Depodaki QR kodu okutulduğunda önce OP şifresini sorar, eşleşen parçayı açar; Depo Onayı Gerekli ise Depocu onayı ister, değilse doğrudan stoktan düşer.</p><div class="button-row"><button class="btn primary" data-action="download-qr-terminal">${ic('download','ic-sm')} QR Terminali İndir</button><button class="btn ghost" data-action="open-qr-terminal">${ic('qr','ic-sm')} Terminali Dene</button></div></div><div class="security-list"><p><span>${ic('check','ic-sm')}</span> Rol ve depo kapsamı hem arayüzde hem Kod.gs’de doğrulanır</p><p><span>${ic('check','ic-sm')}</span> PIN yerine imzalı, süreli oturum belirteci kullanılır</p><p><span>${ic('check','ic-sm')}</span> Bağımsız QR terminali <span class="mono">/qr-terminal.html</span> ve <span class="mono">?qr=KOD</span> destekler</p></div></article></section><section class="panel code-panel"><div class="panel-head"><div><h2>Google Apps Script · Kod.gs</h2><p>Arıza Formu, onayHavuzu, planliBakimRecete, kkdAnaliz, hareketAnaliz ve anında Depocu PIN onayı dahil</p></div><button class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kodu Kopyala</button></div><pre><code>${esc(code)}</code></pre></section>`;}
+
+let cameraStream=null,cameraTimer=null;
+async function openScanner(){modal('QR Kodunu Okut',`<div class="camera"><video id="cameraVideo" playsinline muted></video><div class="camera-frame"></div></div><p class="camera-help">Kamera izni verin ve kodu çerçeveye hizalayın. Desteklenmiyorsa kodu elle girin.</p>${field('Manuel kod','<input id="scanManual" placeholder="RUL-6205 veya ISG-DOLAP">')}`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="scan-manual-go">Devam Et</button>`);try{cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});const v=$('#cameraVideo');v.srcObject=cameraStream;await v.play();if('BarcodeDetector'in window){const det=new BarcodeDetector({formats:['qr_code']});cameraTimer=setInterval(async()=>{try{const codes=await det.detect(v);if(codes[0]?.rawValue){handleQr(codes[0].rawValue);}}catch{}},500);}}catch(e){toast('Kamera açılamadı; kodu elle girebilirsiniz.','error');}}
+function stopCamera(){if(cameraTimer)clearInterval(cameraTimer);cameraTimer=null;if(cameraStream)cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
+function handleQr(code){stopCamera();closeModal();code=String(code).trim();if(norm(code)==='ISG-DOLAP')return cabinetModal();const item=state.data.stock.find(x=>norm(x.code)===norm(code)||norm(x.id)===norm(code));if(!item)return toast('QR kodu stok kartıyla eşleşmedi: '+code,'error');checkoutModal(item);}
+
+function qrMatrix(text){const CH='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';text=String(text).toUpperCase().replace(/[^0-9A-Z $%*+\-./:]/g,'-').slice(0,25);let bits='0010'+text.length.toString(2).padStart(9,'0');for(let i=0;i<text.length;i+=2){if(i+1<text.length)bits+=(CH.indexOf(text[i])*45+CH.indexOf(text[i+1])).toString(2).padStart(11,'0');else bits+=CH.indexOf(text[i]).toString(2).padStart(6,'0');}bits+='0'.repeat(Math.min(4,152-bits.length));bits+='0'.repeat((8-bits.length%8)%8);let data=[];for(let i=0;i<bits.length;i+=8)data.push(parseInt(bits.slice(i,i+8),2));for(let p=0;data.length<19;p++)data.push(p%2?17:236);const exp=new Array(512),log=new Array(256);let gx=1;for(let i=0;i<255;i++){exp[i]=gx;log[gx]=i;gx<<=1;if(gx&256)gx^=0x11d;}for(let i=255;i<512;i++)exp[i]=exp[i-255];const mul=(a,b)=>a&&b?exp[log[a]+log[b]]:0;let gen=[1];for(let i=0;i<7;i++){let nx=new Array(gen.length+1).fill(0);for(let j=0;j<gen.length;j++){nx[j]^=gen[j];nx[j+1]^=mul(gen[j],exp[i]);}gen=nx;}let rem=new Array(7).fill(0);for(const b of data){const f=b^rem[0];rem.shift();rem.push(0);for(let j=0;j<7;j++)rem[j]^=mul(gen[j+1],f);}let stream='';data.concat(rem).forEach(b=>stream+=b.toString(2).padStart(8,'0'));const n=21,m=Array.from({length:n},()=>Array(n).fill(false)),fun=Array.from({length:n},()=>Array(n).fill(false));const set=(r,c,v)=>{if(r>=0&&r<n&&c>=0&&c<n){m[r][c]=!!v;fun[r][c]=true;}};function finder(r,c){for(let dr=-1;dr<=7;dr++)for(let dc=-1;dc<=7;dc++){const rr=r+dr,cc=c+dc;if(rr<0||rr>=n||cc<0||cc>=n)continue;set(rr,cc,dr>=0&&dr<=6&&dc>=0&&dc<=6&&(dr===0||dr===6||dc===0||dc===6||(dr>=2&&dr<=4&&dc>=2&&dc<=4)));}}finder(0,0);finder(0,n-7);finder(n-7,0);for(let i=8;i<n-8;i++){set(6,i,i%2===0);set(i,6,i%2===0);}for(let i=0;i<=8;i++)if(i!==6){set(8,i,false);set(i,8,false);}for(let i=0;i<8;i++)set(8,n-1-i,false);for(let i=0;i<7;i++)set(n-1-i,8,false);set(n-8,8,true);let k=0,up=true;for(let right=n-1;right>=1;right-=2){if(right===6)right--;for(let v=0;v<n;v++){const r=up?n-1-v:v;for(let j=0;j<2;j++){const c=right-j;if(fun[r][c])continue;let b=k<stream.length&&stream[k++]==='1';if((r+c)%2===0)b=!b;m[r][c]=b;}}up=!up;}let dat=8,rf=dat;for(let i=0;i<10;i++)rf=(rf<<1)^(((rf>>9)&1)*0x537);const f=((dat<<10)|rf)^0x5412,fb=i=>((f>>i)&1)!==0;for(let i=0;i<=5;i++)m[i][8]=fb(i);m[7][8]=fb(6);m[8][8]=fb(7);m[8][7]=fb(8);for(let i=9;i<15;i++)m[14-i][8]=fb(i);for(let i=0;i<8;i++)m[8][n-1-i]=fb(i);for(let i=8;i<15;i++)m[n-15+i][8]=fb(i);m[n-8][8]=true;return m;}
+function qrSvg(text){const m=qrMatrix(text),q=4,n=m.length;let p='';for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(m[y][x])p+=`M${x+q},${y+q}h1v1h-1z`;return`<svg viewBox="0 0 ${n+q*2} ${n+q*2}" xmlns="http://www.w3.org/2000/svg" aria-label="QR ${esc(text)}"><rect width="100%" height="100%" fill="#fff"/><path d="${p}" fill="#0f172a"/></svg>`;}
+
+async function refreshData(){await bootstrap();renderNav();await showPage(state.page,false);}
+function logout(){state.user=null;state.session='';state.data=null;stopCamera();document.body.classList.remove('logged');renderLogin();}
+function renderLogin(){document.body.innerHTML=`<div id="login" class="login"><section class="login-art"><div class="art-grid"></div><div class="login-brand"><span class="brand-mark">M</span><div><b>Mekanik + İSG Depo</b><small>Depo 2027 · V8.7</small></div></div><div class="login-copy"><span class="login-kicker">Akıllı Stok · Güvenli QR Çıkış</span><h1>İki depo.<br>Tek kontrol merkezi.</h1><p>Rol bazlı yetki yönetimi, hızlı QR çıkışı, planlı bakım reçeteleri ve tüketim analizleri tek sistemde.</p></div><div class="login-stats"><div><b>4</b><span>Yetki Rolü</span></div><div><b>2</b><span>Bağımsız Depo</span></div><div><b>1</b><span>Güvenli Sistem</span></div></div></section><section class="login-form"><form id="loginForm"><span class="kicker">Güvenli Giriş</span><h2>PIN ile devam edin</h2><p>${state.mode==='demo'?'Şu an <b>Demo</b> modundasınız. Kendi tablonuzdaki PIN ile girmek için aşağıdan Bağlantı Ayarı’nı kaydedin.':'PIN’iniz VERİ sayfasındaki rol ve depo yetkinizi belirler.'}</p>${field('4-8 haneli PIN',`<div class="pin-wrap"><input name="pin" type="password" inputmode="numeric" maxlength="8" autocomplete="current-password" placeholder="••••"><button type="button" data-action="toggle-pin" aria-label="PIN göster">${ic('eye')}</button></div>`)}<button class="btn primary large wide" type="submit">Güvenli Giriş →</button><button class="btn ghost large wide" type="button" data-action="open-qr-terminal" style="margin-top:10px">${ic('qr','ic-sm')} Bağımsız QR Çıkış Terminali</button><div class="login-mode"><i class="${state.mode}"></i>${state.mode==='demo'?'Demo verisi etkin':state.mode==='direct'?'Canlı bağlantı: Doğrudan GAS':'Canlı bağlantı: Güvenli /api/gas'}</div>${state.mode==='demo'?'<details open><summary>Demo PIN’leri (tıkla ve doldur)</summary><div class="demo-pins"><button type="button" data-fill-pin="1111"><span>Operatör</span><b>1111</b></button><button type="button" data-fill-pin="2222"><span>Mekanik</span><b>2222</b></button><button type="button" data-fill-pin="3333"><span>İSG</span><b>3333</b></button><button type="button" data-fill-pin="4444"><span>Yönetici</span><b>4444</b></button></div></details>':''}<details class="login-conn"><summary>Bağlantı Ayarı (Canlı Google Sheets / Demo)</summary><div class="login-conn-body">${field('Bağlantı Modu',`<select id="loginMode"><option value="demo" ${state.mode==='demo'?'selected':''}>Demo / Yerel Test</option><option value="direct" ${state.mode==='direct'?'selected':''}>Doğrudan Google Apps Script (/exec)</option><option value="proxy" ${state.mode==='proxy'?'selected':''}>Güvenli /api/gas Sunucusu</option></select>`)}${field('Apps Script /exec Adresi',`<input id="loginDirectUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan modda Apps Script Web App /exec adresini yapıştırın.')}<div class="button-row"><button type="button" class="btn ghost" data-action="login-test-conn">Test Et</button><button type="button" class="btn primary" data-action="login-save-conn">Kaydet</button></div></div></details></form><footer>Mekanik + İSG Depo 2027 · V8.7</footer></section></div><div id="toasts"></div><div id="modalRoot" hidden></div><div class="loader"><span></span></div>`;$('#loginForm').addEventListener('submit',login);}
+async function login(e){e.preventDefault();const pin=String(new FormData(e.currentTarget).get('pin')||'').replace(/\s+/g,'').trim();if(!pin)return toast('Lütfen PIN girin.','error');setBusy(true);try{const r=await api('auth',{pin});state.user=r.user;state.session=r.session;await bootstrap();state.page=defaultPage();document.body.classList.add('logged');document.body.innerHTML='<div id="app"></div><div id="toasts"></div><div id="modalRoot" hidden></div><div class="loader"><span></span></div>';renderShell();if(state.pendingQr){const code=state.pendingQr;state.pendingQr='';setTimeout(()=>handleQr(code),120);}}catch(err){toast(err.message,'error');}finally{setBusy(false);}}
+
+async function actionHandler(e){const page=e.target.closest('[data-page]')?.dataset.page;if(page)return showPage(page);if(e.target.closest('[data-close]'))return closeModal();const a=e.target.closest('[data-action]')?.dataset.action;if(a){
+  if(a==='logout')return logout();if(a==='menu')return $('.sidebar').classList.toggle('open');if(a==='refresh'){setBusy(true);try{await refreshData();toast('Veriler yenilendi.');}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}
+  if(a==='new-item')return newItemModal();if(a==='scan')return openScanner();if(a==='manual-qr')return modal('QR Kodunu Elle Gir',field('Kod','<input id="manualQr" placeholder="RUL-6205 veya ISG-DOLAP">'),'<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="manual-go">Devam Et</button>');if(a==='manual-go')return handleQr($('#manualQr').value);if(a==='scan-manual-go')return handleQr($('#scanManual').value);if(a==='cabinet')return cabinetModal();
+  if(a==='submit-checkout')return submitCheckout();if(a==='gate-confirm'){const p=JSON.parse($('#modalRoot').dataset.checkout||'{}');return submitCheckout({...p,managerPin:$('#managerPin')?.value});}if(a==='gate-pool'){const p=JSON.parse($('#modalRoot').dataset.checkout||'{}');return submitCheckout({...p,sendApproval:true});}if(a==='cabinet-submit'){const id=$('[name=cabItem]:checked')?.value,qty=$('#cabQty')?.value||1,item=state.data.stock.find(x=>x.id===id);closeModal();checkoutModal(item);$('[name=qty]').value=qty;return;}
+  if(a==='stock-in'||a==='stock-count'){const id=e.target.closest('[data-id]').dataset.id,item=state.data.stock.find(x=>x.id===id),count=a==='stock-count';modal(count?'Stok Sayımı':'Malzeme Girişi',`<div class="item-summary"><div><b>${esc(item.name)}</b><small class="mono">${esc(item.code)}</small></div><strong>${num(item.stock)} ${esc(item.unit)}</strong></div>${field(count?'Fiili stok':'Giriş miktarı',`<input id="stockValue" type="number" min="0" value="${count?item.stock:1}">`)}`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-stock-op="${count?'stockCount':'stockIn'}" data-id="${id}">Kaydet</button>`);return;}
+  if(a==='item-save'){const f=$('#itemForm');if(!f.reportValidity())return;const usage=selectedRegistrationUsage(),machines=selectedRegistrationMachines();if(!usage.length)return toast('En az bir kullanım şekli seçin.','error');if(usage.includes('Tekli Makine')&&usage.includes('Çoklu Makine'))return toast('Tekli ve Çoklu Makine birlikte seçilemez.','error');if(registrationNeedsMachine(usage)&&!machines.length)return toast('Makine/Makineler alanından seçim yapın.','error');if(usage.includes('Tekli Makine')&&machines.length!==1)return toast('Tekli Makine için yalnız bir makine seçin.','error');if(usage.includes('Çoklu Makine')&&machines.length<2)return toast('Çoklu Makine için en az iki makine seçin.','error');const p=Object.fromEntries(new FormData(f)),depotApproval=p.depotApproval==='Gerekli';delete p.depotApproval;if(depotApproval)usage.push('Depo Onayı Gerekli');p.usage=[...new Set(usage)].join(' | ');p.machines=machines;p.machine=machines.join(' | ');p.initial=Number(p.initial);p.min=Number(p.min);p.unitPrice=Number(p.unitPrice);setBusy(true);try{const r=await api('itemCreate',p);closeModal();await refreshData();const item=state.data.stock.find(x=>x.id===r.id);if(r.existing){toast('Aynı parça kodu bulundu; mevcut stoğa giriş eklendi.');if(item)itemDetail(item);}else if(item){modal('Kayıt Tamamlandı',`<div class="created-qr">${qrSvg(item.id)}<div><h3>${esc(item.id)}</h3><p><b>${esc(item.name)}</b></p><p><span class="mono">${esc(item.code)}</span> · ${num(item.stock)} ${esc(item.unit)}</p><p>Yeni stok kartı, ilk giriş hareketi ve QR hazır.</p></div></div>`,`<button class="btn ghost" data-close>Kapat</button><button class="btn primary" data-action="label-one" data-id="${esc(item.id)}">QR Etiketini Yazdır</button>`);toast('Yeni stok kartı ve QR oluşturuldu.');}}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}if(a==='item-edit'){const item=state.data.stock.find(x=>x.id===e.target.closest('[data-id]').dataset.id);return editItemModal(item);}if(a==='item-update-save'){const f=$('#editItemForm');if(!f.reportValidity())return;const usage=$$('[name="editUsageOption"]:checked',f).map(x=>x.value);if(!usage.length)return toast('En az bir depo şekli seçin.','error');const p=Object.fromEntries(new FormData(f)),depotApproval=p.depotApproval==='Gerekli';delete p.editUsageOption;delete p.depotApproval;if(depotApproval)usage.push('Depo Onayı Gerekli');p.usage=[...new Set(usage)].join(' | ');p.min=Number(p.min);if(!f.elements.machine||f.elements.machine.disabled)p.machine='';setBusy(true);try{await api('itemUpdate',p);closeModal();await refreshData();toast('Stok kartı güncellendi.');}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}
+  if(a==='recipe-edit')return recipeEditModal();if(a==='recipe-line-add'){return $('#recipeEditRows').insertAdjacentHTML('beforeend',recipeEditRow());}if(a==='remove-line')return e.target.closest('.recipe-edit-row').remove();if(a==='recipe-save'){const f=$('#recipeForm'),fd=new FormData(f),ids=fd.getAll('itemId'),qs=fd.getAll('qty');if(!f.reportValidity())return;const p={machine:fd.get('machine'),period:fd.get('period'),items:ids.map((id,i)=>({itemId:id,qty:Number(qs[i])}))};setBusy(true);try{await api('recipeSave',p);closeModal();await refreshData();toast('Bakım reçetesi kaydedildi.');}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}
+  if(a==='recipe-bulk'){const machine=$('#recipeMachine').value,period=$('#recipePeriod').value;if(isAllRecipePeriods(period))return toast('Seti toplu düşmek için tek bir periyot seçin.','error');setBusy(true);try{const r=await api('recipeBulkCheckout',{machine,period});await refreshData();toast('Bakım seti toplu olarak stoktan düşüldü.');if(r.autoLogout)setTimeout(logout,700);}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}
+  if(a==='maintenance-pick')return showPage('maintenance');if(a==='print-ppe'||a==='print-movements')return window.print();if(a==='print-cabinet')return printLabels([{code:'ISG-DOLAP',name:'İSG DOLABI',shelf:'Tek Sabit QR'}],'İSG DOLABI QR ETİKETİ');if(a==='labels-toggle-all'){const boxes=$$('.label-select input[type="checkbox"]');const allChecked=boxes.length&&boxes.every(x=>x.checked);boxes.forEach(x=>x.checked=!allChecked);const btn=e.target.closest('[data-action="labels-toggle-all"]');if(btn)btn.textContent=allChecked?'Tümünü Seç':'Seçimi Temizle';return;}if(a==='print-selected'){const ids=$$('.label-select input:checked').map(x=>x.value),items=state.data.stock.filter(x=>ids.includes(x.id));return items.length?printLabels(items):toast('En az bir etiket seçin.','error');}if(a==='label-one'){const item=state.data.stock.find(x=>x.id===e.target.closest('[data-id]').dataset.id);return printLabels([item]);}
+  if(a==='copy-gas'){navigator.clipboard.writeText($('#gasCode').textContent).then(()=>toast('Kod.gs panoya kopyalandı.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));return;}if(a==='download-html'){const url=URL.createObjectURL(new Blob([ORIGINAL_HTML],{type:'text/html;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='Mekanik_Depo_V8.7_Tek_HTML.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);return;}if(a==='open-qr-terminal'){modal('Bağımsız Depo QR Terminali',`<div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#F4F6F9"><iframe src="/qr-terminal.html" title="Bağımsız Depo QR Terminali" style="width:100%;height:min(74vh,680px);border:0;display:block"></iframe></div>`,`<button class="btn ghost" data-action="download-qr-terminal">${ic('download','ic-sm')} Bağımsız HTML İndir</button><a class="btn ghost" href="/qr-terminal.html" target="_blank" rel="noopener">Yeni Sekmede Aç</a><button class="btn primary" data-close>Kapat</button>`);return;}if(a==='download-qr-terminal'){setBusy(true);try{const res=await fetch('/qr-terminal.html');if(!res.ok)throw Error('QR Terminal dosyası okunamadı.');const html=await res.text(),url=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download='Depo_QR_Terminali.html';link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);toast('Bağımsız QR Terminali (Depo_QR_Terminali.html) indirildi.');}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}if(a==='save-connection'){state.mode=$('[name=mode]:checked').value;state.directUrl=$('#directUrl').value.trim();localStorage.setItem('depo.mode',state.mode);localStorage.setItem('depo.directUrl',state.directUrl);toast('Bağlantı ayarı kaydedildi; yeniden giriş yapın.');return;}if(a==='test-connection'){const old=state.directUrl,oldMode=state.mode;state.mode=$('[name=mode]:checked')?.value||state.mode;state.directUrl=$('#directUrl').value.trim();setBusy(true);try{await api('health');toast('Bağlantı yanıt verdi.');}catch(x){toast(x.message,'error');}finally{state.directUrl=old;state.mode=oldMode;setBusy(false);}return;}if(a==='login-save-conn'){const mode=$('#loginMode')?.value||'demo',url=($('#loginDirectUrl')?.value||'').trim();if(mode==='direct'&&!url)return toast('Doğrudan mod için Apps Script /exec adresi girin.','error');state.mode=mode;state.directUrl=url;localStorage.setItem('depo.mode',state.mode);localStorage.setItem('depo.directUrl',state.directUrl);renderLogin();toast('Bağlantı ayarı kaydedildi ('+(mode==='demo'?'Demo':mode==='direct'?'Doğrudan GAS':'/api/gas')+').');return;}if(a==='login-test-conn'){const oldMode=state.mode,oldUrl=state.directUrl;state.mode=$('#loginMode')?.value||state.mode;state.directUrl=($('#loginDirectUrl')?.value||'').trim();setBusy(true);try{await api('health');toast('Bağlantı başarılı.');}catch(x){toast(x.message,'error');}finally{state.mode=oldMode;state.directUrl=oldUrl;setBusy(false);}return;}
+ }
+  const fillPin=e.target.closest('[data-fill-pin]');if(fillPin){const inp=$('#loginForm [name="pin"]');if(inp){inp.value=fillPin.dataset.fillPin;inp.focus();}return;}
+  const recipeMachine=e.target.closest('[data-recipe-machine]');if(recipeMachine){const machine=recipeMachine.dataset.recipeMachine,select=$('#recipeMachine'),period=$('#recipePeriod')?.value||'TÜMÜ';if(!select)return;select.value=machine;syncRecipeMachineSelection(machine);$('#recipePanel').innerHTML=recipeTable(machine,period,recipeRows(machine,period));return;}
+  const gate=e.target.closest('[data-gate]');if(gate){$$('[data-gate]').forEach(x=>x.classList.toggle('active',x===gate));const pool=gate.dataset.gate==='pool';$('#gateBody').innerHTML=pool?'<div class="notice">Talep yönetici ekranındaki Onay Bekleyenler listesine gönderilir. Onaylandığı anda stoktan düşer.</div>':field('Yönetici Onay PIN’i','<input id="managerPin" type="password" inputmode="numeric" maxlength="8" placeholder="••••">','Demo yönetici PIN: 4444');const b=$('#modalRoot footer .btn.primary');b.dataset.action=pool?'gate-pool':'gate-confirm';b.textContent=pool?'Onay Havuzuna Gönder':'PIN ile Onayla';return;}
+ const itemEl=e.target.closest('[data-item]');if(itemEl){const item=state.data.stock.find(x=>x.id===itemEl.dataset.item);if(item)return itemDetail(item);}const co=e.target.closest('[data-checkout]');if(co){const item=state.data.stock.find(x=>x.id===co.dataset.checkout);if(item)return checkoutModal(item);}const ap=e.target.closest('[data-approval]');if(ap){setBusy(true);try{await api('approvalDecide',{id:ap.dataset.id,decision:ap.dataset.approval});await refreshData();toast('Talep '+(ap.dataset.approval==='ONAYLA'?'onaylandı ve stoktan düşüldü.':'reddedildi.'));}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}const ai=e.target.closest('[data-analysis-item]');if(ai)return analysisDetail(ai.dataset.analysisItem);const q=e.target.closest('[data-qty]');if(q){const i=$('[name=qty]');i.value=Math.max(.01,Number(i.value)+Number(q.dataset.qty));}
+}
+async function changeHandler(e){if(e.target.name==='usageOption'){if(e.target.checked&&e.target.value==='Tekli Makine')$('[name="usageOption"][value="Çoklu Makine"]').checked=false;if(e.target.checked&&e.target.value==='Çoklu Makine')$('[name="usageOption"][value="Tekli Makine"]').checked=false;return syncItemForm();}if(e.target.name==='machineOption'){if(selectedRegistrationUsage().includes('Tekli Makine')&&e.target.checked)$$('[name="machineOption"]').forEach(x=>{if(x!==e.target)x.checked=false;});return syncItemForm();}if(e.target.id==='stockStatus'){state.stockFilter.status=e.target.value;return renderStock();}if(e.target.matches('[data-filter-depot]')){state.stockFilter.depot=e.target.dataset.filterDepot;return renderStock();}if(e.target.id==='recipeMachine'||e.target.id==='recipePeriod'){const m=$('#recipeMachine').value,p=$('#recipePeriod').value;syncRecipeMachineSelection(m);$('#recipePanel').innerHTML=recipeTable(m,p,recipeRows(m,p));return;}if(e.target.matches('[data-ppe]')){$$('[data-ppe]').forEach(x=>x.classList.toggle('active',x===e.target));setBusy(true);try{state.ppe=await api('ppeAnalysis',{range:e.target.dataset.ppe});await renderPpe();$$(`[data-ppe="${e.target.dataset.ppe}"]`).forEach(x=>x.classList.add('active'));}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}if(['anaRange','anaDepot'].includes(e.target.id)){setBusy(true);try{state.analysis=await api('movementAnalysis',{range:$('#anaRange').value,depot:$('#anaDepot').value});await renderAnalysis();}catch(x){toast(x.message,'error');}finally{setBusy(false);}return;}if(e.target.id==='anaSort')$('#analysisBars').innerHTML=analysisBars(state.analysis.rows,e.target.value);}
+async function clickStockOp(e){const b=e.target.closest('[data-stock-op]');if(!b)return;setBusy(true);try{await api(b.dataset.stockOp,{itemId:b.dataset.id,[b.dataset.stockOp==='stockIn'?'qty':'actual']:Number($('#stockValue').value)});closeModal();await refreshData();toast('Stok işlemi kaydedildi.');}catch(x){toast(x.message,'error');}finally{setBusy(false);}}
+function keepInputFocus(id,fn){const el=$('#'+id),pos=el?.selectionStart;fn();const next=$('#'+id);if(next){next.focus();if(typeof pos==='number')next.setSelectionRange(pos,pos);}}
+function inputHandler(e){if(e.target.id==='itemInitial'||e.target.id==='itemUnitPrice')updateRegistrationTotal();if(e.target.id==='itemMachineSearch')filterRegistrationMachines(e.target.value);if(e.target.id==='stockSearch'){state.stockFilter.query=e.target.value;clearTimeout(inputHandler.t);inputHandler.t=setTimeout(()=>keepInputFocus('stockSearch',renderStock),160);}if(e.target.id==='movSearch'){state.movQuery=e.target.value;clearTimeout(inputHandler.mt);inputHandler.mt=setTimeout(()=>keepInputFocus('movSearch',renderMovements),160);}}
+
+document.addEventListener('click',e=>{actionHandler(e);clickStockOp(e);const d=e.target.closest('[data-filter-depot],[data-ppe]');if(d)changeHandler({target:d});if(e.target.closest('[data-action="toggle-pin"]')){const i=$('[name=pin]');i.type=i.type==='password'?'text':'password';}});
+document.addEventListener('change',changeHandler);document.addEventListener('input',inputHandler);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modalRoot')?.hidden)closeModal();});
+renderLogin();
+})();</script>
+</body>
+</html>

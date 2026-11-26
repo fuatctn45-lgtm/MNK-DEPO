@@ -1,0 +1,6 @@
+{
+  "name": "Mekanik + İSG Depo 2027 · V8.7",
+  "description": "Mekanik ve İSG depoları için rol bazlı QR stok yönetimi",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
