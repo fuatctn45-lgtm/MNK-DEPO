@@ -2444,8 +2444,9 @@ function syncPwaUi(){
 }
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPwaPrompt=e;syncPwaUi();});
 window.addEventListener('appinstalled',()=>{deferredPwaPrompt=null;syncPwaUi();toast('Uygulama ana ekrana kuruldu.');});
-if('serviceWorker' in navigator && /^https?:$/i.test(location.protocol) && !document.getElementById('vite-plugin-pwa:register-sw')){
- navigator.serviceWorker.register('./qr-sw.js',{scope:'./'}).catch(()=>{});
+if('serviceWorker' in navigator && /^https?:$/i.test(location.protocol)){
+ navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>{const s=r.active?.scriptURL||r.waiting?.scriptURL||r.installing?.scriptURL||'';if(/dev-sw\.js/i.test(s))r.unregister();})).catch(()=>{});
+ if(!document.getElementById('vite-plugin-pwa:register-sw'))navigator.serviceWorker.register('./qr-sw.js',{scope:'./'}).catch(()=>{});
 }
 window.addEventListener('online',syncPwaUi);
 window.addEventListener('offline',()=>{syncPwaUi();toast('İnternet bağlantısı kesildi. Çevrimdışı moddasınız.','error');});
@@ -3164,7 +3165,7 @@ function printLabels(items,title='MEKANİK DEPO QR ETİKETLERİ'){
   const subParts=[x.code&&x.id?x.code:'',x.shelf?('Raf '+x.shelf):'Tek Sabit QR'].filter(Boolean).join(' · ');
   return`<div class="l">${qrSvg(x.id||x.code||'ISG-DOLAP')}<div class="t"><b>${esc(x.name||'İSG DOLABI')}</b><strong>${esc(x.id||x.code||'ISG-DOLAP')}</strong><small>${esc(subParts)}</small></div></div>`;
  }).join('');
- const docHtml=`<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>${esc(title)} (${m.w}x${m.h}mm)</title><style>*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}${pageCss}body{font-family:Arial,Helvetica,sans-serif;color:#0F172A}.l{width:${m.w}mm;height:${m.h}mm;padding:${m.pad}mm;overflow:hidden;page-break-inside:avoid;break-inside:avoid;${cardLayout}}.l svg{width:${m.qr}mm;height:${m.qr}mm;display:block;flex:none}.t{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:.8mm;overflow:hidden}.t b{font-size:${m.titlePt}pt;line-height:1.15;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}.t strong{font-family:monospace;font-size:${m.codePt}pt;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.t small{font-size:${m.subPt}pt;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style></head><body><div class="sheet">${cardsHtml}</div></body></html>`;
+ const docHtml=`<!doctype html><meta charset="utf-8"><title>${esc(title)} (${m.w}x${m.h}mm)</title><style>*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}${pageCss}body{font-family:Arial,Helvetica,sans-serif;color:#0F172A}.l{width:${m.w}mm;height:${m.h}mm;padding:${m.pad}mm;overflow:hidden;page-break-inside:avoid;break-inside:avoid;${cardLayout}}.l svg{width:${m.qr}mm;height:${m.qr}mm;display:block;flex:none}.t{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:.8mm;overflow:hidden}.t b{font-size:${m.titlePt}pt;line-height:1.15;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}.t strong{font-family:monospace;font-size:${m.codePt}pt;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.t small{font-size:${m.subPt}pt;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style><div class="sheet">${cardsHtml}</div>`;
  let frame=$('#labelPrintFrame');
  if(!frame){frame=document.createElement('iframe');frame.id='labelPrintFrame';frame.setAttribute('aria-hidden','true');frame.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';document.body.appendChild(frame);}
  const doc=frame.contentDocument||frame.contentWindow.document;
