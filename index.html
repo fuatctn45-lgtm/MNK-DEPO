@@ -500,7 +500,25 @@ mark.search-hl{background:#FFE600;color:#0F172A;font-weight:700;padding:0 3px;bo
 .lbl-preview-title{font-weight:800;line-height:1.15;color:#0F172A;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
 .lbl-preview-code{font-family:var(--font-mono);font-weight:700;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lbl-preview-sub{color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@media(max-width:960px){.label-size-grid{grid-template-columns:1fr}.label-dims{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.label-design-row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:end;margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft)}
+.label-pos-seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;padding:3px;background:var(--surface-alt);gap:3px}
+.label-pos-seg button{border:0;background:transparent;padding:7px 13px;border-radius:6px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;transition:background .12s,color .12s}
+.label-pos-seg button.active{background:var(--orange);color:#fff;font-weight:700}
+.label-font-ctrl{display:flex;align-items:center;gap:8px;min-width:0}
+.label-font-ctrl input[type="range"]{flex:1;min-width:90px;accent-color:var(--orange);cursor:pointer;height:24px}
+.label-font-btn{width:30px;height:30px;border-radius:7px;border:1px solid var(--line);background:var(--surface);font-size:15px;font-weight:700;color:var(--ink);display:grid;place-items:center;cursor:pointer;flex:none}
+.label-font-btn:hover{border-color:var(--orange);color:var(--orange)}
+.label-font-auto{height:30px;padding:0 9px;border-radius:7px;border:1px solid var(--line);background:var(--surface-alt);font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer;flex:none}
+.label-font-auto.active{border-color:var(--orange);background:var(--orange-soft);color:var(--orange)}
+.label-fields-box{margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft);display:flex;flex-direction:column;gap:10px}
+.label-fields-head{font-size:12.5px;font-weight:700;color:var(--ink2)}
+.label-fields-grid{display:flex;flex-wrap:wrap;gap:7px}
+.label-field-chk{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer;user-select:none;transition:border-color .12s,background .12s}
+.label-field-chk:has(input:checked){border-color:var(--orange);background:var(--orange-soft);color:var(--ink)}
+.label-field-chk input{margin:0;accent-color:var(--orange);width:14px;height:14px}
+.label-custom-note{height:36px;padding:0 11px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:var(--surface);color:var(--ink);width:100%;max-width:340px}
+.label-custom-note:focus{outline:none;border-color:var(--orange)}
+@media(max-width:960px){.label-size-grid{grid-template-columns:1fr}.label-dims{grid-template-columns:repeat(2,minmax(0,1fr))}.label-design-row{grid-template-columns:1fr}}
 .connection-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:20px;margin-bottom:20px;align-items:stretch}
 .mode-cards{display:grid;gap:9px;margin-bottom:16px}
 .mode-cards label{border:1px solid var(--line);border-radius:10px;padding:13px 14px;display:flex;gap:11px;align-items:flex-start;cursor:pointer;transition:border-color .15s var(--ease),background .15s var(--ease)}
@@ -2030,7 +2048,11 @@ for(let i=0;i<56;i++){
 
 const ORIGINAL_HTML='<!doctype html>\n'+document.documentElement.outerHTML.replace(/<script[^>]*src="\/@vite\/client"[^>]*><\/script>\s*/gi,'');
 const LABEL_PRESETS=[{label:'40 × 25 mm',w:40,h:25,hint:'Küçük barkod'},{label:'50 × 30 mm',w:50,h:30,hint:'Standart termal'},{label:'60 × 40 mm',w:60,h:40,hint:'Orta raf'},{label:'70 × 40 mm',w:70,h:40,hint:'Geniş raf'},{label:'100 × 50 mm',w:100,h:50,hint:'Büyük raf / koli'},{label:'100 × 70 mm',w:100,h:70,hint:'Dolap / pano'}];
-function sanitizeLabelCfg(c={}){return{w:Math.max(25,Math.min(210,Math.round(Number(c.w)||70))),h:Math.max(15,Math.min(297,Math.round(Number(c.h)||40))),copies:Math.max(1,Math.min(50,Math.round(Number(c.copies)||1))),mode:c.mode==='a4'?'a4':'thermal'};}
+function sanitizeLabelCfg(c={}){
+ const pos=['right','left','bottom'].includes(c.textPos)?c.textPos:'right';
+ const fp=Number(c.fontPt);
+ return{w:Math.max(25,Math.min(210,Math.round(Number(c.w)||70))),h:Math.max(15,Math.min(297,Math.round(Number(c.h)||40))),copies:Math.max(1,Math.min(50,Math.round(Number(c.copies)||1))),mode:c.mode==='a4'?'a4':'thermal',textPos:pos,fontPt:fp>=5&&fp<=26?+(Math.round(fp*2)/2):0,showName:c.showName!==false,showId:c.showId!==false,showCode:c.showCode!==false,showShelf:c.showShelf!==false,showMachine:!!c.showMachine,showCategory:!!c.showCategory,customText:String(c.customText||'').slice(0,40)};
+}
 function loadLabelCfg(){try{return sanitizeLabelCfg(JSON.parse(localStorage.getItem('depo.labelCfg')||'{}'));}catch{return sanitizeLabelCfg();}}
 function saveLabelCfg(cfg){state.labelCfg=sanitizeLabelCfg(cfg);try{localStorage.setItem('depo.labelCfg',JSON.stringify(state.labelCfg));}catch{}}
 const state={user:null,session:'',page:'dashboard',data:null,mode:localStorage.getItem('depo.mode')||'demo',directUrl:localStorage.getItem('depo.directUrl')||'',busy:false,stockFilter:{depot:'TUMU',query:'',status:'TUMU'},movQuery:'',analysis:null,ppe:null,ppeTab:'analysis',ppeRange:'30d',ppeUsageQuery:'',ppeFilter:{status:'TUMU',query:''},cost:null,costFilter:{range:'year',depot:'TUMU',group:'machine',query:'',sort:'cost'},labelCfg:loadLabelCfg(),pendingQr:new URLSearchParams(location.search).get('qr')||''};
@@ -3091,48 +3113,72 @@ function exportCostsCsv(){
  toast('Maliyet raporu CSV olarak indirildi.');
 }
 
-function labelMetrics(w,h){
+function labelTextData(item,cfg){
+ const name=cfg.showName?(item.name||'İSG DOLABI'):'';
+ const idTxt=cfg.showId?(item.id||item.code||'ISG-DOLAP'):'';
+ const line1=[cfg.showCode&&item.code?item.code:'',cfg.showShelf?(item.shelf?('Raf '+item.shelf):'Tek Sabit QR'):''].filter(Boolean).join(' · ');
+ const line2=[cfg.showCategory&&item.category?item.category:'',cfg.showMachine&&item.machine?item.machine:'',cfg.customText.trim()].filter(Boolean).join(' · ');
+ const hasText=!!(name||idTxt||line1||line2);
+ return{name,idTxt,line1,line2,hasText};
+}
+function labelMetrics(cfg){
+ const w=cfg.w,h=cfg.h,pos=cfg.textPos||'right';
  const pad=+Math.max(1.4,Math.min(4.5,Math.min(w,h)*0.08)).toFixed(2);
- const iw=Math.max(10,w-pad*2),ih=Math.max(8,h-pad*2),landscape=w>=h*1.15;
+ const iw=Math.max(10,w-pad*2),ih=Math.max(8,h-pad*2);
+ const isBottom=pos==='bottom';
  const gap=+Math.max(1.2,Math.min(4,Math.min(iw,ih)*0.09)).toFixed(2);
- const qr=+(landscape?Math.min(ih,iw*0.42):Math.min(iw*0.66,ih*0.50)).toFixed(2);
- const ref=landscape?ih:Math.min(iw*0.58,ih*0.58);
- const titlePt=+Math.max(5.5,Math.min(17,ref*0.30)).toFixed(1);
- const codePt=+Math.max(5,Math.min(12.5,ref*0.23)).toFixed(1);
- const subPt=+Math.max(4.5,Math.min(10.5,ref*0.19)).toFixed(1);
+ const qr=+(isBottom?Math.min(iw*0.70,ih*0.52):Math.min(ih,iw*0.42)).toFixed(2);
+ const ref=isBottom?Math.min(iw*0.58,ih*0.58):ih;
+ const autoTitlePt=+Math.max(5.5,Math.min(17,ref*0.30)).toFixed(1);
+ const titlePt=cfg.fontPt>0?cfg.fontPt:autoTitlePt;
+ const codePt=+Math.max(4.5,titlePt*0.78).toFixed(1);
+ const subPt=+Math.max(4,titlePt*0.68).toFixed(1);
  const border=Math.min(w,h)<30?'0.35mm':'0.45mm';
  const radius=+Math.max(1,Math.min(3,Math.min(w,h)*0.055)).toFixed(1);
- return{w,h,pad,iw,ih,landscape,gap,qr,titlePt,codePt,subPt,border,radius};
+ return{w,h,pos,isBottom,pad,iw,ih,gap,qr,autoTitlePt,titlePt,codePt,subPt,border,radius};
+}
+function labelCardLayoutCss(m,hasText){
+ if(!hasText)return`display:flex;align-items:center;justify-content:center`;
+ if(m.pos==='bottom')return`display:flex;flex-direction:column;align-items:center;justify-content:center;gap:${m.gap}mm;text-align:center`;
+ if(m.pos==='left')return`display:grid;grid-template-columns:minmax(0,1fr) ${m.qr}mm;gap:${m.gap}mm;align-items:center;text-align:left`;
+ return`display:grid;grid-template-columns:${m.qr}mm minmax(0,1fr);gap:${m.gap}mm;align-items:center;text-align:left`;
 }
 function sampleLabelItem(){
  const checked=$('.label-select input:checked')?.value;
  if(checked){const f=state.data?.stock?.find(x=>x.id===checked);if(f)return f;}
- return state.data?.stock?.find(x=>x.depot==='MEKANIK')||state.data?.stock?.[0]||{id:'MEK-0001',code:'RUL-6205',name:'Rulman 6205 2RS',shelf:'A-01'};
+ return state.data?.stock?.find(x=>x.depot==='MEKANIK')||state.data?.stock?.[0]||{id:'MEK-0001',code:'RUL-6205',name:'Rulman 6205 2RS',category:'RULMAN',shelf:'A-01',machine:'Kondanser Boru Makinesi'};
 }
 function buildLabelPreviewHtml(item,cfg){
- const m=labelMetrics(cfg.w,cfg.h);
+ const m=labelMetrics(cfg),td=labelTextData(item,cfg);
  const scale=Math.min(1,290/(cfg.w*3.78),175/(cfg.h*3.78));
- const layout=m.landscape?`display:grid;grid-template-columns:${m.qr}mm minmax(0,1fr);gap:${m.gap}mm;align-items:center`:`display:flex;flex-direction:column;align-items:center;justify-content:center;gap:${m.gap}mm;text-align:center`;
- const qrHtml=qrSvg(item.id||item.code||'ISG-DOLAP').replace('<svg ',`<svg style="width:${m.qr}mm;height:${m.qr}mm" `);
- const subParts=[item.code&&item.id?item.code:'',item.shelf?('Raf '+item.shelf):'Tek Sabit QR'].filter(Boolean).join(' · ');
- return`<div class="lbl-preview-card" style="width:${m.w}mm;height:${m.h}mm;padding:${m.pad}mm;border:${m.border} solid #111;border-radius:${m.radius}mm;${layout};transform:scale(${scale.toFixed(3)})">${qrHtml}<div class="lbl-preview-txt"><div class="lbl-preview-title" style="font-size:${m.titlePt}pt">${esc(item.name||'İSG DOLABI')}</div><div class="lbl-preview-code" style="font-size:${m.codePt}pt">${esc(item.id||item.code||'ISG-DOLAP')}</div><div class="lbl-preview-sub" style="font-size:${m.subPt}pt">${esc(subParts)}</div></div></div>`;
+ const qrDim=td.hasText?m.qr:+Math.min(m.iw,m.ih).toFixed(2);
+ const qrHtml=qrSvg(item.id||item.code||'ISG-DOLAP').replace('<svg ',`<svg style="width:${qrDim}mm;height:${qrDim}mm" `);
+ const txtHtml=td.hasText?`<div class="lbl-preview-txt">${td.name?`<div class="lbl-preview-title" style="font-size:${m.titlePt}pt">${esc(td.name)}</div>`:''}${td.idTxt?`<div class="lbl-preview-code" style="font-size:${m.codePt}pt">${esc(td.idTxt)}</div>`:''}${td.line1?`<div class="lbl-preview-sub" style="font-size:${m.subPt}pt">${esc(td.line1)}</div>`:''}${td.line2?`<div class="lbl-preview-sub" style="font-size:${m.subPt}pt">${esc(td.line2)}</div>`:''}</div>`:'';
+ const inner=m.pos==='left'?(txtHtml+qrHtml):(qrHtml+txtHtml);
+ return`<div class="lbl-preview-card" style="width:${m.w}mm;height:${m.h}mm;padding:${m.pad}mm;border:${m.border} solid #111;border-radius:${m.radius}mm;${labelCardLayoutCss(m,td.hasText)};transform:scale(${scale.toFixed(3)})">${inner}</div>`;
 }
 function updateLabelPreview(){
- const cfg=state.labelCfg=sanitizeLabelCfg(state.labelCfg);
- const stage=$('#lblLiveStage'),badge=$('#lblSizeBadge');
+ const cfg=state.labelCfg=sanitizeLabelCfg(state.labelCfg),m=labelMetrics(cfg);
+ const stage=$('#lblLiveStage'),badge=$('#lblSizeBadge'),hint=$('#lblHintSize'),fVal=$('#lblFontVal'),fRange=$('#lblFontRange'),fAuto=$('[data-label-font-auto]');
  if(stage)stage.innerHTML=buildLabelPreviewHtml(sampleLabelItem(),cfg);
- if(badge)badge.textContent=`${cfg.w} × ${cfg.h} mm · ${cfg.mode==='thermal'?'Termal':'A4'}${cfg.copies>1?' · ×'+cfg.copies:''}`;
- const hint=$('#lblHintSize');if(hint)hint.textContent=`${cfg.w}×${cfg.h} mm`;
+ const posLabel=cfg.textPos==='left'?'Solda':cfg.textPos==='bottom'?'Altta':'Sağda';
+ if(badge)badge.textContent=`${cfg.w} × ${cfg.h} mm · ${posLabel} · ${m.titlePt} pt · ${cfg.mode==='thermal'?'Termal':'A4'}${cfg.copies>1?' · ×'+cfg.copies:''}`;
+ if(hint)hint.textContent=`${cfg.w}×${cfg.h} mm`;
+ if(fVal)fVal.textContent=cfg.fontPt>0?`${m.titlePt} pt`:`${m.titlePt} pt (Oto)`;
+ if(fRange&&document.activeElement!==fRange)fRange.value=String(m.titlePt);
+ if(fAuto)fAuto.classList.toggle('active',cfg.fontPt===0);
  $$('[data-label-preset]').forEach(b=>b.classList.toggle('active',Number(b.dataset.w)===cfg.w&&Number(b.dataset.h)===cfg.h));
+ $$('[data-label-pos]').forEach(b=>b.classList.toggle('active',b.dataset.labelPos===cfg.textPos));
  $$('.lbl-size-tag').forEach(el=>{el.textContent=`(${cfg.w}×${cfg.h} mm)`;});
 }
 function renderLabels(){
- const mech=state.data.stock.filter(x=>x.depot==='MEKANIK'),isg=state.data.stock.filter(x=>x.depot==='ISG'),cfg=state.labelCfg=sanitizeLabelCfg(state.labelCfg);
+ const mech=state.data.stock.filter(x=>x.depot==='MEKANIK'),isg=state.data.stock.filter(x=>x.depot==='ISG'),cfg=state.labelCfg=sanitizeLabelCfg(state.labelCfg),m=labelMetrics(cfg);
+ const posLabel=cfg.textPos==='left'?'Solda':cfg.textPos==='bottom'?'Altta':'Sağda';
  $('#content').innerHTML=`
  <section class="panel">
   <div class="panel-head">
-   <div><h2>Etiket Boyutu ve Yazıcı Ayarı</h2><p>Milimetre cinsinden etiket ölçüsünü seçin; yazıcıya doğrudan bu boyutta gönderilir</p></div>
-   <span class="badge neutral mono" id="lblSizeBadge">${cfg.w} × ${cfg.h} mm · ${cfg.mode==='thermal'?'Termal':'A4'}${cfg.copies>1?' · ×'+cfg.copies:''}</span>
+   <div><h2>Etiket Boyutu, Yazı ve Yazıcı Ayarı</h2><p>Ölçüyü, görünecek yazıları, yazı konumunu ve yazı boyutunu ayarlayın; yazıcıya birebir gönderilir</p></div>
+   <span class="badge neutral mono" id="lblSizeBadge">${cfg.w} × ${cfg.h} mm · ${posLabel} · ${m.titlePt} pt · ${cfg.mode==='thermal'?'Termal':'A4'}${cfg.copies>1?' · ×'+cfg.copies:''}</span>
   </div>
   <div class="label-size-grid">
    <div>
@@ -3142,6 +3188,37 @@ function renderLabels(){
      ${field('Yükseklik (mm)',`<input id="lblHeight" type="number" min="15" max="297" step="1" value="${cfg.h}">`)}
      ${field('Adet / Kopya',`<input id="lblCopies" type="number" min="1" max="50" step="1" value="${cfg.copies}">`)}
      ${field('Yazıcı / Kağıt Modu',`<select id="lblMode"><option value="thermal" ${cfg.mode==='thermal'?'selected':''}>Termal / Rulo (Tam Boy)</option><option value="a4" ${cfg.mode==='a4'?'selected':''}>A4 Sayfaya Diz (Gerçek Ölçü)</option></select>`)}
+    </div>
+    <div class="label-design-row">
+     <div class="field" style="margin:0">
+      <span>Yazı Konumu (QR’a göre)</span>
+      <div class="label-pos-seg">
+       <button type="button" class="${cfg.textPos==='right'?'active':''}" data-label-pos="right">Sağda</button>
+       <button type="button" class="${cfg.textPos==='left'?'active':''}" data-label-pos="left">Solda</button>
+       <button type="button" class="${cfg.textPos==='bottom'?'active':''}" data-label-pos="bottom">Altta</button>
+      </div>
+     </div>
+     <div class="field" style="margin:0">
+      <span>Yazı Boyutu · <strong id="lblFontVal" class="mono">${cfg.fontPt>0?`${m.titlePt} pt`:`${m.titlePt} pt (Oto)`}</strong></span>
+      <div class="label-font-ctrl">
+       <button type="button" class="label-font-btn" data-label-font="-0.5" aria-label="Küçült">−</button>
+       <input id="lblFontRange" type="range" min="5" max="24" step="0.5" value="${m.titlePt}">
+       <button type="button" class="label-font-btn" data-label-font="0.5" aria-label="Büyüt">+</button>
+       <button type="button" class="label-font-auto ${cfg.fontPt===0?'active':''}" data-label-font-auto>Oto</button>
+      </div>
+     </div>
+    </div>
+    <div class="label-fields-box">
+     <span class="label-fields-head">Etikette Görünecek Yazılar</span>
+     <div class="label-fields-grid">
+      <label class="label-field-chk"><input type="checkbox" data-label-field="showName" ${cfg.showName?'checked':''}><span>Malzeme Adı</span></label>
+      <label class="label-field-chk"><input type="checkbox" data-label-field="showId" ${cfg.showId?'checked':''}><span>Stok ID</span></label>
+      <label class="label-field-chk"><input type="checkbox" data-label-field="showCode" ${cfg.showCode?'checked':''}><span>Parça Kodu</span></label>
+      <label class="label-field-chk"><input type="checkbox" data-label-field="showShelf" ${cfg.showShelf?'checked':''}><span>Raf No</span></label>
+      <label class="label-field-chk"><input type="checkbox" data-label-field="showMachine" ${cfg.showMachine?'checked':''}><span>Makine</span></label>
+      <label class="label-field-chk"><input type="checkbox" data-label-field="showCategory" ${cfg.showCategory?'checked':''}><span>Kategori</span></label>
+     </div>
+     <input id="lblCustomText" class="label-custom-note" maxlength="40" placeholder="İsteğe bağlı özel alt yazı (örn: MEKANİK DEPO)" value="${esc(cfg.customText)}">
     </div>
     <p style="margin:10px 0 0;font-size:12.5px;color:var(--muted)">Termal etiket yazıcıda her etiket ayrı sayfa olarak tam <b id="lblHintSize">${cfg.w}×${cfg.h} mm</b> basılır; A4 modunda sayfaya birebir aynı ölçüde dizilir. Yazdırma penceresinde ölçeği <b>%100 (Varsayılan)</b> tutun.</p>
    </div>
@@ -3156,16 +3233,18 @@ function renderLabels(){
  ${state.user.role==='YONETICI'||state.user.role==='ISG_ADMIN'?`<section class="panel"><div class="panel-head"><div><h2>İSG kartları</h2><p>Tek tek etiket yerine sabit dolap QR etiketi önerilir (tıklayarak tekli etiket de basabilirsiniz)</p></div><span class="meta-inline">${isg.length} ekipman</span></div><div class="product-strip">${isg.map(x=>`<button class="isg-item" data-item="${x.id}"><span>${ic('shield','ic-sm')}</span><div><b>${esc(x.name)}</b><small>${num(x.stock)} ${esc(x.unit)}</small></div></button>`).join('')}</div></section>`:''}`;
 }
 function printLabels(items,title='MEKANİK DEPO QR ETİKETLERİ'){
- const cfg=sanitizeLabelCfg(state.labelCfg),m=labelMetrics(cfg.w,cfg.h);
+ const cfg=sanitizeLabelCfg(state.labelCfg),m=labelMetrics(cfg);
  const list=[];items.forEach(x=>{for(let i=0;i<cfg.copies;i++)list.push(x);});
  const thermal=cfg.mode==='thermal';
  const pageCss=thermal?`@page{size:${m.w}mm ${m.h}mm;margin:0}html,body{margin:0;padding:0;background:#fff}.sheet{display:block}.l{page-break-after:always;break-after:page;border:0;border-radius:0}.l:last-child{page-break-after:auto;break-after:auto}`:`@page{size:A4 portrait;margin:8mm}html,body{margin:0;padding:0;background:#fff}.sheet{display:flex;flex-wrap:wrap;gap:3mm;align-content:flex-start}.l{border:${m.border} solid #111;border-radius:${m.radius}mm}`;
- const cardLayout=m.landscape?`display:grid;grid-template-columns:${m.qr}mm minmax(0,1fr);gap:${m.gap}mm;align-items:center`:`display:flex;flex-direction:column;align-items:center;justify-content:center;gap:${m.gap}mm;text-align:center`;
  const cardsHtml=list.map(x=>{
-  const subParts=[x.code&&x.id?x.code:'',x.shelf?('Raf '+x.shelf):'Tek Sabit QR'].filter(Boolean).join(' · ');
-  return`<div class="l">${qrSvg(x.id||x.code||'ISG-DOLAP')}<div class="t"><b>${esc(x.name||'İSG DOLABI')}</b><strong>${esc(x.id||x.code||'ISG-DOLAP')}</strong><small>${esc(subParts)}</small></div></div>`;
+  const td=labelTextData(x,cfg),qrDim=td.hasText?m.qr:+Math.min(m.iw,m.ih).toFixed(2);
+  const qrHtml=qrSvg(x.id||x.code||'ISG-DOLAP').replace('<svg ',`<svg style="width:${qrDim}mm;height:${qrDim}mm" `);
+  const txtHtml=td.hasText?`<div class="t">${td.name?`<b>${esc(td.name)}</b>`:''}${td.idTxt?`<strong>${esc(td.idTxt)}</strong>`:''}${td.line1?`<small>${esc(td.line1)}</small>`:''}${td.line2?`<small>${esc(td.line2)}</small>`:''}</div>`:'';
+  const inner=m.pos==='left'?(txtHtml+qrHtml):(qrHtml+txtHtml);
+  return`<div class="l" style="${labelCardLayoutCss(m,td.hasText)}">${inner}</div>`;
  }).join('');
- const docHtml=`<!doctype html><meta charset="utf-8"><title>${esc(title)} (${m.w}x${m.h}mm)</title><style>*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}${pageCss}body{font-family:Arial,Helvetica,sans-serif;color:#0F172A}.l{width:${m.w}mm;height:${m.h}mm;padding:${m.pad}mm;overflow:hidden;page-break-inside:avoid;break-inside:avoid;${cardLayout}}.l svg{width:${m.qr}mm;height:${m.qr}mm;display:block;flex:none}.t{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:.8mm;overflow:hidden}.t b{font-size:${m.titlePt}pt;line-height:1.15;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}.t strong{font-family:monospace;font-size:${m.codePt}pt;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.t small{font-size:${m.subPt}pt;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style><div class="sheet">${cardsHtml}</div>`;
+ const docHtml=`<!doctype html><meta charset="utf-8"><title>${esc(title)} (${m.w}x${m.h}mm)</title><style>*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}${pageCss}body{font-family:Arial,Helvetica,sans-serif;color:#0F172A}.l{width:${m.w}mm;height:${m.h}mm;padding:${m.pad}mm;overflow:hidden;page-break-inside:avoid;break-inside:avoid}.l svg{display:block;flex:none}.t{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:.8mm;overflow:hidden}.t b{font-size:${m.titlePt}pt;line-height:1.15;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}.t strong{font-family:monospace;font-size:${m.codePt}pt;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.t small{font-size:${m.subPt}pt;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style><div class="sheet">${cardsHtml}</div>`;
  let frame=$('#labelPrintFrame');
  if(!frame){frame=document.createElement('iframe');frame.id='labelPrintFrame';frame.setAttribute('aria-hidden','true');frame.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';document.body.appendChild(frame);}
  const doc=frame.contentDocument||frame.contentWindow.document;
@@ -3324,6 +3403,9 @@ async function actionHandler(e){const page=e.target.closest('[data-page]')?.data
  }
   const fillPin=e.target.closest('[data-fill-pin]');if(fillPin){const inp=$('#loginForm [name="pin"]');if(inp){inp.value=fillPin.dataset.fillPin;inp.focus();}return;}
   const lblPreset=e.target.closest('[data-label-preset]');if(lblPreset){saveLabelCfg({...state.labelCfg,w:Number(lblPreset.dataset.w),h:Number(lblPreset.dataset.h)});if($('#lblWidth'))$('#lblWidth').value=state.labelCfg.w;if($('#lblHeight'))$('#lblHeight').value=state.labelCfg.h;updateLabelPreview();return;}
+  const lblPos=e.target.closest('[data-label-pos]');if(lblPos){saveLabelCfg({...state.labelCfg,textPos:lblPos.dataset.labelPos});updateLabelPreview();return;}
+  const lblFontStep=e.target.closest('[data-label-font]');if(lblFontStep){const cur=labelMetrics(state.labelCfg).titlePt,next=Math.max(5,Math.min(24,+(cur+Number(lblFontStep.dataset.labelFont)).toFixed(1)));saveLabelCfg({...state.labelCfg,fontPt:next});updateLabelPreview();return;}
+  if(e.target.closest('[data-label-font-auto]')){saveLabelCfg({...state.labelCfg,fontPt:0});updateLabelPreview();return;}
   const ppeTab=e.target.closest('[data-ppe-tab]');if(ppeTab){state.ppeTab=ppeTab.dataset.ppeTab;return renderPpe();}
   const ppeSt=e.target.closest('[data-ppe-status]');if(ppeSt){state.ppeFilter.status=ppeSt.dataset.ppeStatus;return renderPpe();}
   const ppeSign=e.target.closest('[data-ppe-sign]');if(ppeSign)return ppeSignModal(ppeSign.dataset.ppeSign);
@@ -3348,7 +3430,7 @@ async function actionHandler(e){const page=e.target.closest('[data-page]')?.data
  }
  const ai=e.target.closest('[data-analysis-item]');if(ai)return analysisDetail(ai.dataset.analysisItem);const cg=e.target.closest('[data-cost-group]');if(cg){state.costFilter.group=cg.dataset.costGroup;return renderCosts();}const ck=e.target.closest('[data-cost-key]');if(ck)return costDetailModal(ck.dataset.costKind,ck.dataset.costKey);const q=e.target.closest('[data-qty]');if(q){const i=$('[name=qty]');i.value=Math.max(.01,Number(i.value)+Number(q.dataset.qty));}
 }
-async function changeHandler(e){if(e.target.id==='lblMode'){saveLabelCfg({...state.labelCfg,mode:e.target.value});return updateLabelPreview();}if(e.target.closest('.label-select')){return updateLabelPreview();}if(e.target.name==='ppeSignMode'){const now=e.target.value==='now',box=$('#ppeSignNowBox'),btn=$('#ppeCreateSubmitBtn');if(box)box.hidden=!now;if(btn)btn.textContent=now?'İmzala ve Teslim Et':'Onaya Gönder';if(now)setTimeout(()=>{activeSigPad=initSigPad($('#ppeCreateSigCanvas'));},40);else activeSigPad=null;return;}if(e.target.name==='usageOption'){if(e.target.checked&&e.target.value==='Tekli Makine')$('[name="usageOption"][value="Çoklu Makine"]').checked=false;if(e.target.checked&&e.target.value==='Çoklu Makine')$('[name="usageOption"][value="Tekli Makine"]').checked=false;return syncItemForm();}if(e.target.name==='machineOption'){if(selectedRegistrationUsage().includes('Tekli Makine')&&e.target.checked)$$('[name="machineOption"]').forEach(x=>{if(x!==e.target)x.checked=false;});return syncItemForm();}if(e.target.id==='stockStatus'){state.stockFilter.status=e.target.value;return renderStock();}if(e.target.matches('[data-filter-depot]')){state.stockFilter.depot=e.target.dataset.filterDepot;return renderStock();}if(e.target.id==='recipeMachine'||e.target.id==='recipePeriod'){const m=$('#recipeMachine').value,p=$('#recipePeriod').value;syncRecipeMachineSelection(m);$('#recipePanel').innerHTML=recipeTable(m,p,recipeRows(m,p));return;}if(e.target.matches('[data-ppe]')){const nextRange=e.target.dataset.ppe||'30d';state.ppeRange=nextRange;beginSave('KKD analizi yükleniyor...');try{await loadPpeAnalysis(nextRange,true);await renderPpe();endSave(true,'Güncellendi ✓');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(['anaRange','anaDepot'].includes(e.target.id)){beginSave('Tüketim analizi yükleniyor...');try{state.analysis=await api('movementAnalysis',{range:$('#anaRange').value,depot:$('#anaDepot').value});await renderAnalysis();endSave(true,'Güncellendi ✓');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(e.target.id==='anaSort')$('#analysisBars').innerHTML=analysisBars(state.analysis.rows,e.target.value);if(['costRange','costDepot'].includes(e.target.id)){state.costFilter.range=$('#costRange')?.value||state.costFilter.range;if($('#costDepot'))state.costFilter.depot=$('#costDepot').value;beginSave('Maliyet analizi yükleniyor...');try{await loadCostAnalysis(true);await renderCosts();endSave(true,'Güncellendi ✓');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(e.target.id==='costSort'){state.costFilter.sort=e.target.value;return renderCosts();}}
+async function changeHandler(e){if(e.target.id==='lblMode'){saveLabelCfg({...state.labelCfg,mode:e.target.value});return updateLabelPreview();}if(e.target.matches('[data-label-field]')){saveLabelCfg({...state.labelCfg,[e.target.dataset.labelField]:e.target.checked});return updateLabelPreview();}if(e.target.closest('.label-select')){return updateLabelPreview();}if(e.target.name==='ppeSignMode'){const now=e.target.value==='now',box=$('#ppeSignNowBox'),btn=$('#ppeCreateSubmitBtn');if(box)box.hidden=!now;if(btn)btn.textContent=now?'İmzala ve Teslim Et':'Onaya Gönder';if(now)setTimeout(()=>{activeSigPad=initSigPad($('#ppeCreateSigCanvas'));},40);else activeSigPad=null;return;}if(e.target.name==='usageOption'){if(e.target.checked&&e.target.value==='Tekli Makine')$('[name="usageOption"][value="Çoklu Makine"]').checked=false;if(e.target.checked&&e.target.value==='Çoklu Makine')$('[name="usageOption"][value="Tekli Makine"]').checked=false;return syncItemForm();}if(e.target.name==='machineOption'){if(selectedRegistrationUsage().includes('Tekli Makine')&&e.target.checked)$$('[name="machineOption"]').forEach(x=>{if(x!==e.target)x.checked=false;});return syncItemForm();}if(e.target.id==='stockStatus'){state.stockFilter.status=e.target.value;return renderStock();}if(e.target.matches('[data-filter-depot]')){state.stockFilter.depot=e.target.dataset.filterDepot;return renderStock();}if(e.target.id==='recipeMachine'||e.target.id==='recipePeriod'){const m=$('#recipeMachine').value,p=$('#recipePeriod').value;syncRecipeMachineSelection(m);$('#recipePanel').innerHTML=recipeTable(m,p,recipeRows(m,p));return;}if(e.target.matches('[data-ppe]')){const nextRange=e.target.dataset.ppe||'30d';state.ppeRange=nextRange;beginSave('KKD analizi yükleniyor...');try{await loadPpeAnalysis(nextRange,true);await renderPpe();endSave(true,'Güncellendi ✓');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(['anaRange','anaDepot'].includes(e.target.id)){beginSave('Tüketim analizi yükleniyor...');try{state.analysis=await api('movementAnalysis',{range:$('#anaRange').value,depot:$('#anaDepot').value});await renderAnalysis();endSave(true,'Güncellendi ✓');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(e.target.id==='anaSort')$('#analysisBars').innerHTML=analysisBars(state.analysis.rows,e.target.value);if(['costRange','costDepot'].includes(e.target.id)){state.costFilter.range=$('#costRange')?.value||state.costFilter.range;if($('#costDepot'))state.costFilter.depot=$('#costDepot').value;beginSave('Maliyet analizi yükleniyor...');try{await loadCostAnalysis(true);await renderCosts();endSave(true,'Güncellendi ✓');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(e.target.id==='costSort'){state.costFilter.sort=e.target.value;return renderCosts();}}
 async function clickStockOp(e){
  const b=e.target.closest('[data-stock-op]');if(!b)return;
  const op=b.dataset.stockOp, id=b.dataset.id, val=Number($('#stockValue').value);
@@ -3365,7 +3447,7 @@ async function clickStockOp(e){
  api(op,payload).then(()=>{saveBootCache(state.user?.role,state.data);endSave(true,'Stok işlemi kaydedildi ✓');scheduleBgSync();}).catch(x=>{if(item&&prev)Object.assign(item,prev);endSave(false,x.message);toast(x.message,'error');renderNav();showPage(state.page,false);});
 }
 function keepInputFocus(id,fn){const el=$('#'+id),pos=el?.selectionStart;fn();const next=$('#'+id);if(next){next.focus();if(typeof pos==='number')next.setSelectionRange(pos,pos);}}
-function inputHandler(e){if(e.target.id==='lblWidth'||e.target.id==='lblHeight'||e.target.id==='lblCopies'){const w=Number($('#lblWidth')?.value),h=Number($('#lblHeight')?.value),copies=Number($('#lblCopies')?.value);if(w>=25&&h>=15){saveLabelCfg({...state.labelCfg,w,h,copies:copies>=1?copies:state.labelCfg.copies});updateLabelPreview();}return;}if(e.target.id==='itemInitial'||e.target.id==='itemUnitPrice')updateRegistrationTotal();if(e.target.id==='itemMachineSearch')filterRegistrationMachines(e.target.value);if(e.target.id==='stockSearch'){state.stockFilter.query=e.target.value;clearTimeout(inputHandler.t);inputHandler.t=setTimeout(()=>keepInputFocus('stockSearch',renderStock),90);}if(e.target.id==='movSearch'){state.movQuery=e.target.value;clearTimeout(inputHandler.mt);inputHandler.mt=setTimeout(()=>keepInputFocus('movSearch',renderMovements),90);}if(e.target.id==='ppeSearch'){state.ppeFilter.query=e.target.value;clearTimeout(inputHandler.pt);inputHandler.pt=setTimeout(()=>keepInputFocus('ppeSearch',renderPpe),90);}if(e.target.id==='ppeUsageSearch'){state.ppeUsageQuery=e.target.value;clearTimeout(inputHandler.put);inputHandler.put=setTimeout(()=>keepInputFocus('ppeUsageSearch',renderPpe),90);}if(e.target.id==='costSearch'){state.costFilter.query=e.target.value;clearTimeout(inputHandler.ct);inputHandler.ct=setTimeout(()=>keepInputFocus('costSearch',renderCosts),90);}}
+function inputHandler(e){if(e.target.id==='lblWidth'||e.target.id==='lblHeight'||e.target.id==='lblCopies'){const w=Number($('#lblWidth')?.value),h=Number($('#lblHeight')?.value),copies=Number($('#lblCopies')?.value);if(w>=25&&h>=15){saveLabelCfg({...state.labelCfg,w,h,copies:copies>=1?copies:state.labelCfg.copies});updateLabelPreview();}return;}if(e.target.id==='lblFontRange'){saveLabelCfg({...state.labelCfg,fontPt:Number(e.target.value)});updateLabelPreview();return;}if(e.target.id==='lblCustomText'){saveLabelCfg({...state.labelCfg,customText:e.target.value});updateLabelPreview();return;}if(e.target.id==='itemInitial'||e.target.id==='itemUnitPrice')updateRegistrationTotal();if(e.target.id==='itemMachineSearch')filterRegistrationMachines(e.target.value);if(e.target.id==='stockSearch'){state.stockFilter.query=e.target.value;clearTimeout(inputHandler.t);inputHandler.t=setTimeout(()=>keepInputFocus('stockSearch',renderStock),90);}if(e.target.id==='movSearch'){state.movQuery=e.target.value;clearTimeout(inputHandler.mt);inputHandler.mt=setTimeout(()=>keepInputFocus('movSearch',renderMovements),90);}if(e.target.id==='ppeSearch'){state.ppeFilter.query=e.target.value;clearTimeout(inputHandler.pt);inputHandler.pt=setTimeout(()=>keepInputFocus('ppeSearch',renderPpe),90);}if(e.target.id==='ppeUsageSearch'){state.ppeUsageQuery=e.target.value;clearTimeout(inputHandler.put);inputHandler.put=setTimeout(()=>keepInputFocus('ppeUsageSearch',renderPpe),90);}if(e.target.id==='costSearch'){state.costFilter.query=e.target.value;clearTimeout(inputHandler.ct);inputHandler.ct=setTimeout(()=>keepInputFocus('costSearch',renderCosts),90);}}
 
 document.addEventListener('click',e=>{actionHandler(e);clickStockOp(e);const d=e.target.closest('[data-filter-depot],[data-ppe]');if(d)changeHandler({target:d});if(e.target.closest('[data-action="toggle-pin"]')){const i=$('[name=pin]');i.type=i.type==='password'?'text':'password';}});
 document.addEventListener('change',changeHandler);document.addEventListener('input',inputHandler);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modalRoot')?.hidden)closeModal();});
