@@ -113,6 +113,13 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
   color:#F1F5F9;font-size:12px;font-weight:700;flex:none;white-space:nowrap;
 }
 .conn-btn:active{transform:scale(.96);background:rgba(255,255,255,.16)}
+.exit-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  height:34px;padding:0 10px;border-radius:9px;
+  border:1px solid rgba(248,113,113,.38);background:rgba(220,38,38,.22);
+  color:#FEE2E2;font-size:12px;font-weight:800;flex:none;white-space:nowrap;
+}
+.exit-btn:active{transform:scale(.96);background:rgba(220,38,38,.42)}
 .dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
 .dot.demo{background:#F59E0B}
 .dot.direct{background:#22C55E}
@@ -312,6 +319,7 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
   width:8px;height:8px;border-radius:50%;background:#22C55E;
   box-shadow:0 0 0 4px rgba(34,197,94,.25);
 }
+.cam-tools-right{display:flex;align-items:center;gap:6px}
 .cam-tool-btn{
   height:38px;padding:0 12px;border-radius:10px;
   border:1px solid rgba(255,255,255,.18);background:rgba(15,23,42,.8);
@@ -319,6 +327,8 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
   display:inline-flex;align-items:center;gap:6px;
 }
 .cam-tool-btn.on{background:var(--orange);border-color:var(--orange);color:#fff}
+.cam-tool-btn.danger{background:rgba(220,38,38,.88);border-color:rgba(248,113,113,.65);color:#fff}
+.cam-tool-btn.danger:active{background:#B91C1C;transform:scale(.96)}
 
 .cam-fallback{
   text-align:center;padding:24px 20px;max-width:320px;z-index:3;
@@ -340,14 +350,13 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
   font-size:13px;color:#CBD5E1;
 }
 .scan-foot-msg b{color:#fff}
-.scan-quick-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.scan-quick-btn{
-  min-height:44px;padding:0 12px;border-radius:11px;
-  border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);
-  color:#F8FAFC;font-size:13px;font-weight:700;
-  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+.scan-exit-bar{
+  width:100%;min-height:46px;padding:0 14px;border-radius:11px;
+  border:1px solid rgba(248,113,113,.38);background:rgba(220,38,38,.16);
+  color:#FECACA;font-size:13.5px;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
 }
-.scan-quick-btn:active{background:rgba(255,255,255,.16);transform:scale(.98)}
+.scan-exit-bar:active{background:rgba(220,38,38,.32);transform:scale(.98)}
 
 /* Scanned QR Banner */
 .qr-banner{
@@ -938,7 +947,7 @@ body.busy .busy-bar{display:block}
   .btn{min-height:48px}
 }
 @media (max-width:360px){
-  .meta-grid,.mpo-grid-2,.scan-quick-row{grid-template-columns:1fr}
+  .meta-grid,.mpo-grid-2{grid-template-columns:1fr}
   .keypad button{height:46px;font-size:19px}
   .btn-row{grid-template-columns:1fr}
 }
@@ -964,6 +973,10 @@ body.busy .busy-bar{display:block}
         <button class="conn-btn" type="button" data-action="open-settings" id="connBtn">
           <i class="dot demo" id="connDot"></i>
           <span id="connLabel">Demo</span>
+        </button>
+        <button class="exit-btn" type="button" data-action="exit-terminal" id="exitTopBtn" aria-label="Çıkış">
+          <span class="ic ic-sm"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
+          <span>Çıkış</span>
         </button>
       </div>
     </div>
@@ -1010,7 +1023,6 @@ body.busy .busy-bar{display:block}
 </div>
 
 <canvas id="decodeCanvas" hidden></canvas>
-<input id="qrPhotoInput" type="file" accept="image/*" capture="environment" hidden>
 
 <div class="modal-back" id="installModal" hidden>
   <section class="modal" role="dialog" aria-modal="true" aria-label="Telefona Uygulama Olarak Kur">
@@ -1228,7 +1240,8 @@ const SVG = {
   trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/>',
   mail: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
   print: '<polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>',
-  search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>'
+  search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+  logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'
 };
 const ic = (name, cls='') => `<span class="ic ${cls}" aria-hidden="true"><svg viewBox="0 0 24 24">${SVG[name]||''}</svg></span>`;
 
@@ -1341,6 +1354,7 @@ const state = {
   approvalTab: 'pin',
   receipt: null,
   camActive: false,
+  camStoppedByUser: false,
   camError: '',
   torchSupported: false,
   torchOn: false,
@@ -1512,7 +1526,7 @@ function updateConnBadge() {
 }
 function updateStepper() {
   const st = $('#stepper');
-  if (st) st.hidden = state.tab !== 'scan';
+  if (st) st.hidden = state.tab !== 'scan' || state.step === 'closed';
   const isOrder = state.intent === 'order' || state.step === 'order';
   const labels = isOrder ? ['Sipariş', 'OP PIN', 'Talep Formu'] : ['QR Okut', 'OP PIN', 'Çıkış'];
   const stepNum = state.step === 'scan' ? 1 : state.step === 'pin' ? 2 : 3;
@@ -1732,12 +1746,13 @@ function scheduleScanLoop(video) {
 
 async function startCamera(silent = false) {
   stopCamera();
+  state.camStoppedByUser = false;
   state.camError = '';
   const stage = $('#camStage');
   if (!stage) return;
 
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    state.camError = 'Canlı kamera bu tarayıcıda desteklenmiyor. Aşağıdan "Fotoğraftan QR Oku" ile kamerayı açabilir veya kodu elle girebilirsiniz.';
+    state.camError = 'Canlı kamera bu tarayıcıda desteklenmiyor. Lütfen Android Chrome veya iPhone Safari ile HTTPS üzerinden açın.';
     renderCamStage();
     return;
   }
@@ -1787,70 +1802,45 @@ async function startCamera(silent = false) {
   } catch (err) {
     stopCamera();
     state.camError = err?.name === 'NotAllowedError'
-      ? 'Kamera izni verilmedi. Tarayıcı ayarlarından kamera iznini açıp "Kamerayı Başlat" butonuna dokunun veya "Fotoğraftan QR Oku" kullanın.'
-      : 'Canlı kamera başlatılamadı. "Kamerayı Başlat"a dokunun veya "Fotoğraftan QR Oku" ile çekim yapın.';
+      ? 'Kamera izni verilmedi. Tarayıcı ayarlarından kamera iznini açıp "Kamerayı Başlat" butonuna dokunun.'
+      : 'Canlı kamera başlatılamadı. Kamera iznini kontrol edip "Kamerayı Başlat" butonuna dokunun.';
     renderCamStage();
     if (!silent) toast('Kamera başlatılamadı; izinleri kontrol edin.', 'warn');
   }
 }
 
-async function decodeQrFromFile(file) {
-  if (!file) return;
-  beginSave('QR fotoğrafı okunuyor...');
-  try {
-    const imgUrl = URL.createObjectURL(file);
-    try {
-      const img = await new Promise((res, rej) => {
-        const el = new Image();
-        el.onload = () => res(el);
-        el.onerror = () => rej(new Error('Fotoğraf okunamadı.'));
-        el.src = imgUrl;
-      });
-      let raw = '';
-      if (nativeDetector) {
-        try {
-          const codes = await nativeDetector.detect(img);
-          if (codes && codes[0]?.rawValue) raw = codes[0].rawValue;
-        } catch {}
-      }
-      if (!raw && typeof window.jsQR === 'function') {
-        const canvas = $('#decodeCanvas');
-        const ctx = canvas.getContext('2d', {willReadFrequently: true});
-        const maxDim = 1400;
-        const scale = Math.min(1, maxDim / Math.max(img.naturalWidth || img.width || 1, img.naturalHeight || img.height || 1));
-        const w = Math.max(1, Math.round((img.naturalWidth || img.width) * scale));
-        const h = Math.max(1, Math.round((img.naturalHeight || img.height) * scale));
-        canvas.width = w; canvas.height = h;
-        ctx.drawImage(img, 0, 0, w, h);
-        const data = ctx.getImageData(0, 0, w, h);
-        const res = window.jsQR(data.data, w, h, {inversionAttempts: 'attemptBoth'});
-        if (res && res.data) raw = res.data;
-      }
-      if (!raw) throw new Error('Fotoğrafta QR kod tespit edilemedi. Daha yakından ve net çekin.');
-      endSave(true, 'QR okundu ✓');
-      vibrate(70);
-      beepScan();
-      selectQrCode(raw);
-    } finally {
-      URL.revokeObjectURL(imgUrl);
-    }
-  } catch (err) {
-    endSave(false, err.message);
-    toast(err.message, 'err');
-  }
+function closeCameraByUser() {
+  stopCamera();
+  state.camStoppedByUser = true;
+  state.camError = '';
+  renderCamStage();
+  toast('Kamera kapatıldı.');
 }
 
-function openManualQrModal() {
-  openQrModal(
-    'QR Kodunu Elle Gir',
-    `<label class="field">
-       <span>Parça Kodu, Stok ID veya İSG Dolap Kodu</span>
-       <input class="input mono" id="manualQrCodeInput" type="text" autocomplete="off" autocapitalize="characters" placeholder="Örn: RUL-6205, MEK-0001 veya ISG-DOLAP">
-     </label>`,
-    `<button type="button" class="btn ghost" data-action="close-qr-modal">Vazgeç</button>
-     <button type="button" class="btn primary" data-action="submit-manual-qr">${ic('arrow','ic-sm')} Devam Et</button>`
-  );
-  setTimeout(() => $('#manualQrCodeInput')?.focus(), 80);
+function exitTerminal() {
+  stopCamera();
+  state.camStoppedByUser = true;
+  state.camError = '';
+  state.tab = 'scan';
+  state.intent = 'scan';
+  state.scannedQr = '';
+  state.user = null;
+  state.session = '';
+  state.stock = [];
+  state.item = null;
+  state.orderDraft = null;
+  state.pendingCheckout = null;
+  state.receipt = null;
+  state.showPin = false;
+  state.step = 'closed';
+  if (location.search) {
+    try { history.replaceState(null, '', location.pathname); } catch {}
+  }
+  render();
+  toast('QR okuyucu ve oturum kapatıldı.');
+  if (window.opener && !window.opener.closed) {
+    try { window.close(); } catch {}
+  }
 }
 
 async function toggleTorch() {
@@ -2010,6 +2000,8 @@ function startOrderFlow(seedItem = null) {
 
 function resetToScan() {
   stopCamera();
+  state.camStoppedByUser = false;
+  state.camError = '';
   state.tab = 'scan';
   state.intent = 'scan';
   state.scannedQr = '';
@@ -2071,8 +2063,9 @@ function render() {
   if (state.step === 'scan') {
     root.innerHTML = renderScan();
     renderCamStage();
-    setTimeout(() => { if (state.tab === 'scan' && state.step === 'scan' && !state.camActive && !state.camError) startCamera(true); }, 120);
+    setTimeout(() => { if (state.tab === 'scan' && state.step === 'scan' && !state.camActive && !state.camError && !state.camStoppedByUser) startCamera(true); }, 120);
   }
+  else if (state.step === 'closed') root.innerHTML = renderClosed();
   else if (state.step === 'pin') root.innerHTML = renderPin();
   else if (state.step === 'part') root.innerHTML = renderPart();
   else if (state.step === 'cabinet') root.innerHTML = renderCabinet();
@@ -2080,6 +2073,23 @@ function render() {
   else if (state.step === 'approval') root.innerHTML = renderApproval();
   else if (state.step === 'receipt') root.innerHTML = renderReceipt();
   else if (state.step === 'notfound') root.innerHTML = renderNotFound();
+}
+
+function renderClosed() {
+  return `
+  <section class="card">
+    <div class="card-body">
+      <div class="empty-box" style="padding:26px 12px">
+        <div class="cam-fallback-ic" style="background:var(--red-soft);color:var(--red);border-color:var(--red-line)">${ic('logout','ic-lg')}</div>
+        <b>QR Okuyucu Kapatıldı</b>
+        <p>Kamera ve operatör oturumu güvenli şekilde sonlandırıldı.</p>
+        <div class="btn-stack" style="margin-top:16px">
+          <button class="btn primary wide" type="button" data-action="reset-scan">${ic('scan','ic-sm')} QR Okuyucuyu Tekrar Aç</button>
+          <a class="btn ghost wide" href="./index.html">${ic('arrow','ic-sm')} Ana Giriş Ekranı</a>
+        </div>
+      </div>
+    </div>
+  </section>`;
 }
 
 function renderCamStage() {
@@ -2093,17 +2103,19 @@ function renderCamStage() {
       </div>
       <div class="cam-top-bar">
         <span class="cam-pill"><span class="pulse"></span>QR Aranıyor...</span>
-        ${state.torchSupported ? `<button class="cam-tool-btn ${state.torchOn ? 'on' : ''}" type="button" id="torchBtn" data-action="toggle-torch">${ic('flash','ic-sm')} Flaş</button>` : ''}
+        <div class="cam-tools-right">
+          ${state.torchSupported ? `<button class="cam-tool-btn ${state.torchOn ? 'on' : ''}" type="button" id="torchBtn" data-action="toggle-torch">${ic('flash','ic-sm')} Flaş</button>` : ''}
+          <button class="cam-tool-btn danger" type="button" data-action="stop-cam">${ic('x','ic-sm')} Kapat</button>
+        </div>
       </div>`;
   } else {
     stage.innerHTML = `
       <div class="cam-fallback">
         <div class="cam-fallback-ic">${ic('camera','ic-lg')}</div>
-        <b>Depo QR Kodunu Okutun</b>
-        <p>${esc(state.camError || 'Arka kamera ile raf etiketi veya İSG dolabı QR kodunu okutun.')}</p>
+        <b>${state.camStoppedByUser ? 'Kamera Kapatıldı' : 'Depo QR Kodunu Okutun'}</b>
+        <p>${esc(state.camError || (state.camStoppedByUser ? 'QR kod okutmak için tekrar kamerayı başlatabilirsiniz.' : 'Arka kamera ile raf etiketi veya İSG dolabı QR kodunu okutun.'))}</p>
         <div class="btn-stack" style="width:100%">
           <button class="btn primary wide" type="button" data-action="start-cam">${ic('scan','ic-sm')} Kamerayı Başlat</button>
-          <button class="btn ghost wide" type="button" data-action="qr-photo" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);color:#fff">${ic('camera','ic-sm')} Fotoğraftan QR Oku</button>
         </div>
       </div>`;
   }
@@ -2133,10 +2145,6 @@ function renderScan() {
       <div class="scan-foot-msg">
         <span><b>Adım 1:</b> Depodaki raf veya İSG dolabı QR etiketini kameraya tutun, ardından OP PIN girin.</span>
       </div>
-      <div class="scan-quick-row">
-        <button class="scan-quick-btn" type="button" data-action="qr-photo">${ic('camera','ic-sm')} Fotoğraftan QR Oku</button>
-        <button class="scan-quick-btn" type="button" data-action="manual-qr">${ic('qr','ic-sm')} Kodu Elle Gir</button>
-      </div>
       <button class="order-cta-bar" type="button" data-action="start-order">
         <span class="order-cta-ic">${ic('fileText')}</span>
         <div>
@@ -2144,6 +2152,9 @@ function renderScan() {
           <small>OP PIN ile giriş yapıp satın alma talebi gönderin</small>
         </div>
         ${ic('arrow','ic-sm')}
+      </button>
+      <button class="scan-exit-bar" type="button" data-action="exit-terminal">
+        ${ic('logout','ic-sm')} Kamerayı Kapat / Çıkış
       </button>
     </div>
   </section>
@@ -3677,7 +3688,7 @@ document.addEventListener('click', async e => {
   if (navBtn) {
     vibrate(10);
     const target = navBtn.dataset.nav;
-    if (target === 'scan' && state.tab === 'scan' && state.step !== 'scan') return resetToScan();
+    if (target === 'scan' && (state.step === 'closed' || (state.tab === 'scan' && state.step !== 'scan'))) return resetToScan();
     state.tab = target;
     render();
     return;
@@ -3818,14 +3829,8 @@ document.addEventListener('click', async e => {
   }
   if (act === 'open-settings') { state.tab = 'settings'; render(); return; }
   if (act === 'start-cam') return startCamera(false);
-  if (act === 'qr-photo') { const inp = $('#qrPhotoInput'); if (inp) { inp.value = ''; inp.click(); } return; }
-  if (act === 'manual-qr') return openManualQrModal();
-  if (act === 'submit-manual-qr') {
-    const val = ($('#manualQrCodeInput')?.value || '').trim();
-    if (!val) return toast('Lütfen bir kod yazın.', 'err');
-    closeQrModal();
-    return selectQrCode(val);
-  }
+  if (act === 'stop-cam') return closeCameraByUser();
+  if (act === 'exit-terminal') return exitTerminal();
   if (act === 'toggle-torch') return toggleTorch();
   if (act === 'reset-scan') return resetToScan();
   if (act === 'start-order') { vibrate(18); return startOrderFlow(null); }
@@ -4011,18 +4016,13 @@ $('#saveBar').addEventListener('click', () => {
   if ($('#saveBar').classList.contains('err')) $('#saveBar').hidden = true;
 });
 
-$('#qrPhotoInput').addEventListener('change', e => {
-  const f = e.target.files?.[0];
-  if (f) decodeQrFromFile(f);
-});
-
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) stopCamera();
-  else if (state.tab === 'scan' && state.step === 'scan' && !state.camActive) startCamera(true);
+  else if (state.tab === 'scan' && state.step === 'scan' && !state.camActive && !state.camError && !state.camStoppedByUser) startCamera(true);
 });
 window.addEventListener('pagehide', () => stopCamera());
 window.addEventListener('pageshow', () => {
-  if (state.tab === 'scan' && state.step === 'scan' && !state.camActive && !state.camError) startCamera(true);
+  if (state.tab === 'scan' && state.step === 'scan' && !state.camActive && !state.camError && !state.camStoppedByUser) startCamera(true);
 });
 
 warmupGas();

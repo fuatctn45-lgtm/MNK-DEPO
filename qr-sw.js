@@ -1,4 +1,4 @@
-const CACHE_NAME = 'depo-qr-app-v88-mobile';
+const CACHE_NAME = 'depo-qr-app-v88-mobile-2';
 const CORE_ASSETS = [
   './qr-terminal.html',
   './qr-manifest.json',
