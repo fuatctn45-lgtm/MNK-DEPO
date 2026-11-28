@@ -973,7 +973,7 @@ const CFG = Object.freeze({
     recipes: 'PLANLI_BAKIM_RECETE', ppeForms: 'KKD_ZIMMET', orders: 'SIPARIS_TALEPLERI', log: 'LOG', faults: 'Açık Arizalar'
   },
   spreadsheetId: '1AtCrVmav8bIQno5aeP-sFtS3L90KwdipMpZtFeP1KT4',
-  apiVersion: 'V8.8.1-MALIYET',
+  apiVersion: 'V8.8.2-MALIYET',
   sessionHours: 8,
   roles: ['OP', 'MEK_ADMIN', 'ISG_ADMIN', 'YONETICI'],
   periods: ['AYLIK', '3 AYLIK', '6 AYLIK', 'YILLIK']
@@ -1353,31 +1353,40 @@ function capabilities_(u) {
 function dataLists_() {
   const v = values_(CFG.sheets.data); if (!v.length) return {};
   const clean = s => String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
-  const h = v[0].map(norm_);
+  let hdrRow = 0;
+  for (let r = 0; r < Math.min(5, v.length); r++) {
+    const rowNorm = v[r].map(norm_);
+    if (rowNorm.some(x => x === 'MAKINE_ADI' || x === 'MAKINE' || x.indexOf('MALIYET') >= 0)) { hdrRow = r; break; }
+  }
+  const h = (v[hdrRow] || []).map(norm_);
+  const body = v.slice(hdrRow + 1);
   const colIdx = (...names) => {
     for (const n of names) { const i = h.indexOf(norm_(n)); if (i >= 0) return i; }
     return -1;
   };
   const get = (...names) => {
     const i = colIdx(...names);
-    return i < 0 ? [] : [...new Set(v.slice(1).map(r => clean(r[i])).filter(Boolean))];
+    return i < 0 ? [] : [...new Set(body.map(r => clean(r[i])).filter(Boolean))];
   };
-  const macCol = colIdx('MAKİNE ADI','MAKİNE');
+  let macCol = colIdx('MAKİNE ADI','MAKİNE','MAKINE ADI','MAKINE');
+  if (macCol < 0) macCol = h.findIndex(x => x.indexOf('MAKINE') >= 0);
+  if (macCol < 0 && body.some(r => clean(r[8]))) macCol = 8;
   let mcCol = colIdx('MALİYET MERKEZLERİ','MALIYET MERKEZLERI','MALİYET MERKEZİ','MALIYET MERKEZI','COST CENTER');
-  if (mcCol < 0) mcCol = h.findIndex(x => x.indexOf('MALIYET') >= 0 && x.indexOf('MERKEZ') >= 0);
-  if (mcCol < 0 && v[0].length > 12) mcCol = 12;
-  const costCenters = mcCol < 0 ? [] : [...new Set(v.slice(1).map(r => clean(r[mcCol])).filter(Boolean))];
+  if (mcCol < 0) mcCol = h.findIndex(x => x.indexOf('MALIYET') >= 0);
+  if (mcCol < 0 && ((v[hdrRow] && v[hdrRow].length > 12) || body.some(r => clean(r[12])))) mcCol = 12;
+  const costCenters = mcCol < 0 ? [] : [...new Set(body.map(r => clean(r[mcCol])).filter(Boolean))];
   const machineCostCenters = {};
   if (macCol >= 0 && mcCol >= 0) {
-    v.slice(1).forEach(r => {
+    body.forEach(r => {
       const m = clean(r[macCol]), c = clean(r[mcCol]);
       if (m && c && !machineCostCenters[m]) machineCostCenters[m] = c;
     });
   }
   return {
     types:get('MALZEME TÜR','MALZEME TÜRÜ','KATEGORİ'), companies:get('FİRMA BİLGİLERİ','FİRMA'), units:get('BİRİM'),
-    usage:get('MALZEME DEPO ŞEKLİ'), shelves:get('RAFNO','RAF NO'), machines:get('MAKİNE ADI','MAKİNE'),
+    usage:get('MALZEME DEPO ŞEKLİ'), shelves:get('RAFNO','RAF NO'), machines:macCol >= 0 ? [...new Set(body.map(r => clean(r[macCol])).filter(Boolean))] : [],
     costCenters:costCenters, machineCostCenters:machineCostCenters,
+    _meta:{headerRow:hdrRow + 1, macCol:macCol + 1, mcCol:mcCol + 1, headers:(v[hdrRow] || []).slice(0, 16)},
     operators:users_().filter(x => x.role === 'OP').map(x => x.name)
   };
 }
@@ -2050,14 +2059,14 @@ function costAnalysis_(u, p) {
   };
 }
 function purchaseOrderList_(u) {
-  const sh = ss_().getSheetByName(CFG.sheets.orders);
+  const sh = depotBook_().getSheetByName(CFG.sheets.orders);
   if (!sh || sh.getLastRow() < 2) return [];
-  const rows = rows_(CFG.sheets.orders).map((o, idx) => {
+  const rows = objects_(CFG.sheets.orders).map(o => {
     let items = [], approvals = {};
     try { items = JSON.parse(s_(o.KALEMLER_JSON) || '[]'); } catch (e) { items = []; }
     try { approvals = JSON.parse(s_(o.ONAYLAR_JSON) || '{}'); } catch (e) { approvals = {}; }
     return {
-      row: idx + 2,
+      row: o._row,
       formNo: s_(o.FORM_NO), docCode: s_(o.DOKUMAN_KODU) || 'IZM_350600_LJT_001',
       requestDate: s_(o.TALEP_TARIHI), requestedBy: s_(o.TALEP_EDEN), requestedByRole: s_(o.ROL),
       department: s_(o.BOLUM), costCenter: s_(o.MALIYET_MERKEZI), attachmentQty: s_(o.EKLI_DOKUMAN),
@@ -2087,8 +2096,9 @@ function sanitizeOrderItems_(raw) {
   }).filter(it => it.name || it.code);
 }
 function nextOrderFormNo_() {
-  const yr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy');
-  const existing = rows_(CFG.sheets.orders).map(o => s_(o.FORM_NO));
+  const yr = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Europe/Istanbul', 'yyyy');
+  const sh = depotBook_().getSheetByName(CFG.sheets.orders);
+  const existing = (sh && sh.getLastRow() >= 2) ? objects_(CFG.sheets.orders).map(o => s_(o.FORM_NO)) : [];
   let maxN = 0;
   existing.forEach(fn => {
     const m = String(fn).match(new RegExp('^SAT-' + yr + '-(\\d+)$'));
@@ -2171,7 +2181,7 @@ function purchaseOrderUpdate_(u, p) {
     next.transport, next.deliveryPlace, next.details, JSON.stringify(next.approvals),
     next.status, next.source, next.stockSynced ? 'EVET' : 'HAYIR', next.createdAt
   ];
-  sh.getRange(cur.row, 1, 1, vals.length).setValues([vals]);
+  setValuesSafe_(sh.getRange(cur.row, 1, 1, vals.length), [vals]);
   log_(u, 'SIPARIS_GUNCELLE', next.formNo, { status: next.status, totalAmount: next.totalAmount });
   return { formNo: next.formNo, order: next };
 }
@@ -2216,13 +2226,21 @@ function TEST_KULLANICILAR() {
 }
 function TEST_SUTUNLAR() {
   const show = (sheet, names) => { const o = {}; names.forEach(n => { const c = headerCol_(sheet, [n]); o[n] = c ? colLetter_(c) : 'YOK'; }); return o; };
+  const dl = dataLists_();
   const out = {
+    API_VERSION: CFG.apiVersion,
+    VERI: Object.assign(show(CFG.sheets.data, ['MAKİNE ADI','BAKIM OPARATÖR','şifre','YETKİ','Maliyet merkezleri']), {
+      makineSayisi: (dl.machines || []).length,
+      maliyetMerkeziSayisi: (dl.costCenters || []).length,
+      eslesmeSayisi: Object.keys(dl.machineCostCenters || {}).length
+    }),
     STOK_KARTLARI:show(CFG.sheets.stock, ['ID','PARÇA KODU','MALZEME TÜRÜ','MALZEME DEPO ŞEKLİ','RAF','MAKİNE','MİN STOK','GİREN','ÇIKAN','ANLIK STOK','DURUM','AKTİF/PASİF','BİRİM FİYAT','TOPLAM FİYAT']),
     GIRIS_HAREKETLERI:show(CFG.sheets.incoming, ['KAYIT NO','TARİH','PARÇA KODU','ADET','BİRİM','YAPAN','İŞLEM TÜRÜ']),
     CIKIS_HAREKETLERI:show(CFG.sheets.outgoing, ['KAYIT NO','TARİH','ID','PARÇA KODU','MALZEME','OPERATÖR','MAKİNE','ADET','BİRİM','ÇIKIŞ TÜRÜ','ONAY','ONAYLAYAN','TALEP NO']),
     ONAY_HAVUZU:show(CFG.sheets.approvals, ['TALEP NO','TARİH','OPERATÖR','ID','MALZEME','MAKİNE','ADET','DURUM','ONAYLAYAN','ONAY TARİHİ']),
     PLANLI_BAKIM_RECETE:show(CFG.sheets.recipes, ['MAKİNE','PERİYOT','MALZEME ID','PARÇA KODU','MALZEME','STANDART ADET']),
-    KKD_ZIMMET:show(CFG.sheets.ppeForms, ['FORM NO','TARİH','OPERATÖR','TESLİM EDEN','STOK ID','MALZEME','ADET','DURUM','İMZA','İMZA TARİHİ','ÇIKIŞ ID'])
+    KKD_ZIMMET:show(CFG.sheets.ppeForms, ['FORM NO','TARİH','OPERATÖR','TESLİM EDEN','STOK ID','MALZEME','ADET','DURUM','İMZA','İMZA TARİHİ','ÇIKIŞ ID']),
+    SIPARIS_TALEPLERI:show(CFG.sheets.orders, ['FORM NO','TALEP TARİHİ','TALEP EDEN','BÖLÜM','MALİYET MERKEZİ','TOPLAM TUTAR','DURUM'])
   };
   Logger.log(JSON.stringify(out, null, 2));
   return out;
@@ -2442,6 +2460,7 @@ function loadBootCache(role){
  try{
   const raw=JSON.parse(localStorage.getItem(bootCacheKey(role))||'null');
   if(!raw||raw.url!==(state.directUrl||'')||!raw.data||!Array.isArray(raw.data.stock))return null;
+  if(raw.data.apiVersion!=='V8.8.2-MALIYET'||!Object.keys(raw.data.lists?.machineCostCenters||{}).length)return null;
   if(Date.now()-(raw.ts||0)>30*60*1000)return null;
   return raw.data;
  }catch{return null;}
@@ -2471,7 +2490,7 @@ async function demoApi(action,p={}){
   return state.user.role==='OP'?list.filter(x=>norm(x.requestedBy)===norm(state.user.name)):list;
  };
  const isValidSig=s=>typeof s==='string'&&s.length>=12&&/^SIG1:[ML0-9.,\s-]+$/.test(s.trim());
- if(action==='bootstrap')return{user:state.user,stock:visibleStock(),approvals:state.user.role==='OP'?[]:visibleApprovals(),recipes:recipes(),ppeForms:visiblePpeForms(),orders:visibleOrders(),movements:DEMO.movements,lists:DEMO.lists,serverTime:today(),apiVersion:'V8.8.1-MALIYET'};
+ if(action==='bootstrap')return{user:state.user,stock:visibleStock(),approvals:state.user.role==='OP'?[]:visibleApprovals(),recipes:recipes(),ppeForms:visiblePpeForms(),orders:visibleOrders(),movements:DEMO.movements,lists:DEMO.lists,serverTime:today(),apiVersion:'V8.8.2-MALIYET'};
  if(action==='stockList')return visibleStock(); if(action==='approvalList')return visibleApprovals(); if(action==='recipeList')return recipes().filter(x=>(!p.machine||x.machine===p.machine)&&(!p.period||x.period===p.period));
  if(action==='ppeFormList')return visiblePpeForms();
  if(action==='purchaseOrderList')return visibleOrders();
@@ -3292,7 +3311,7 @@ function newItemModal(){
 function editItemModal(item){const selected=new Set(String(item.usage||'').split('|').map(norm)),depotApproval=needsDepotApprovalUi(item),usageHtml=REGISTRATION_USAGE_UI.map(x=>`<label><input type="checkbox" name="editUsageOption" value="${esc(x)}" ${selected.has(norm(x))?'checked':''}><span>${esc(x)}</span></label>`).join('');modal('Stok Kartını Düzenle',`<form id="editItemForm" class="form-grid"><input type="hidden" name="id" value="${esc(item.id)}">${field('Parça kodu *',`<input name="code" value="${esc(item.code)}" required>`)}${field('Malzeme adı *',`<input name="name" value="${esc(item.name)}" placeholder="Malzeme adını yazın" required>`)}${field('Kategori *',`<input name="category" list="editTypes" value="${esc(item.category)}" required><datalist id="editTypes">${opts(state.data.lists.types)}</datalist>`)}${field('Firma',`<input name="company" list="editCompanies" value="${esc(item.company)}"><datalist id="editCompanies">${opts(state.data.lists.companies)}</datalist>`)}${field('Birim *',`<select name="unit" required><option value="">Seçin</option>${opts(state.data.lists.units,item.unit)}</select>`)}<div class="field form-span-2"><span>Kullanım Şekli · Çoklu seçim</span><div class="usage-grid">${usageHtml}</div><small>Mevcut değerler “ | ” ayıracına göre işaretlenmiştir.</small></div><div class="field form-span-2"><span>Depo Onayı</span><select name="depotApproval"><option value="Gereksiz" ${depotApproval?'':'selected'}>Gereksiz</option><option value="Gerekli" ${depotApproval?'selected':''}>Gerekli</option></select><small>Mevcut kullanım değerine göre otomatik seçilir.</small></div>${field('Raf *',`<input name="shelf" list="editShelves" value="${esc(item.shelf)}" required><datalist id="editShelves">${opts(state.data.lists.shelves)}</datalist>`)}${field('Makine',`<select name="machine" ${item.depot==='ISG'||/SARF/.test(norm(item.type))?'disabled':''}><option value="">Ortak kullanım</option>${opts(state.data.lists.machines,item.machine)}</select>`)}${field('Kritik / Minimum stok *',`<input name="min" type="number" min="0.01" step="0.01" value="${Number(item.min)>0?item.min:''}" placeholder="Örn: 5" required>`,'0’dan büyük olmalıdır.')}${field('Birim fiyat (₺) *',`<input name="unitPrice" type="number" min="0.01" step="0.01" value="${Number(item.unitPrice)>0?item.unitPrice:''}" placeholder="Örn: 125,00" required>`,'Maliyet hesabı için zorunludur (0’dan büyük).')}${field('Durum',`<select name="active"><option value="AKTİF" ${norm(item.active)==='PASIF'?'':'selected'}>AKTİF</option><option value="PASİF" ${norm(item.active)==='PASIF'?'selected':''}>PASİF</option></select>`)}</form>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="item-update-save">Değişiklikleri Kaydet</button>`);}
 
 function renderMovements(){const q=norm(state.movQuery||'');const rows=(state.data.movements||[]).filter(x=>(state.user.role==='YONETICI'||(state.user.role==='MEK_ADMIN'&&x.depot==='MEKANIK')||(state.user.role==='ISG_ADMIN'&&x.depot==='ISG'))&&(!q||norm([x.person,x.name,x.code,x.machine,x.source,x.depot].join(' ')).includes(q))).slice(0,200);$('#content').innerHTML=`<section class="panel table-panel print-area"><div class="toolbar"><div class="search">${ic('search','ic-sm')}<input id="movSearch" placeholder="Personel, malzeme, parça kodu, makine veya kaynak ara..." value="${esc(state.movQuery||'')}"></div><span class="meta-inline">${rows.length} kayıt</span></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Tarih</th><th>Çıkış Yapan</th><th>Malzeme</th><th>Depo</th><th>Makine / Bölüm</th><th class="num-col">Miktar</th><th>Kaynak</th></tr></thead><tbody>${rows.length?rows.map(x=>`<tr><td class="num">${fmt(x.date)}</td><td><b>${esc(x.person)}</b></td><td><b>${esc(x.name)}</b><small class="mono">${esc(x.code)}</small></td><td><span class="depot ${x.depot.toLowerCase()}">${x.depot==='ISG'?'İSG':'Mekanik'}</span></td><td>${esc(x.machine)}</td><td class="big num-col">${num(x.qty)} <small>${esc(x.unit)}</small></td><td><span class="badge neutral">${esc(x.source)}</span></td></tr>`).join(''):'<tr><td colspan="7"><div class="empty">Kriterlere uyan hareket kaydı bulunamadı.</div></td></tr>'}</tbody></table></div></section>`;}
-function renderApprovals(){const rows=[...(state.data.approvals||[])].map(x=>({...x,_st:approvalStatus(x),_dep:(norm(x.depot)==='ISG'||/ISG|KKD/.test(norm((x.machine||'')+' '+(x.itemId||''))))?'ISG':'MEKANIK'})).sort((a,b)=>(a._st==='BEKLIYOR'?0:1)-(b._st==='BEKLIYOR'?0:1));const oldGas=state.mode!=='demo'&&!['V8.7-ONAY2','V8.7-KKD','V8.8-SIPARIS','V8.8.1-MALIYET'].includes(state.data?.apiVersion);$('#content').innerHTML=`${oldGas?`<div class="approval-warning" style="margin-bottom:16px"><b>${ic('alert','ic-sm')}</b><p><b>Google Apps Script (Kod.gs) eski sürümde çalışıyor!</b> Yeni kayıtların <b>ONAY_HAVUZU</b> tablosuna eksiksiz yazılması için <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs</b>’yi kopyalayın, Apps Script’e yapıştırıp kaydedin ve <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> adımlarını uygulayın (URL değişmez).</p></div>`:''}<section class="approval-kpis">${kpi('Bekleyen',rows.filter(x=>x._st==='BEKLIYOR').length,'Depocu veya yönetici kararı bekleyen','clock','orange')}${kpi('Onaylanan',rows.filter(x=>x._st==='ONAYLANDI').length,'Stoktan düşülen talepler','checkCircle','green')}${kpi('Reddedilen',rows.filter(x=>x._st==='REDDEDILDI').length,'Stok değişmeyen talepler','close','red')}</section><section class="panel"><div class="panel-head"><div><h2>Depocu / Yönetici Onay Havuzu</h2><p>Depo onayı gereken veya açık bakım kaydı bulunmayan çıkış talepleri</p></div><span class="meta-inline">${rows.length} talep</span></div><div class="approval-list">${rows.length?rows.map(x=>`<article><div class="approval-id"><span>${esc(x.id||'—')}</span><small>${x.date?fmt(x.date):'Tarih yok'}</small><span class="depot ${x._dep.toLowerCase()}">${x._dep==='ISG'?'İSG':'Mekanik'}</span>${x.depotApproval?'<span class="badge warning">Depo Onayı</span>':''}</div><div><b>${esc(x.name||'Eksik Talep Kaydı')}</b><p>${x.code?`<span class="mono">${esc(x.code)}</span> · `:''}${esc(x.machine||'—')}${x.qty?` · <strong>${num(x.qty)} ${esc(x.unit||'AD')}</strong>`:''}</p><small>${esc(x.requester||'Operatör yok')} — ${esc(x.reason||'')}</small></div><span class="badge ${x._st==='BEKLIYOR'?'warning':x._st==='ONAYLANDI'?'success':'danger'}">${esc(x._st)}</span>${x._st==='BEKLIYOR'?`<div class="approval-buttons"><button class="btn reject" data-approval="REDDET" data-id="${esc(x.id)}">${x.incomplete?'Reddet / Kapat':'Reddet'}</button>${x.incomplete?'':`<button class="btn approve" data-approval="ONAYLA" data-id="${esc(x.id)}">Onayla</button>`}</div>`:''}</article>`).join(''):'<div class="empty">Onay havuzunda bekleyen veya sonuçlanmış talep yok.</div>'}</div></section>`;}
+function renderApprovals(){const rows=[...(state.data.approvals||[])].map(x=>({...x,_st:approvalStatus(x),_dep:(norm(x.depot)==='ISG'||/ISG|KKD/.test(norm((x.machine||'')+' '+(x.itemId||''))))?'ISG':'MEKANIK'})).sort((a,b)=>(a._st==='BEKLIYOR'?0:1)-(b._st==='BEKLIYOR'?0:1));const oldGas=state.mode!=='demo'&&!['V8.7-ONAY2','V8.7-KKD','V8.8-SIPARIS','V8.8.1-MALIYET','V8.8.2-MALIYET'].includes(state.data?.apiVersion);$('#content').innerHTML=`${oldGas?`<div class="approval-warning" style="margin-bottom:16px"><b>${ic('alert','ic-sm')}</b><p><b>Google Apps Script (Kod.gs) eski sürümde çalışıyor!</b> Yeni kayıtların <b>ONAY_HAVUZU</b> tablosuna eksiksiz yazılması için <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs</b>’yi kopyalayın, Apps Script’e yapıştırıp kaydedin ve <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> adımlarını uygulayın (URL değişmez).</p></div>`:''}<section class="approval-kpis">${kpi('Bekleyen',rows.filter(x=>x._st==='BEKLIYOR').length,'Depocu veya yönetici kararı bekleyen','clock','orange')}${kpi('Onaylanan',rows.filter(x=>x._st==='ONAYLANDI').length,'Stoktan düşülen talepler','checkCircle','green')}${kpi('Reddedilen',rows.filter(x=>x._st==='REDDEDILDI').length,'Stok değişmeyen talepler','close','red')}</section><section class="panel"><div class="panel-head"><div><h2>Depocu / Yönetici Onay Havuzu</h2><p>Depo onayı gereken veya açık bakım kaydı bulunmayan çıkış talepleri</p></div><span class="meta-inline">${rows.length} talep</span></div><div class="approval-list">${rows.length?rows.map(x=>`<article><div class="approval-id"><span>${esc(x.id||'—')}</span><small>${x.date?fmt(x.date):'Tarih yok'}</small><span class="depot ${x._dep.toLowerCase()}">${x._dep==='ISG'?'İSG':'Mekanik'}</span>${x.depotApproval?'<span class="badge warning">Depo Onayı</span>':''}</div><div><b>${esc(x.name||'Eksik Talep Kaydı')}</b><p>${x.code?`<span class="mono">${esc(x.code)}</span> · `:''}${esc(x.machine||'—')}${x.qty?` · <strong>${num(x.qty)} ${esc(x.unit||'AD')}</strong>`:''}</p><small>${esc(x.requester||'Operatör yok')} — ${esc(x.reason||'')}</small></div><span class="badge ${x._st==='BEKLIYOR'?'warning':x._st==='ONAYLANDI'?'success':'danger'}">${esc(x._st)}</span>${x._st==='BEKLIYOR'?`<div class="approval-buttons"><button class="btn reject" data-approval="REDDET" data-id="${esc(x.id)}">${x.incomplete?'Reddet / Kapat':'Reddet'}</button>${x.incomplete?'':`<button class="btn approve" data-approval="ONAYLA" data-id="${esc(x.id)}">Onayla</button>`}</div>`:''}</article>`).join(''):'<div class="empty">Onay havuzunda bekleyen veya sonuçlanmış talep yok.</div>'}</div></section>`;}
 
 const RECIPE_PERIODS=['AYLIK','3 AYLIK','6 AYLIK','YILLIK'];
 function isAllRecipePeriods(period){return norm(period)==='TUMU';}
@@ -3503,7 +3522,7 @@ async function renderPpe(){
  const pendingForms=forms.filter(x=>x.status==='İMZA BEKLİYOR');
  const signedForms=forms.filter(x=>x.status==='İMZALANDI');
  const totalSignedQty=signedForms.reduce((s,x)=>s+(Number(x.totalQty)||0),0);
- const oldGas=state.mode!=='demo'&&!['V8.7-KKD','V8.8-SIPARIS','V8.8.1-MALIYET'].includes(state.data?.apiVersion);
+ const oldGas=state.mode!=='demo'&&!['V8.7-KKD','V8.8-SIPARIS','V8.8.1-MALIYET','V8.8.2-MALIYET'].includes(state.data?.apiVersion);
  if(isOp){
   const selfCard=buildPpeFromMovements(state.data?.movements||[],[state.user.name],'all').cards[0]||{name:state.user.name,count:0,total:0,summary:[],records:[]};
   $('#content').innerHTML=`
@@ -3994,12 +4013,54 @@ function openOrderFromMissing(){
  openOrderEditor(null,seeds);
  toast(`${seeds.length} eksik malzeme AKG sipariş formuna aktarıldı.`);
 }
+let lastCostMapAutoSync=0;
+function tryRefreshMissingCostMap(){
+ if(state.mode==='demo'||!state.session)return;
+ if(Object.keys(state.data?.lists?.machineCostCenters||{}).length)return;
+ if(Date.now()-lastCostMapAutoSync<10000)return;
+ lastCostMapAutoSync=Date.now();
+ const sess=state.session, role=state.user?.role;
+ api('bootstrap',{},sess).then(fresh=>{
+  if(state.session!==sess||!fresh)return;
+  state.data=fresh;
+  saveBootCache(role,fresh);
+  if(state.orderDraft&&state.orderDraft.department){
+   const autoCc=resolveCostCenterForDepartment(state.orderDraft.department);
+   if(autoCc&&(!state.orderDraft.costCenter||flatKey(state.orderDraft.costCenter)===flatKey(state.orderDraft.department))){
+    state.orderDraft.costCenter=autoCc;
+   }
+  }
+  renderNav();
+  if(state.page==='orders')renderOrders();
+ }).catch(()=>{});
+}
+function costMapWarningBanner(isEditor=false){
+ if(state.mode==='demo')return '';
+ const mapCount=Object.keys(state.data?.lists?.machineCostCenters||{}).length;
+ const ver=state.data?.apiVersion||'';
+ const verOk=ver==='V8.8.2-MALIYET';
+ if(verOk&&mapCount>0)return '';
+ const isOp=state.user?.role==='OP';
+ const macCount=(state.data?.lists?.machines||[]).length;
+ const ccCount=(state.data?.lists?.costCenters||[]).length;
+ const meta=state.data?.lists?._meta;
+ const diag=verOk
+  ?`Bağlı sürüm: <b>${esc(ver)}</b> · Makine: <b>${macCount}</b> · Maliyet merkezi: <b>${ccCount}</b> · Eşleşme: <b>0</b>${meta?.headers?.length?` · VERİ başlıkları: <span class="mono">${esc(meta.headers.filter(Boolean).join(', '))}</span>`:''}`
+  :`Bağlı canlı <code>Kod.gs</code> sürümü: <b>${esc(ver||'Eski / V8.7')}</b> (beklenen: <b>V8.8.2-MALIYET</b>). Apps Script’te yeni kodu yapıştırıp <b>Ctrl+S (Kaydet)</b> yaptıktan sonra <b>Dağıt → Dağıtımları yönet → Kalem → Yeni sürüm → Dağıt</b> yapın${isOp?'':' veya Bağlantı sekmesindeki <code>/exec</code> adresinin güncel dağıtımla aynı olduğunu kontrol edin'}.`;
+ return`<div class="notice" style="margin-bottom:${isEditor?12:14}px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+  <div style="flex:1;min-width:260px"><b>${verOk?'VERİ M Sütunu Eşleşmesi Bulunamadı':'Maliyet Merkezi Eşleşmesi Hazır Değil'}:</b> ${diag}</div>
+  <div class="button-row" style="gap:8px;flex:none">
+   <button type="button" class="btn primary sm" data-action="refresh">${ic('refresh','ic-sm')} Verileri Şimdi Yenile</button>
+   ${!isOp?`<button type="button" class="btn ghost sm" data-page="connection">Bağlantı / Kod.gs</button>`:''}
+  </div>
+ </div>`;
+}
 function renderOrders(){
  if(state.orderView==='editor'&&state.orderDraft)return renderOrderEditor();
  state.orderView='list';
+ tryRefreshMissingCostMap();
  const all=state.data?.orders||[];
  const isOp=state.user?.role==='OP';
- const oldGas=state.mode!=='demo'&&state.data?.apiVersion!=='V8.8.1-MALIYET';
  const q=state.orderFilter.query||'', st=state.orderFilter.status||'TUMU';
  const rows=all.filter(o=>{
   if(st!=='TUMU'&&o.status!==st)return false;
@@ -4009,7 +4070,7 @@ function renderOrders(){
  });
  const cnt=s=>all.filter(x=>x.status===s).length;
  $('#content').innerHTML=`
-  ${oldGas&&!isOp?`<div class="notice" style="margin-bottom:14px"><b>Bilgi:</b> Canlı Google Apps Script henüz <b>V8.8.1-MALIYET</b> sürümüne güncellenmemiş. Siparişlerin <b>SIPARIS_TALEPLERI</b> sayfasına yazılması ve <b>VERİ M sütunu (Maliyet Merkezleri)</b> otomatik gelmesi için <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs</b>’yi kopyalayıp Apps Script’te <b>Yeni Dağıtım</b> yapın, ardından üstten <b>Yenile</b>’ye basın.</div>`:''}
+  ${!isOp?costMapWarningBanner(false):''}
   <section class="po-kpis">
    ${kpi('Toplam Talep',all.length,'Oluşturulan sipariş formu','fileText','orange')}
    ${kpi('Yeni Talep',cnt('TALEP_OLUSTURULDU'),'İnceleme / onay bekleyen','clock','orange')}
@@ -4055,15 +4116,19 @@ function renderOrders(){
 }
 function renderOrderEditor(){
  const d=state.orderDraft;if(!d)return;
+ tryRefreshMissingCostMap();
  const isOp=state.user?.role==='OP';
  const readOnly=isOp&&!d.isNew;
  const roAttr=readOnly?'readonly':'';
  const disAttr=readOnly?'disabled':'';
  const cleanTxt=s=>String(s||'').replace(/\s+/g,' ').trim();
  const dDeptClean=cleanTxt(d.department);
+ if(dDeptClean&&(!d.costCenter||flatKey(d.costCenter)===flatKey(dDeptClean))){
+  const autoCc=resolveCostCenterForDepartment(dDeptClean);
+  if(autoCc)d.costCenter=autoCc;
+ }
  const depts=[...new Set([...(state.data?.lists?.machines||[]).map(cleanTxt),...(state.data?.lists?.costCenters||[]).map(cleanTxt),dDeptClean].filter(Boolean))];
  const costCenters=[...new Set([...(state.data?.lists?.costCenters||[]).map(cleanTxt),...Object.values(state.data?.lists?.machineCostCenters||{}).map(cleanTxt),cleanTxt(d.costCenter)].filter(Boolean))];
- const missingCostMap=state.mode!=='demo'&&!Object.keys(state.data?.lists?.machineCostCenters||{}).length;
  const suppliers=[...new Set(['ÜNLÜ TEKNİK',...(state.data?.lists?.companies||[]),...(state.data?.stock||[]).map(x=>x.company).filter(Boolean)])];
  const units=[...new Set(['AD','MT','KG','LİTRE','ÇİFT','PK','SET',...(state.data?.lists?.units||[])])];
  const rowsHtml=d.items.map((it,idx)=>`
@@ -4082,7 +4147,7 @@ function renderOrderEditor(){
  const grandTotal=d.items.reduce((s,x)=>s+(Number(x.total)||0),0);
  const hasStockItems=d.items.some(x=>x.itemId&&Number(x.qty)>0);
  $('#content').innerHTML=`
-  ${missingCostMap?`<div class="notice" style="margin-bottom:12px"><b>Maliyet Merkezi Eşleşmesi Hazır Değil:</b> Google Sheets <b>VERİ M sütunu</b> verisi canlı <code>Kod.gs</code>’den gelmedi. <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs (V8.8.1-MALIYET)</b> kodunu kopyalayıp Apps Script’te <b>Yeni Dağıtım</b> yapın ve üst menüden <b>Yenile</b>’ye basın.</div>`:''}
+  ${costMapWarningBanner(true)}
   <datalist id="poCostCenterList">${costCenters.map(x=>`<option value="${esc(x)}"></option>`).join('')}</datalist>
   <datalist id="poSupplierList">${suppliers.map(x=>`<option value="${esc(x)}"></option>`).join('')}</datalist>
   <datalist id="poUnitList">${units.map(x=>`<option value="${esc(x)}"></option>`).join('')}</datalist>
@@ -4377,7 +4442,7 @@ function receiveOrderToStock(){
  toast(`${payload.formNo} teslim alındı ve ${stockItems.length} kalem stok girişi sıraya alındı.`);
 }
 
-function renderConnection(){const code=$('#gasCode').textContent.trim();const gasOk=state.mode==='demo'||state.data?.apiVersion==='V8.8.1-MALIYET';$('#content').innerHTML=`<section class="connection-grid"><article class="panel"><div class="panel-head"><div><h2>Bağlantı Modu</h2><p>GitHub Pages yayınında Doğrudan GAS (/exec), yerel sunucuda /api/gas önerilir</p></div><span class="connection ${state.mode}"><i></i>${state.mode.toUpperCase()}</span></div><div class="mode-cards">${[['proxy','Güvenli /api/gas','GAS adresi ve proxy anahtarı sunucuda gizli kalır; V8 kayıt akışı etkindir.'],['direct','Tek HTML / Doğrudan','GitHub Pages veya tek HTML için Apps Script ALLOW_DIRECT=true ile kullanın.'],['demo','Demo / Yerel','Gerçek tabloya yazmaz; tüm ekranlar test edilir.']].map(([m,t,d])=>`<label class="${state.mode===m?'selected':''}"><input type="radio" name="mode" value="${m}" ${state.mode===m?'checked':''}><span><b>${t}</b><small>${d}</small></span></label>`).join('')}</div>${field('Apps Script /exec adresi',`<input id="directUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan mod dışında tarayıcıya açılmaz.')}<div class="button-row"><button class="btn ghost" data-action="test-connection">Bağlantıyı Test Et</button><button class="btn primary" data-action="save-connection">Ayarları Kaydet</button></div></article><article class="panel"><div class="panel-head"><div><h2>Bağımsız Tek HTML Dosyaları</h2><p>Tam yönetim paneli ve sahaya özel bağımsız QR çıkış terminali</p></div><span class="ic" style="color:var(--orange)">${ic('download','ic-lg')}</span></div><div class="download-card"><b>1. Ana Yönetim Paneli (Tek HTML)</b><p>CSS, JavaScript ve QR üreticisi tek dosyada. Demo veya canlı Google Sheets bağlantısı ile çalışır.</p><button class="btn primary large" data-action="download-html">${ic('download','ic-sm')} Ana Panel HTML İndir</button></div><div class="download-card" style="margin-top:12px"><b>2. Bağımsız Depo QR Terminali (Tek HTML)</b><p>Depodaki QR kodu okutulduğunda önce OP şifresini sorar, eşleşen parçayı açar; Depo Onayı Gerekli ise Depocu onayı ister, değilse doğrudan stoktan düşer.</p><div class="button-row"><button class="btn primary" data-action="download-qr-terminal">${ic('download','ic-sm')} QR Terminali İndir</button><button class="btn ghost" data-action="open-qr-terminal">${ic('qr','ic-sm')} Terminali Dene</button></div></div><div class="security-list"><p><span>${ic('check','ic-sm')}</span> Rol ve depo kapsamı hem arayüzde hem Kod.gs’de doğrulanır</p><p><span>${ic('check','ic-sm')}</span> PIN yerine imzalı, süreli oturum belirteci kullanılır</p><p><span>${ic('check','ic-sm')}</span> Bağımsız QR terminali <span class="mono">./qr-terminal.html</span> ve <span class="mono">?qr=KOD</span> destekler</p></div></article></section><section class="panel code-panel"><div class="panel-head"><div><h2>Google Apps Script · Kod.gs ${gasOk?'<span class="badge success">Güncel (V8.8.1-MALIYET)</span>':'<span class="badge danger">Eski Sürüm Bağlı — Güncelleme Gerekli</span>'}</h2><p>Kodu kopyalayıp Apps Script’te kaydettikten sonra <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> yapın (mevcut /exec adresiniz değişmez).</p></div><button class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kodu Kopyala</button></div><pre><code>${esc(code)}</code></pre></section>`;}
+function renderConnection(){const code=$('#gasCode').textContent.trim();const gasOk=state.mode==='demo'||state.data?.apiVersion==='V8.8.2-MALIYET';$('#content').innerHTML=`<section class="connection-grid"><article class="panel"><div class="panel-head"><div><h2>Bağlantı Modu</h2><p>GitHub Pages yayınında Doğrudan GAS (/exec), yerel sunucuda /api/gas önerilir</p></div><span class="connection ${state.mode}"><i></i>${state.mode.toUpperCase()}</span></div><div class="mode-cards">${[['proxy','Güvenli /api/gas','GAS adresi ve proxy anahtarı sunucuda gizli kalır; V8 kayıt akışı etkindir.'],['direct','Tek HTML / Doğrudan','GitHub Pages veya tek HTML için Apps Script ALLOW_DIRECT=true ile kullanın.'],['demo','Demo / Yerel','Gerçek tabloya yazmaz; tüm ekranlar test edilir.']].map(([m,t,d])=>`<label class="${state.mode===m?'selected':''}"><input type="radio" name="mode" value="${m}" ${state.mode===m?'checked':''}><span><b>${t}</b><small>${d}</small></span></label>`).join('')}</div>${field('Apps Script /exec adresi',`<input id="directUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan mod dışında tarayıcıya açılmaz.')}<div class="button-row"><button class="btn ghost" data-action="test-connection">Bağlantıyı Test Et</button><button class="btn primary" data-action="save-connection">Ayarları Kaydet</button></div></article><article class="panel"><div class="panel-head"><div><h2>Bağımsız Tek HTML Dosyaları</h2><p>Tam yönetim paneli ve sahaya özel bağımsız QR çıkış terminali</p></div><span class="ic" style="color:var(--orange)">${ic('download','ic-lg')}</span></div><div class="download-card"><b>1. Ana Yönetim Paneli (Tek HTML)</b><p>CSS, JavaScript ve QR üreticisi tek dosyada. Demo veya canlı Google Sheets bağlantısı ile çalışır.</p><button class="btn primary large" data-action="download-html">${ic('download','ic-sm')} Ana Panel HTML İndir</button></div><div class="download-card" style="margin-top:12px"><b>2. Bağımsız Depo QR Terminali (Tek HTML)</b><p>Depodaki QR kodu okutulduğunda önce OP şifresini sorar, eşleşen parçayı açar; Depo Onayı Gerekli ise Depocu onayı ister, değilse doğrudan stoktan düşer.</p><div class="button-row"><button class="btn primary" data-action="download-qr-terminal">${ic('download','ic-sm')} QR Terminali İndir</button><button class="btn ghost" data-action="open-qr-terminal">${ic('qr','ic-sm')} Terminali Dene</button></div></div><div class="security-list"><p><span>${ic('check','ic-sm')}</span> Rol ve depo kapsamı hem arayüzde hem Kod.gs’de doğrulanır</p><p><span>${ic('check','ic-sm')}</span> PIN yerine imzalı, süreli oturum belirteci kullanılır</p><p><span>${ic('check','ic-sm')}</span> Bağımsız QR terminali <span class="mono">./qr-terminal.html</span> ve <span class="mono">?qr=KOD</span> destekler</p></div></article></section><section class="panel code-panel"><div class="panel-head"><div><h2>Google Apps Script · Kod.gs ${gasOk?'<span class="badge success">Güncel (V8.8.2-MALIYET)</span>':'<span class="badge danger">Eski Sürüm Bağlı — Güncelleme Gerekli</span>'}</h2><p>Kodu kopyalayıp Apps Script’te kaydettikten sonra <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> yapın (mevcut /exec adresiniz değişmez).</p></div><button class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kodu Kopyala</button></div><pre><code>${esc(code)}</code></pre></section>`;}
 
 let cameraStream=null,cameraTimer=null;
 async function openScanner(){modal('QR Kodunu Okut',`<div class="camera"><video id="cameraVideo" playsinline muted></video><div class="camera-frame"></div></div><p class="camera-help">Kamera izni verin ve kodu çerçeveye hizalayın. Desteklenmiyorsa kodu elle girin.</p>${field('Manuel kod','<input id="scanManual" placeholder="RUL-6205 veya ISG-DOLAP">')}`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="scan-manual-go">Devam Et</button>`);try{cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});const v=$('#cameraVideo');v.srcObject=cameraStream;await v.play();if('BarcodeDetector'in window){const det=new BarcodeDetector({formats:['qr_code']});cameraTimer=setInterval(async()=>{try{const codes=await det.detect(v);if(codes[0]?.rawValue){handleQr(codes[0].rawValue);}}catch{}},500);}}catch(e){toast('Kamera açılamadı; kodu elle girebilirsiniz.','error');}}
@@ -4406,6 +4471,7 @@ function loginSettingsModal(){
     ${field('Apps Script /exec Adresi',`<input id="loginDirectUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan modda Apps Script Web App /exec adresini yapıştırın.')}
     <div class="button-row">
      <button type="button" class="btn ghost" data-action="login-test-conn">Bağlantıyı Test Et</button>
+     <button type="button" class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kod.gs (V8.8.2) Kopyala</button>
      <button type="button" class="btn primary" data-action="login-save-conn">Ayarları Kaydet</button>
     </div>
    </div>
@@ -4640,7 +4706,7 @@ async function actionHandler(e){const page=e.target.closest('[data-page]')?.data
   if(a==='order-copy-text')return copyOrderSummary(syncDraftFromDom());
   if(a==='order-receive-stock')return receiveOrderToStock();
   if(a==='maintenance-pick')return showPage('maintenance');if(a==='stock-print-modal')return stockPrintModal();if(a==='stock-print-run')return printStockList();if(a==='print-ppe'||a==='print-movements'||a==='print-costs')return window.print();if(a==='export-costs-csv')return exportCostsCsv();if(a==='print-cabinet')return printLabels([{code:'ISG-DOLAP',name:'İSG DOLABI',shelf:'Tek Sabit QR'}],'İSG DOLABI QR ETİKETİ');if(a==='labels-toggle-all'){const boxes=$$('.label-select input[type="checkbox"]');const allChecked=boxes.length&&boxes.every(x=>x.checked);boxes.forEach(x=>x.checked=!allChecked);const btn=e.target.closest('[data-action="labels-toggle-all"]');if(btn)btn.textContent=allChecked?'Tümünü Seç':'Seçimi Temizle';return;}if(a==='print-selected'){const ids=$$('.label-select input:checked').map(x=>x.value),items=state.data.stock.filter(x=>ids.includes(x.id));return items.length?printLabels(items):toast('En az bir etiket seçin.','error');}if(a==='label-one'){const item=state.data.stock.find(x=>x.id===e.target.closest('[data-id]').dataset.id);return printLabels([item]);}
-  if(a==='copy-gas'){navigator.clipboard.writeText($('#gasCode').textContent).then(()=>toast('Kod.gs panoya kopyalandı.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));return;}if(a==='login-settings-modal')return loginSettingsModal();if(a==='pwa-install-modal')return installAppModal();if(a==='pwa-install-now'){location.href=qrAppUrl();return;}if(a==='copy-qr-url'){navigator.clipboard.writeText(qrAppUrl()).then(()=>toast('Operatör QR kurulum linki kopyalandı.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));return;}if(a==='share-qr-url'){const u=qrAppUrl();if(navigator.share){navigator.share({title:'Operatör QR Okuyucu',text:'Operatör QR uygulamasını telefonunuza kurmak için bu bağlantıyı açıp "Kur" butonuna basın:',url:u}).catch(()=>{});}else{navigator.clipboard.writeText(u).then(()=>toast('Link panoya kopyalandı; WhatsApp veya SMS ile operatöre gönderebilirsiniz.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));}return;}if(a==='download-html'){const url=URL.createObjectURL(new Blob([ORIGINAL_HTML],{type:'text/html;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='Mekanik_Depo_V8.7_Tek_HTML.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);return;}if(a==='open-qr-terminal'){const u=qrAppUrl();if(window.innerWidth<=768){location.href=u;return;}modal('Operatör QR Okuyucu',`<div style="border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#0F172A;max-width:430px;margin:0 auto"><iframe src="${esc(u)}" allow="camera" title="Operatör QR Okuyucu" style="width:100%;height:min(76vh,700px);border:0;display:block"></iframe></div>`,`<button class="btn ghost" data-action="pwa-install-modal">${ic('phone','ic-sm')} Operatör Telefonuna Kur</button><button class="btn ghost" data-action="download-qr-terminal">${ic('download','ic-sm')} HTML İndir</button><a class="btn ghost" href="${esc(u)}" target="_blank" rel="noopener">Yeni Sekmede Aç</a><button class="btn primary" data-close>Kapat</button>`);return;}if(a==='download-qr-terminal'){beginSave('QR Terminali indiriliyor...');try{let res=await fetch('./qr-terminal.html');if(!res.ok)res=await fetch('./public/qr-terminal.html');if(!res.ok)throw Error('QR Terminal dosyası okunamadı.');const html=(await res.text()).replace(/<script[^>]*src="\/@vite\/client"[^>]*><\/script>\s*/gi,''),url=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download='Operator_QR_Okuyucu.html';link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);endSave(true,'Operatör QR indirildi ✓');toast('Operatör QR Okuyucu (Operator_QR_Okuyucu.html) indirildi.');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(a==='save-connection'){state.mode=$('[name=mode]:checked').value;state.directUrl=$('#directUrl').value.trim();localStorage.setItem('depo.mode',state.mode);localStorage.setItem('depo.directUrl',state.directUrl);toast('Bağlantı ayarı kaydedildi; yeniden giriş yapın.');return;}if(a==='test-connection'){const old=state.directUrl,oldMode=state.mode;state.mode=$('[name=mode]:checked')?.value||state.mode;state.directUrl=$('#directUrl').value.trim();beginSave('Bağlantı test ediliyor...');try{await api('health');endSave(true,'Bağlantı başarılı ✓');toast('Bağlantı yanıt verdi.');}catch(x){endSave(false,x.message);toast(x.message,'error');}finally{state.directUrl=old;state.mode=oldMode;}return;}if(a==='login-save-conn'){const mode=$('#loginMode')?.value||'demo',url=($('#loginDirectUrl')?.value||'').trim();if(mode==='direct'&&!url)return toast('Doğrudan mod için Apps Script /exec adresi girin.','error');state.mode=mode;state.directUrl=url;localStorage.setItem('depo.mode',state.mode);localStorage.setItem('depo.directUrl',state.directUrl);closeModal();renderLogin();toast('Bağlantı ayarı kaydedildi ('+(mode==='demo'?'Demo':mode==='direct'?'Doğrudan GAS':'/api/gas')+').');return;}if(a==='login-test-conn'){const oldMode=state.mode,oldUrl=state.directUrl;state.mode=$('#loginMode')?.value||state.mode;state.directUrl=($('#loginDirectUrl')?.value||'').trim();beginSave('Bağlantı test ediliyor...');try{await api('health');endSave(true,'Bağlantı başarılı ✓');toast('Bağlantı başarılı.');}catch(x){endSave(false,x.message);toast(x.message,'error');}finally{state.mode=oldMode;state.directUrl=oldUrl;}return;}
+  if(a==='copy-gas'){navigator.clipboard.writeText($('#gasCode').textContent).then(()=>toast('Kod.gs panoya kopyalandı.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));return;}if(a==='login-settings-modal')return loginSettingsModal();if(a==='pwa-install-modal')return installAppModal();if(a==='pwa-install-now'){location.href=qrAppUrl();return;}if(a==='copy-qr-url'){navigator.clipboard.writeText(qrAppUrl()).then(()=>toast('Operatör QR kurulum linki kopyalandı.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));return;}if(a==='share-qr-url'){const u=qrAppUrl();if(navigator.share){navigator.share({title:'Operatör QR Okuyucu',text:'Operatör QR uygulamasını telefonunuza kurmak için bu bağlantıyı açıp "Kur" butonuna basın:',url:u}).catch(()=>{});}else{navigator.clipboard.writeText(u).then(()=>toast('Link panoya kopyalandı; WhatsApp veya SMS ile operatöre gönderebilirsiniz.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));}return;}if(a==='download-html'){const url=URL.createObjectURL(new Blob([ORIGINAL_HTML],{type:'text/html;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='Mekanik_Depo_V8.7_Tek_HTML.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);return;}if(a==='open-qr-terminal'){const u=qrAppUrl();if(window.innerWidth<=768){location.href=u;return;}modal('Operatör QR Okuyucu',`<div style="border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#0F172A;max-width:430px;margin:0 auto"><iframe src="${esc(u)}" allow="camera" title="Operatör QR Okuyucu" style="width:100%;height:min(76vh,700px);border:0;display:block"></iframe></div>`,`<button class="btn ghost" data-action="pwa-install-modal">${ic('phone','ic-sm')} Operatör Telefonuna Kur</button><button class="btn ghost" data-action="download-qr-terminal">${ic('download','ic-sm')} HTML İndir</button><a class="btn ghost" href="${esc(u)}" target="_blank" rel="noopener">Yeni Sekmede Aç</a><button class="btn primary" data-close>Kapat</button>`);return;}if(a==='download-qr-terminal'){beginSave('QR Terminali indiriliyor...');try{let res=await fetch('./qr-terminal.html');if(!res.ok)res=await fetch('./public/qr-terminal.html');if(!res.ok)throw Error('QR Terminal dosyası okunamadı.');const html=(await res.text()).replace(/<script[^>]*src="\/@vite\/client"[^>]*><\/script>\s*/gi,''),url=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download='Operator_QR_Okuyucu.html';link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);endSave(true,'Operatör QR indirildi ✓');toast('Operatör QR Okuyucu (Operator_QR_Okuyucu.html) indirildi.');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(a==='save-connection'){state.mode=$('[name=mode]:checked').value;state.directUrl=$('#directUrl').value.trim();localStorage.setItem('depo.mode',state.mode);localStorage.setItem('depo.directUrl',state.directUrl);toast('Bağlantı ayarı kaydedildi; yeniden giriş yapın.');return;}if(a==='test-connection'){const old=state.directUrl,oldMode=state.mode;state.mode=$('[name=mode]:checked')?.value||state.mode;state.directUrl=$('#directUrl').value.trim();beginSave('Bağlantı test ediliyor...');try{const h=await api('health');const vTxt=h?.apiVersion?` (${h.apiVersion})`:' (Eski sürüm)';endSave(true,'Bağlantı başarılı'+vTxt+' ✓');toast('Bağlantı yanıt verdi'+vTxt);}catch(x){endSave(false,x.message);toast(x.message,'error');}finally{state.directUrl=old;state.mode=oldMode;}return;}if(a==='login-save-conn'){const mode=$('#loginMode')?.value||'demo',url=($('#loginDirectUrl')?.value||'').trim();if(mode==='direct'&&!url)return toast('Doğrudan mod için Apps Script /exec adresi girin.','error');state.mode=mode;state.directUrl=url;localStorage.setItem('depo.mode',state.mode);localStorage.setItem('depo.directUrl',state.directUrl);closeModal();renderLogin();toast('Bağlantı ayarı kaydedildi ('+(mode==='demo'?'Demo':mode==='direct'?'Doğrudan GAS':'/api/gas')+').');return;}if(a==='login-test-conn'){const oldMode=state.mode,oldUrl=state.directUrl;state.mode=$('#loginMode')?.value||state.mode;state.directUrl=($('#loginDirectUrl')?.value||'').trim();beginSave('Bağlantı test ediliyor...');try{const h=await api('health');const vTxt=h?.apiVersion?` (${h.apiVersion})`:' (Eski sürüm)';endSave(true,'Bağlantı başarılı'+vTxt+' ✓');toast('Bağlantı başarılı'+vTxt);}catch(x){endSave(false,x.message);toast(x.message,'error');}finally{state.mode=oldMode;state.directUrl=oldUrl;}return;}
  }
   const sqRetry=e.target.closest('[data-sync-retry]');if(sqRetry)return retrySyncJob(sqRetry.dataset.syncRetry);
   const sqDismiss=e.target.closest('[data-sync-dismiss]');if(sqDismiss)return dismissSyncJob(sqDismiss.dataset.syncDismiss);

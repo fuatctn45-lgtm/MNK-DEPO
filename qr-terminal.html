@@ -2103,7 +2103,7 @@ function renderOrder() {
       <span class="tag blue mono">IZM_350600_LJT_001</span>
     </div>
     <div class="card-body">
-      ${missingCostMap ? `<div class="callout amber">${ic('alert','ic-sm')}<div><b>Maliyet Merkezi Eşleşmesi Bekliyor</b>Ana sistemdeki Bağlantı sekmesinden güncel <b>Kod.gs (V8.8.1)</b> dağıtıldığında maliyet merkezi otomatik gelir.</div></div>` : ''}
+      ${missingCostMap ? `<div class="callout amber">${ic('alert','ic-sm')}<div><b>Maliyet Merkezi Eşleşmesi Bekliyor</b>Ana sistemdeki Bağlantı sekmesinden güncel <b>Kod.gs (V8.8.2)</b> dağıtıldığında maliyet merkezi otomatik gelir.</div></div>` : ''}
       <div class="op-lock-box">
         <div>
           <small>Talep Eden Kişi (Sipariş Veren OP)</small>
@@ -2296,6 +2296,7 @@ async function submitOpPin(pinRaw) {
         const freshMap = boot.lists?.machineCostCenters || state.machineCostCenters;
         saveStockCache(boot.stock, freshMac, freshCc, freshMap);
         if (state.session === reqSession) {
+          const hadMap = Object.keys(state.machineCostCenters || {}).length;
           state.stock = boot.stock;
           state.machines = freshMac;
           state.costCenters = freshCc;
@@ -2306,6 +2307,15 @@ async function submitOpPin(pinRaw) {
               state.item = fresh;
               render();
             }
+          } else if (state.step === 'order' && Object.keys(freshMap || {}).length !== hadMap) {
+            syncOrderDraftFromDom();
+            if (state.orderDraft?.department) {
+              const autoCc = resolveCostCenterForDepartment(state.orderDraft.department);
+              if (autoCc && (!state.orderDraft.costCenter || flatKey(state.orderDraft.costCenter) === flatKey(state.orderDraft.department))) {
+                state.orderDraft.costCenter = autoCc;
+              }
+            }
+            render();
           }
         }
       }).catch(() => {});
