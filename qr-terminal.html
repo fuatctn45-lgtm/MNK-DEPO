@@ -1533,13 +1533,13 @@ async function demoApi(action, p = {}) {
       approvals: {
         requirer: state.user?.name || String(ap.requirer || p.requestedBy || ''),
         managerName: ap.managerName || 'FUAT ÇETİN',
-        managerDate: ap.managerDate || '',
+        managerDate: ap.managerDate || p.requestDate || todayTr(),
         approval1Name: ap.approval1Name || 'İbrahim Özdemir',
-        approval1Date: ap.approval1Date || '',
+        approval1Date: ap.approval1Date || p.requestDate || todayTr(),
         approval2Name: ap.approval2Name || 'Yüksel Kurun',
-        approval2Date: ap.approval2Date || '',
+        approval2Date: ap.approval2Date || p.requestDate || todayTr(),
         approval3Name: ap.approval3Name || 'İbrahim Özdemir',
-        approval3Date: ap.approval3Date || ''
+        approval3Date: ap.approval3Date || p.requestDate || todayTr()
       },
       items: cleanItems,
       totalAmount,
@@ -1777,10 +1777,11 @@ function createOrderDraft(seedItem = null) {
   const items = padOrderRows(seedRows, Math.max(14, seedRows.length));
   const seedDept = String(seedItem?.machine || '').split('|')[0].trim() || defs.department || '';
   const autoCc = resolveCostCenterForDepartment(seedDept);
+  const reqDate = todayTr();
   return {
     formNo: nextOrderFormNo(),
     docCode: defs.docCode || 'IZM_350600_LJT_001',
-    requestDate: todayTr(),
+    requestDate: reqDate,
     requestedBy: reqBy,
     department: seedDept,
     costCenter: autoCc || (seedDept === defs.department ? (defs.costCenter || '') : ''),
@@ -1793,13 +1794,13 @@ function createOrderDraft(seedItem = null) {
     approvals: {
       requirer: reqBy,
       managerName: defs.managerName || 'FUAT ÇETİN',
-      managerDate: '',
+      managerDate: reqDate,
       approval1Name: defs.approval1Name || 'İbrahim Özdemir',
-      approval1Date: '',
+      approval1Date: reqDate,
       approval2Name: defs.approval2Name || 'Yüksel Kurun',
-      approval2Date: '',
+      approval2Date: reqDate,
       approval3Name: defs.approval3Name || 'İbrahim Özdemir',
-      approval3Date: ''
+      approval3Date: reqDate
     },
     items,
     totalAmount: Math.round(items.reduce((s, x) => s + (Number(x.total) || 0), 0) * 100) / 100,
@@ -2476,22 +2477,22 @@ function renderOrder() {
             <div class="akg-sig-col">
               <div class="akg-sig-top">Talep Edenin Amiri<br>Manager of Requirer</div>
               <div class="akg-sig-sub"><span>Onay / Approval</span><span>Tarih / Date</span></div>
-              <div class="akg-sig-inputs"><input id="poSigManager" value="${esc(d.approvals?.managerName || 'FUAT ÇETİN')}"><input id="poSigManagerDate" value="${esc(d.approvals?.managerDate || '')}" placeholder="GG.AA.YYYY"></div>
+              <div class="akg-sig-inputs"><input id="poSigManager" value="${esc(d.approvals?.managerName || 'FUAT ÇETİN')}"><input id="poSigManagerDate" value="${esc(d.approvals?.managerDate || d.requestDate || todayTr())}" placeholder="GG.AA.YYYY"></div>
             </div>
             <div class="akg-sig-col">
               <div class="akg-sig-top">1.Onay /<br>1.Approval</div>
               <div class="akg-sig-sub"><span>Onay / Approval</span><span>Tarih / Date</span></div>
-              <div class="akg-sig-inputs"><input id="poSig1Name" value="${esc(d.approvals?.approval1Name || 'İbrahim Özdemir')}"><input id="poSig1Date" value="${esc(d.approvals?.approval1Date || '')}" placeholder="GG.AA.YYYY"></div>
+              <div class="akg-sig-inputs"><input id="poSig1Name" value="${esc(d.approvals?.approval1Name || 'İbrahim Özdemir')}"><input id="poSig1Date" value="${esc(d.approvals?.approval1Date || d.requestDate || todayTr())}" placeholder="GG.AA.YYYY"></div>
             </div>
             <div class="akg-sig-col">
               <div class="akg-sig-top">2.Onay /<br>2.Approval</div>
               <div class="akg-sig-sub"><span>Onay / Approval</span><span>Tarih / Date</span></div>
-              <div class="akg-sig-inputs"><input id="poSig2Name" value="${esc(d.approvals?.approval2Name || 'Yüksel Kurun')}"><input id="poSig2Date" value="${esc(d.approvals?.approval2Date || '')}" placeholder="GG.AA.YYYY"></div>
+              <div class="akg-sig-inputs"><input id="poSig2Name" value="${esc(d.approvals?.approval2Name || 'Yüksel Kurun')}"><input id="poSig2Date" value="${esc(d.approvals?.approval2Date || d.requestDate || todayTr())}" placeholder="GG.AA.YYYY"></div>
             </div>
             <div class="akg-sig-col">
               <div class="akg-sig-top">3.Onay /<br>3.Approval</div>
               <div class="akg-sig-sub"><span>Onay / Approval</span><span>Tarih / Date</span></div>
-              <div class="akg-sig-inputs"><input id="poSig3Name" value="${esc(d.approvals?.approval3Name || 'İbrahim Özdemir')}"><input id="poSig3Date" value="${esc(d.approvals?.approval3Date || '')}" placeholder="GG.AA.YYYY"></div>
+              <div class="akg-sig-inputs"><input id="poSig3Name" value="${esc(d.approvals?.approval3Name || 'İbrahim Özdemir')}"><input id="poSig3Date" value="${esc(d.approvals?.approval3Date || d.requestDate || todayTr())}" placeholder="GG.AA.YYYY"></div>
             </div>
           </div>
         </form>
@@ -2559,7 +2560,7 @@ function printPurchaseOrder(order) {
       <td class="c">${esc(it.deliveryDate)}</td>
     </tr>`;
   }).join('');
-  const docHtml = `<!doctype html><meta charset="utf-8"><title>${esc(order.formNo || 'Satın Alma Talep Formu')}</title><style>@page{size:A4 landscape;margin:7mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}html,body{margin:0;padding:0;background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;font-size:10px}.sheet{width:100%;border:1.5px solid #000}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #000;padding:3.5px 5px;vertical-align:middle;word-wrap:break-word}.c{text-align:center}.r{text-align:right}.b{font-weight:700}.mono{font-family:monospace}.red{color:#dc2626}.hdr{display:grid;grid-template-columns:170px 1fr 170px;border-bottom:1.5px solid #000}.hdr>div{display:flex;align-items:center;justify-content:center;padding:6px 8px}.hdr>div+div{border-left:1px solid #000}.hdr-title{font-size:19px;font-weight:800}.hdr-doc{font-size:11.5px;font-weight:700;font-family:monospace}.meta{display:grid;grid-template-columns:135px 1fr 135px 1.25fr 140px 1fr;border-bottom:1.5px solid #000}.meta>div{padding:4px 6px;border-right:1px solid #000;border-bottom:1px solid #000;line-height:1.25}.meta>div:nth-child(6n){border-right:0}.meta>div:nth-last-child(-n+6){border-bottom:0}.ml{font-size:9px;font-weight:700}.mv{font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;text-align:center}.mv.left{justify-content:flex-start;text-align:left}.itbl th{font-size:9px;font-weight:700;text-align:center;line-height:1.2;border-top:0}.itbl td{height:20px;font-size:9.8px;font-weight:700}.itbl td:first-child,.itbl th:first-child{border-left:0}.itbl td:last-child,.itbl th:last-child{border-right:0}.totrow td{border-top:1.5px solid #000;border-bottom:1.5px solid #000;padding:6px 7px;font-size:10px;font-weight:800}.totval{font-size:14px;font-weight:800;text-align:center}.pay{display:grid;grid-template-columns:115px 1fr 115px 1fr 80px 1fr 110px 1fr;border-bottom:1px solid #000}.pay>div{padding:4px 6px;border-right:1px solid #000;line-height:1.25;display:flex;flex-direction:column;justify-content:center}.pay>div:last-child{border-right:0}.pv{font-size:10px;font-weight:600;text-align:center;align-items:center}.det{display:grid;grid-template-columns:115px 1fr;border-bottom:1.5px solid #000;min-height:56px}.det>div{padding:6px 8px;display:flex;flex-direction:column;justify-content:center}.det>div:first-child{border-right:1px solid #000;font-size:9.5px;font-weight:700}.det-txt{font-size:11px;font-weight:700;white-space:pre-wrap}.sigs{display:grid;grid-template-columns:1.05fr 1.55fr 1.55fr 1.55fr 1.55fr}.sc{border-right:1px solid #000;display:flex;flex-direction:column}.sc:last-child{border-right:0}.st{padding:4px;text-align:center;font-size:9.5px;font-weight:700;line-height:1.2;border-bottom:1px solid #000}.ss{display:grid;grid-template-columns:1fr 76px;border-bottom:1px dashed #333;font-size:8.5px;font-weight:700;text-align:center}.ss.one{grid-template-columns:1fr}.ss span{padding:2.5px 3px}.ss span+span{border-left:1px dashed #333}.sv{display:grid;grid-template-columns:1fr 76px;min-height:40px}.sv.one{grid-template-columns:1fr}.sv span{display:flex;align-items:center;justify-content:center;text-align:center;padding:4px;font-size:10.5px;font-weight:700}.sv span+span{border-left:1px dashed #333;font-size:9.5px;font-weight:600}</style><div class="sheet"><div class="hdr"><div>${akgLogoSvg(32)}</div><div class="hdr-title">Satın Alma Talep Formu / Purchase Request Form</div><div class="hdr-doc">${esc(order.docCode || 'IZM_350600_LJT_001')}</div></div><div class="meta"><div class="ml">Talep Tarihi<br>Date of Request</div><div class="mv left">${esc(order.requestDate || '')}</div><div class="ml">Talep Eden Bölüm<br>Department</div><div class="mv">${esc(order.department || '')}</div><div class="ml">Form Numarası<br>Form Number</div><div class="mv">${esc(order.formNo || '')}</div><div class="ml">Talep Eden Kişi<br>Requested by</div><div class="mv left">${esc(order.requestedBy || '')}</div><div class="ml">Maliyet Merkezi<br>Cost Center</div><div class="mv">${esc(order.costCenter || '')}</div><div class="ml">Ekli Doküman Adedi<br>Attachment Quantity</div><div class="mv">${esc(order.attachmentQty || '')}</div></div><table class="itbl"><colgroup><col style="width:26px"><col style="width:25%"><col style="width:11%"><col style="width:14%"><col style="width:6.5%"><col style="width:6%"><col style="width:10.5%"><col style="width:6%"><col style="width:9.5%"><col style="width:11.5%"></colgroup><thead><tr><th>#</th><th>Malzeme Tanımı<br>Description of Material</th><th>Malzeme Kodu<br>Material Code</th><th>Tedarikçi Firma<br>Supplier</th><th>Miktar<br>Quantity</th><th>Birim<br>Unit</th><th>Birim Fiyat (KDV Hariç)<br>Unit Price (VAT Ex.)</th><th>Para Birimi<br>Currency</th><th>Toplam Tutar<br>Total Amount</th><th>Teslim Tarihi<br>Delivery Date</th></tr></thead><tbody>${bodyRows}</tbody><tfoot><tr class="totrow"><td colspan="8" class="r">TOPLAM TUTAR (<span class="red">KDV HARİÇ</span>) / TOTAL AMOUNT (<span class="red">VAT EXCLUDED</span>)</td><td class="totval">${fmtCur2(grand)}</td><td></td></tr></tfoot></table><div class="pay"><div class="ml">Ödeme Şekli<br>Payment Term</div><div class="pv">${esc(order.paymentTerm || '')}</div><div class="ml">Ödeme Vadesi<br>Payment Maturity</div><div class="pv">${esc(order.paymentMaturity || '')}</div><div class="ml">Nakliye<br>Transport</div><div class="pv">${esc(order.transport || '')}</div><div class="ml">Teslimat Yeri<br>Delivery Place</div><div class="pv">${esc(order.deliveryPlace || '')}</div></div><div class="det"><div>Detaylar<br>Details</div><div class="det-txt">${esc(order.details || '')}</div></div><div class="sigs"><div class="sc"><div class="st">Talep Eden<br>Requirer</div><div class="ss one"><span>Onay / Approval</span></div><div class="sv one"><span>${esc(ap.requirer || order.requestedBy || '')}</span></div></div><div class="sc"><div class="st">Talep Edenin Amiri<br>Manager of Requirer</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.managerName || 'FUAT ÇETİN')}</span><span>${esc(ap.managerDate || '')}</span></div></div><div class="sc"><div class="st">1.Onay /<br>1.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval1Name || 'İbrahim Özdemir')}</span><span>${esc(ap.approval1Date || '')}</span></div></div><div class="sc"><div class="st">2.Onay /<br>2.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval2Name || 'Yüksel Kurun')}</span><span>${esc(ap.approval2Date || '')}</span></div></div><div class="sc"><div class="st">3.Onay /<br>3.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval3Name || 'İbrahim Özdemir')}</span><span>${esc(ap.approval3Date || '')}</span></div></div></div></div>`;
+  const docHtml = `<!doctype html><meta charset="utf-8"><title>${esc(order.formNo || 'Satın Alma Talep Formu')}</title><style>@page{size:A4 landscape;margin:7mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}html,body{margin:0;padding:0;background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;font-size:10px}.sheet{width:100%;border:1.5px solid #000}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #000;padding:3.5px 5px;vertical-align:middle;word-wrap:break-word}.c{text-align:center}.r{text-align:right}.b{font-weight:700}.mono{font-family:monospace}.red{color:#dc2626}.hdr{display:grid;grid-template-columns:170px 1fr 170px;border-bottom:1.5px solid #000}.hdr>div{display:flex;align-items:center;justify-content:center;padding:6px 8px}.hdr>div+div{border-left:1px solid #000}.hdr-title{font-size:19px;font-weight:800}.hdr-doc{font-size:11.5px;font-weight:700;font-family:monospace}.meta{display:grid;grid-template-columns:135px 1fr 135px 1.25fr 140px 1fr;border-bottom:1.5px solid #000}.meta>div{padding:4px 6px;border-right:1px solid #000;border-bottom:1px solid #000;line-height:1.25}.meta>div:nth-child(6n){border-right:0}.meta>div:nth-last-child(-n+6){border-bottom:0}.ml{font-size:9px;font-weight:700}.mv{font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;text-align:center}.mv.left{justify-content:flex-start;text-align:left}.itbl th{font-size:9px;font-weight:700;text-align:center;line-height:1.2;border-top:0}.itbl td{height:20px;font-size:9.8px;font-weight:700}.itbl td:first-child,.itbl th:first-child{border-left:0}.itbl td:last-child,.itbl th:last-child{border-right:0}.totrow td{border-top:1.5px solid #000;border-bottom:1.5px solid #000;padding:6px 7px;font-size:10px;font-weight:800}.totval{font-size:14px;font-weight:800;text-align:center}.pay{display:grid;grid-template-columns:115px 1fr 115px 1fr 80px 1fr 110px 1fr;border-bottom:1px solid #000}.pay>div{padding:4px 6px;border-right:1px solid #000;line-height:1.25;display:flex;flex-direction:column;justify-content:center}.pay>div:last-child{border-right:0}.pv{font-size:10px;font-weight:600;text-align:center;align-items:center}.det{display:grid;grid-template-columns:115px 1fr;border-bottom:1.5px solid #000;min-height:56px}.det>div{padding:6px 8px;display:flex;flex-direction:column;justify-content:center}.det>div:first-child{border-right:1px solid #000;font-size:9.5px;font-weight:700}.det-txt{font-size:11px;font-weight:700;white-space:pre-wrap}.sigs{display:grid;grid-template-columns:1.05fr 1.55fr 1.55fr 1.55fr 1.55fr}.sc{border-right:1px solid #000;display:flex;flex-direction:column}.sc:last-child{border-right:0}.st{padding:4px;text-align:center;font-size:9.5px;font-weight:700;line-height:1.2;border-bottom:1px solid #000}.ss{display:grid;grid-template-columns:1fr 76px;border-bottom:1px dashed #333;font-size:8.5px;font-weight:700;text-align:center}.ss.one{grid-template-columns:1fr}.ss span{padding:2.5px 3px}.ss span+span{border-left:1px dashed #333}.sv{display:grid;grid-template-columns:1fr 76px;min-height:40px}.sv.one{grid-template-columns:1fr}.sv span{display:flex;align-items:center;justify-content:center;text-align:center;padding:4px;font-size:10.5px;font-weight:700}.sv span+span{border-left:1px dashed #333;font-size:9.5px;font-weight:600}</style><div class="sheet"><div class="hdr"><div>${akgLogoSvg(32)}</div><div class="hdr-title">Satın Alma Talep Formu / Purchase Request Form</div><div class="hdr-doc">${esc(order.docCode || 'IZM_350600_LJT_001')}</div></div><div class="meta"><div class="ml">Talep Tarihi<br>Date of Request</div><div class="mv left">${esc(order.requestDate || '')}</div><div class="ml">Talep Eden Bölüm<br>Department</div><div class="mv">${esc(order.department || '')}</div><div class="ml">Form Numarası<br>Form Number</div><div class="mv">${esc(order.formNo || '')}</div><div class="ml">Talep Eden Kişi<br>Requested by</div><div class="mv left">${esc(order.requestedBy || '')}</div><div class="ml">Maliyet Merkezi<br>Cost Center</div><div class="mv">${esc(order.costCenter || '')}</div><div class="ml">Ekli Doküman Adedi<br>Attachment Quantity</div><div class="mv">${esc(order.attachmentQty || '')}</div></div><table class="itbl"><colgroup><col style="width:26px"><col style="width:25%"><col style="width:11%"><col style="width:14%"><col style="width:6.5%"><col style="width:6%"><col style="width:10.5%"><col style="width:6%"><col style="width:9.5%"><col style="width:11.5%"></colgroup><thead><tr><th>#</th><th>Malzeme Tanımı<br>Description of Material</th><th>Malzeme Kodu<br>Material Code</th><th>Tedarikçi Firma<br>Supplier</th><th>Miktar<br>Quantity</th><th>Birim<br>Unit</th><th>Birim Fiyat (KDV Hariç)<br>Unit Price (VAT Ex.)</th><th>Para Birimi<br>Currency</th><th>Toplam Tutar<br>Total Amount</th><th>Teslim Tarihi<br>Delivery Date</th></tr></thead><tbody>${bodyRows}</tbody><tfoot><tr class="totrow"><td colspan="8" class="r">TOPLAM TUTAR (<span class="red">KDV HARİÇ</span>) / TOTAL AMOUNT (<span class="red">VAT EXCLUDED</span>)</td><td class="totval">${fmtCur2(grand)}</td><td></td></tr></tfoot></table><div class="pay"><div class="ml">Ödeme Şekli<br>Payment Term</div><div class="pv">${esc(order.paymentTerm || '')}</div><div class="ml">Ödeme Vadesi<br>Payment Maturity</div><div class="pv">${esc(order.paymentMaturity || '')}</div><div class="ml">Nakliye<br>Transport</div><div class="pv">${esc(order.transport || '')}</div><div class="ml">Teslimat Yeri<br>Delivery Place</div><div class="pv">${esc(order.deliveryPlace || '')}</div></div><div class="det"><div>Detaylar<br>Details</div><div class="det-txt">${esc(order.details || '')}</div></div><div class="sigs"><div class="sc"><div class="st">Talep Eden<br>Requirer</div><div class="ss one"><span>Onay / Approval</span></div><div class="sv one"><span>${esc(ap.requirer || order.requestedBy || '')}</span></div></div><div class="sc"><div class="st">Talep Edenin Amiri<br>Manager of Requirer</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.managerName || 'FUAT ÇETİN')}</span><span>${esc(ap.managerDate || order.requestDate || '')}</span></div></div><div class="sc"><div class="st">1.Onay /<br>1.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval1Name || 'İbrahim Özdemir')}</span><span>${esc(ap.approval1Date || order.requestDate || '')}</span></div></div><div class="sc"><div class="st">2.Onay /<br>2.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval2Name || 'Yüksel Kurun')}</span><span>${esc(ap.approval2Date || order.requestDate || '')}</span></div></div><div class="sc"><div class="st">3.Onay /<br>3.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval3Name || 'İbrahim Özdemir')}</span><span>${esc(ap.approval3Date || order.requestDate || '')}</span></div></div></div></div>`;
   let frame = $('#orderPrintFrame');
   if (!frame) {
     frame = document.createElement('iframe');
@@ -2668,7 +2669,7 @@ function openOrderEmailModal(order, sessionOverride = null) {
         <textarea class="input" id="ordMailMsg" rows="4" style="min-height:92px">${esc(defaultMsg)}</textarea>
       </label>
     </form>
-    ${state.mode !== 'demo' && state.apiVersion && state.apiVersion !== 'V8.8.3-MAIL' ? `<div class="callout amber" style="margin-top:8px;margin-bottom:0">${ic('alert','ic-sm')}<div><b>Not</b>Canlı PDF mail gönderimi için ana paneldeki Bağlantı sekmesinden güncel <b>Kod.gs (V8.8.3-MAIL)</b> sürümünü dağıtmanız gerekir.</div></div>` : ''}`,
+    ${state.mode !== 'demo' && state.apiVersion && !['V8.8.3-MAIL','V8.8.4-OP-LOCK'].includes(state.apiVersion) ? `<div class="callout amber" style="margin-top:8px;margin-bottom:0">${ic('alert','ic-sm')}<div><b>Not</b>Canlı PDF mail gönderimi için ana paneldeki Bağlantı sekmesinden güncel <b>Kod.gs (V8.8.4-OP-LOCK)</b> sürümünü dağıtmanız gerekir.</div></div>` : ''}`,
     `<button type="button" class="btn ghost" data-action="close-qr-modal">Vazgeç</button>
      <button type="button" class="btn ghost" data-action="ord-email-preview">${ic('print','ic-sm')} PDF Önizle</button>
      <button type="button" class="btn primary" data-action="ord-email-send">${ic('mail','ic-sm')} PDF Olarak Gönder</button>`
@@ -2784,7 +2785,7 @@ async function submitOpPin(pinRaw) {
   if (!pin) return toast('Lütfen operatör PIN’inizi tuşlayın.', 'err');
   beginSave('PIN doğrulanıyor...');
   try {
-    const auth = await api('auth', {pin});
+    const auth = await api('auth', {pin, client: 'QR_TERMINAL'});
     state.user = auth.user;
     state.session = auth.session;
     const reqSession = auth.session;
@@ -2907,13 +2908,13 @@ function syncOrderDraftFromDom() {
   d.approvals = {
     requirer: d.requestedBy,
     managerName: $('#poSigManager')?.value.trim() || 'FUAT ÇETİN',
-    managerDate: $('#poSigManagerDate')?.value.trim() || '',
+    managerDate: $('#poSigManagerDate')?.value.trim() || d.requestDate,
     approval1Name: $('#poSig1Name')?.value.trim() || 'İbrahim Özdemir',
-    approval1Date: $('#poSig1Date')?.value.trim() || '',
+    approval1Date: $('#poSig1Date')?.value.trim() || d.requestDate,
     approval2Name: $('#poSig2Name')?.value.trim() || 'Yüksel Kurun',
-    approval2Date: $('#poSig2Date')?.value.trim() || '',
+    approval2Date: $('#poSig2Date')?.value.trim() || d.requestDate,
     approval3Name: $('#poSig3Name')?.value.trim() || 'İbrahim Özdemir',
-    approval3Date: $('#poSig3Date')?.value.trim() || ''
+    approval3Date: $('#poSig3Date')?.value.trim() || d.requestDate
   };
   if ($('#poSigRequirer')) $('#poSigRequirer').value = d.requestedBy;
   $$('[data-po-field]').forEach(el => {

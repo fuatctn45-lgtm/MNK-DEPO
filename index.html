@@ -959,6 +959,9 @@ mark.search-hl{background:#FFE600;color:#0F172A;font-weight:700;padding:0 3px;bo
 .mail-chip.active{background:var(--orange-soft);border-color:var(--orange);color:#c2410c}
 @media (max-width:1100px){.po-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:640px){.po-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.op-block-notice{margin-bottom:14px;padding:12px 14px;border-radius:12px;border:1px solid #fecaca;background:#fef2f2;color:#991b1b;font-size:13px;line-height:1.45}
+.op-block-notice b{display:block;margin-bottom:4px;font-size:13.5px}
+.op-block-notice .btn{margin-top:10px}
 </style>
 <script type="text/plain" id="gasCode">/*
  * MEKANİK + İSG DEPO V8.7 — Google Apps Script backend
@@ -980,7 +983,7 @@ const CFG = Object.freeze({
     recipes: 'PLANLI_BAKIM_RECETE', ppeForms: 'KKD_ZIMMET', orders: 'SIPARIS_TALEPLERI', log: 'LOG', faults: 'Açık Arizalar'
   },
   spreadsheetId: '1AtCrVmav8bIQno5aeP-sFtS3L90KwdipMpZtFeP1KT4',
-  apiVersion: 'V8.8.3-MAIL',
+  apiVersion: 'V8.8.4-OP-LOCK',
   sessionHours: 8,
   roles: ['OP', 'MEK_ADMIN', 'ISG_ADMIN', 'YONETICI'],
   periods: ['AYLIK', '3 AYLIK', '6 AYLIK', 'YILLIK']
@@ -1017,7 +1020,7 @@ function doPost(e) {
 }
 function route_(action, p, token) {
   if (action === 'health') return {service:'MEKANIK_ISG_DEPO_V8.7', apiVersion:CFG.apiVersion, time:new Date().toISOString()};
-  if (action === 'auth') return authenticate_(p.pin);
+  if (action === 'auth') return authenticate_(p.pin, p.client);
   if (action === 'onayHavuzu') action = p.operation === 'create' ? 'approvalCreate' : p.operation === 'decide' ? 'approvalDecide' : 'approvalList';
   if (action === 'planliBakimRecete') action = p.operation === 'save' ? 'recipeSave' : p.operation === 'bulkCheckout' ? 'recipeBulkCheckout' : 'recipeList';
   if (action === 'kkdAnaliz') action = 'ppeAnalysis';
@@ -1027,6 +1030,10 @@ function route_(action, p, token) {
   if (action === 'hareketAnaliz') action = 'movementAnalysis';
   if (action === 'maliyetAnaliz') action = 'costAnalysis';
   const user = verifySession_(token);
+  const OP_ALLOWED_ACTIONS = ['bootstrap','stockList','checkout','approvalCreate','purchaseOrderList','purchaseOrderCreate','purchaseOrderEmail'];
+  if (user.role === 'OP' && OP_ALLOWED_ACTIONS.indexOf(action) < 0) {
+    throw new Error('Operatör (OP) hesapları yalnızca QR çıkış ve sipariş talebi işlemlerini yapabilir.');
+  }
   const read = {
     bootstrap: () => bootstrap_(user), stockList: () => filteredStock_(user),
     approvalList: () => approvalList_(user), recipeList: () => recipeList_(user, p),
@@ -1219,13 +1226,18 @@ function users_() {
     active:activeI < 0 ? true : !/(PASIF|HAYIR)/.test(norm_(r[activeI]))
   })).filter(x => x.name && x.pin && x.role && x.active);
 }
-function authenticate_(pin) {
+function authenticate_(pin, client) {
   pin = String(pin || '').replace(/\s+/g,'').trim();
   if (!/^\d{4,8}$/.test(pin)) throw new Error('PIN 4-8 rakam olmalıdır.');
   const u = users_().find(x => constantTime_(x.pin, pin));
   if (!u) throw new Error('PIN geçersiz veya kullanıcı pasif.');
+  const clientType = norm_(client);
+  if (u.role === 'OP' && clientType === 'PANEL') {
+    log_({name:u.name, role:u.role}, 'ERISIM_REDDEDILDI', 'PANEL', {reason:'OP_PANEL_BLOCKED'});
+    throw new Error('Operatör (OP) hesapları depo sistemine giriş yapamaz. Sadece QR Kod Okuyucu ve Sipariş Terminali kullanılabilir.');
+  }
   const safe = {name:u.name, role:u.role};
-  log_(safe, 'OTURUM_ACILDI', '', {});
+  log_(safe, 'OTURUM_ACILDI', clientType || 'QR_TERMINAL', {});
   return {user:safe, session:signSession_(safe)};
 }
 function sessionSecret_() {
@@ -1341,9 +1353,10 @@ function outs_() {
   }).filter(x => x.code || x.name);
 }
 function bootstrap_(u) {
+  const isOp = u.role === 'OP';
   return {
-    user:u, stock:filteredStock_(u), approvals:u.role === 'OP' ? [] : approvalList_(u), recipes:recipeList_(u, {}),
-    ppeForms:ppeFormList_(u), orders:purchaseOrderList_(u),
+    user:u, stock:filteredStock_(u), approvals:isOp ? [] : approvalList_(u), recipes:isOp ? [] : recipeList_(u, {}),
+    ppeForms:isOp ? [] : ppeFormList_(u), orders:purchaseOrderList_(u),
     movements:recentMovements_(u), lists:dataLists_(), serverTime:now_(), apiVersion:CFG.apiVersion, capabilities:capabilities_(u)
   };
 }
@@ -2123,12 +2136,18 @@ function purchaseOrderCreate_(u, p) {
   const totalAmount = Math.round(items.reduce((s, x) => s + n_(x.total), 0) * 100) / 100;
   const currency = s_(p.currency) || (items[0] && items[0].currency) || 'TL';
   const reqDate = s_(p.requestDate) || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd.MM.yyyy');
+  const apIn = p.approvals || {};
   const approvals = Object.assign({
-    requirer: reqBy, managerName: 'FUAT ÇETİN', managerDate: '',
-    approval1Name: 'İbrahim Özdemir', approval1Date: '',
-    approval2Name: 'Yüksel Kurun', approval2Date: '',
-    approval3Name: 'İbrahim Özdemir', approval3Date: ''
-  }, p.approvals || {}, u.role === 'OP' ? { requirer: u.name } : {});
+    requirer: reqBy, managerName: 'FUAT ÇETİN', managerDate: reqDate,
+    approval1Name: 'İbrahim Özdemir', approval1Date: reqDate,
+    approval2Name: 'Yüksel Kurun', approval2Date: reqDate,
+    approval3Name: 'İbrahim Özdemir', approval3Date: reqDate
+  }, apIn, {
+    managerDate: s_(apIn.managerDate) || reqDate,
+    approval1Date: s_(apIn.approval1Date) || reqDate,
+    approval2Date: s_(apIn.approval2Date) || reqDate,
+    approval3Date: s_(apIn.approval3Date) || reqDate
+  }, u.role === 'OP' ? { requirer: u.name } : {});
   const createdAt = now_();
   const order = {
     formNo: formNo, docCode: s_(p.docCode) || 'IZM_350600_LJT_001',
@@ -2344,10 +2363,10 @@ function buildOrderPdfHtml_(order, logoDataUrl) {
         '</tr>' +
         '<tr class="sv">' +
           '<td>' + escHtml_(ap.requirer || order.requestedBy || '') + '</td>' +
-          '<td>' + escHtml_(ap.managerName || 'FUAT ÇETİN') + '</td><td class="dash-l" style="font-size:8.5px;font-weight:400">' + escHtml_(ap.managerDate || '') + '</td>' +
-          '<td>' + escHtml_(ap.approval1Name || 'İbrahim Özdemir') + '</td><td class="dash-l" style="font-size:8.5px;font-weight:400">' + escHtml_(ap.approval1Date || '') + '</td>' +
-          '<td>' + escHtml_(ap.approval2Name || 'Yüksel Kurun') + '</td><td class="dash-l" style="font-size:8.5px;font-weight:400">' + escHtml_(ap.approval2Date || '') + '</td>' +
-          '<td>' + escHtml_(ap.approval3Name || 'İbrahim Özdemir') + '</td><td class="dash-l" style="font-size:8.5px;font-weight:400">' + escHtml_(ap.approval3Date || '') + '</td>' +
+          '<td>' + escHtml_(ap.managerName || 'FUAT ÇETİN') + '</td><td class="dash-l" style="font-size:8.5px;font-weight:600">' + escHtml_(ap.managerDate || order.requestDate || '') + '</td>' +
+          '<td>' + escHtml_(ap.approval1Name || 'İbrahim Özdemir') + '</td><td class="dash-l" style="font-size:8.5px;font-weight:600">' + escHtml_(ap.approval1Date || order.requestDate || '') + '</td>' +
+          '<td>' + escHtml_(ap.approval2Name || 'Yüksel Kurun') + '</td><td class="dash-l" style="font-size:8.5px;font-weight:600">' + escHtml_(ap.approval2Date || order.requestDate || '') + '</td>' +
+          '<td>' + escHtml_(ap.approval3Name || 'İbrahim Özdemir') + '</td><td class="dash-l" style="font-size:8.5px;font-weight:600">' + escHtml_(ap.approval3Date || order.requestDate || '') + '</td>' +
         '</tr>' +
       '</table>' +
     '</div>';
@@ -2568,13 +2587,13 @@ function ic(name,cls=''){return`<span class="ic ${cls}" aria-hidden="true"><svg 
 const KKD_LEGAL_TEXT='6331 sayılı İş Sağlığı ve Güvenliği Kanunu ve Kişisel Koruyucu Donanımların İşyerlerinde Kullanılması Hakkında Yönetmelik uyarınca yukarıda belirtilen KKD’leri eksiksiz, sağlam ve kullanıma hazır teslim aldığımı; çalışma süresince talimatlara uygun şekilde kullanacağımı, bakımını yapacağımı ve hasar/eskime durumunda derhal bildirip yenisini talep edeceğimi beyan ve taahhüt ederim.';
 const NAV=[
  ['dashboard','grid','Genel Bakış',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
- ['qr','scan','Operatör QR',['OP','MEK_ADMIN','ISG_ADMIN','YONETICI']],
+ ['qr','scan','Operatör QR',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
  ['stock','boxes','Stok Yönetimi',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
- ['orders','fileText','Sipariş Sayfası',['OP','MEK_ADMIN','ISG_ADMIN','YONETICI']],
+ ['orders','fileText','Sipariş Sayfası',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
  ['movements','arrows','Hareketler',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
  ['approvals','checkCircle','Onay Bekleyenler',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
- ['maintenance','wrench','Planlı Bakım',['OP','MEK_ADMIN','YONETICI']],
- ['ppe','shield','KKD & Zimmet',['OP','ISG_ADMIN','YONETICI']],
+ ['maintenance','wrench','Planlı Bakım',['MEK_ADMIN','YONETICI']],
+ ['ppe','shield','KKD & Zimmet',['ISG_ADMIN','YONETICI']],
  ['analysis','chart','Tüketim & ABC',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
  ['costs','wallet','Maliyet Analizi',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
  ['labels','qr','QR Etiketleri',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
@@ -2626,7 +2645,7 @@ const DEMO={
    items:[{itemId:'',name:'HİGH 25 HWİN ARABA',code:'',supplier:'ÜNLÜ TEKNİK',qty:4,unit:'AD',unitPrice:3950,currency:'TL',total:15800,deliveryDate:'28.11.2026 08:49:54'}],
    totalAmount:15800,currency:'TL',paymentTerm:'Peşin / Cash',paymentMaturity:'',transport:'',deliveryPlace:'',
    details:'Dizgi makinaları sağ ve sol dayama kolları hareket arabalarında kullanılacak',
-   approvals:{requirer:'HÜSEYİN YAVUZ',managerName:'FUAT ÇETİN',managerDate:'',approval1Name:'İbrahim Özdemir',approval1Date:'',approval2Name:'Yüksel Kurun',approval2Date:'',approval3Name:'İbrahim Özdemir',approval3Date:''},
+   approvals:{requirer:'HÜSEYİN YAVUZ',managerName:'FUAT ÇETİN',managerDate:'28.11.2026',approval1Name:'İbrahim Özdemir',approval1Date:'28.11.2026',approval2Name:'Yüksel Kurun',approval2Date:'28.11.2026',approval3Name:'İbrahim Özdemir',approval3Date:'28.11.2026'},
    status:'TALEP_OLUSTURULDU',source:'QR_TERMINAL',stockSynced:false,createdAt:new Date(Date.now()-1800000).toISOString()
   }
  ]
@@ -2718,7 +2737,7 @@ function loadBootCache(role){
  try{
   const raw=JSON.parse(localStorage.getItem(bootCacheKey(role))||'null');
   if(!raw||raw.url!==(state.directUrl||'')||!raw.data||!Array.isArray(raw.data.stock))return null;
-  if(!['V8.8.2-MALIYET','V8.8.3-MAIL'].includes(raw.data.apiVersion)||!Object.keys(raw.data.lists?.machineCostCenters||{}).length)return null;
+  if(!['V8.8.2-MALIYET','V8.8.3-MAIL','V8.8.4-OP-LOCK'].includes(raw.data.apiVersion)||!Object.keys(raw.data.lists?.machineCostCenters||{}).length)return null;
   if(Date.now()-(raw.ts||0)>30*60*1000)return null;
   return raw.data;
  }catch{return null;}
@@ -2729,10 +2748,12 @@ function saveBootCache(role,data){
 }
 async function demoApi(action,p={}){
  await new Promise(r=>setTimeout(r,90));
- if(action==='health')return{service:'DEMO',time:today()};
+ if(action==='health')return{service:'DEMO',time:today(),apiVersion:'V8.8.4-OP-LOCK'};
  if(action==='auth'){
   const clean=String(p.pin||'').replace(/\s+/g,'').trim();
-  const u=DEMO.users.find(x=>x.pin===clean&&x.active);if(!u)throw Error('Demo modunda geçersiz PIN (Demo: 1111, 2222, 3333, 4444). Gerçek tablo PIN’iniz için aşağıdan Bağlantı Ayarı’nı seçin.');return{user:{name:u.name,role:u.role},session:'demo-'+u.role};
+  const u=DEMO.users.find(x=>x.pin===clean&&x.active);if(!u)throw Error('Demo modunda geçersiz PIN (Depo Paneli Demo: 2222, 3333, 4444). Gerçek tablo PIN’iniz için aşağıdan Kurulum ve Ayarlar’ı seçin.');
+  if(u.role==='OP'&&(!p.client||String(p.client).toUpperCase()==='PANEL'))throw Error('Operatör (OP) hesapları depo sistemine giriş yapamaz. Sadece QR Kod Okuyucu ve Sipariş Terminali kullanılabilir.');
+  return{user:{name:u.name,role:u.role},session:'demo-'+u.role};
  }
  if(!state.user&&action!=='health')throw Error('Oturum gerekli.');
  const visibleStock=()=>DEMO.stock.filter(x=>state.user.role==='YONETICI'||state.user.role==='OP'||(state.user.role==='MEK_ADMIN'&&x.depot==='MEKANIK')||(state.user.role==='ISG_ADMIN'&&x.depot==='ISG'));
@@ -2748,7 +2769,7 @@ async function demoApi(action,p={}){
   return state.user.role==='OP'?list.filter(x=>norm(x.requestedBy)===norm(state.user.name)):list;
  };
  const isValidSig=s=>typeof s==='string'&&s.length>=12&&/^SIG1:[ML0-9.,\s-]+$/.test(s.trim());
- if(action==='bootstrap')return{user:state.user,stock:visibleStock(),approvals:state.user.role==='OP'?[]:visibleApprovals(),recipes:recipes(),ppeForms:visiblePpeForms(),orders:visibleOrders(),movements:DEMO.movements,lists:DEMO.lists,serverTime:today(),apiVersion:'V8.8.3-MAIL'};
+ if(action==='bootstrap')return{user:state.user,stock:visibleStock(),approvals:state.user.role==='OP'?[]:visibleApprovals(),recipes:recipes(),ppeForms:visiblePpeForms(),orders:visibleOrders(),movements:DEMO.movements,lists:DEMO.lists,serverTime:today(),apiVersion:'V8.8.4-OP-LOCK'};
  if(action==='stockList')return visibleStock(); if(action==='approvalList')return visibleApprovals(); if(action==='recipeList')return recipes().filter(x=>(!p.machine||x.machine===p.machine)&&(!p.period||x.period===p.period));
  if(action==='ppeFormList')return visiblePpeForms();
  if(action==='purchaseOrderList')return visibleOrders();
@@ -2970,8 +2991,8 @@ function buildCostLocal(movements=[],stock=[],p={},role='YONETICI',isFallback=fa
  return{range,depot:p.depot||'Tümü',fallback:isFallback,summary:{totalCost,mechCost,isgCost,exitCount:exits.length,totalQty,avgExitCost:exits.length?totalCost/exits.length:0,stockValue,unpricedExits,unpricedItems,machineCount:machines.length,deptCount:departments.length,hasCustomDepartments:false},machines,departments,monthly};
 }
 
-function allowed(page){return NAV.find(x=>x[0]===page)?.[3].includes(state.user?.role);}
-function defaultPage(){return state.user?.role==='OP'?'qr':'dashboard';}
+function allowed(page){if(!state.user||state.user.role==='OP')return false;return NAV.find(x=>x[0]===page)?.[3].includes(state.user?.role);}
+function defaultPage(){return 'dashboard';}
 function setBusy(v){state.busy=v;document.body.classList.toggle('busy',v);}
 let savePending=0,saveHideTimer=null,lastSaveLabel='Kayıt ediliyor...',bgSyncTimer=null;
 function ensureSaveBar(){
@@ -3241,6 +3262,7 @@ function qrAppUrl(){
   }else if(state.mode==='proxy'){
    u.searchParams.set('mode','proxy');
   }
+  if(state.pendingQr)u.searchParams.set('qr',state.pendingQr);
   return u.href;
  }catch{return'./qr-terminal.html';}
 }
@@ -3261,6 +3283,7 @@ function installAppModal(){
 }
 
 function renderShell(){
+ if(!state.user||state.user.role==='OP'){state.user=null;state.session='';document.body.classList.remove('logged');renderLogin();return;}
  const app=$('#app');app.innerHTML=`<div id="offlineBanner" class="offline-banner" ${navigator.onLine?'hidden':''}>İnternet bağlantısı yok — çevrimdışı moddasınız. Canlı stok işlemleri için bağlantı gerekir.</div><header class="sidebar"><div class="nav-top"><div class="nav-left"><div class="brand"><span class="brand-mark">M</span><div><b>Mekanik + İSG Depo</b><small>Depo 2027 · V8.7</small></div></div><button class="nav-menu-btn" id="navMenuBtn" type="button" data-action="menu" aria-haspopup="true" aria-expanded="false">${ic('menu','ic-sm')}<span>Menü</span><span class="nav-menu-cur" id="navMenuCur"></span><em class="nav-menu-badge" id="navMenuBadge" hidden>0</em><i class="nav-caret">▾</i></button></div><div class="nav-right"><button type="button" class="sync-pill idle" id="syncQueueBtn" data-action="sync-queue-modal" title="Kayıt kuyruğu"></button><span class="connection ${state.mode}"><i></i>${state.mode==='demo'?'Demo Modu':state.mode==='proxy'?'Canlı Bağlantı':'Doğrudan GAS'}</span><div class="side-foot"><div class="avatar">${esc(state.user.name[0])}</div><div><b>${esc(state.user.name)}</b><small>${esc(ROLE_LABEL[state.user.role])}</small></div><button class="icon-btn" data-action="logout" title="Çıkış" aria-label="Çıkış">${ic('logout')}</button></div></div></div><nav id="nav" class="nav-dropdown"></nav></header><main class="main"><div class="topbar"><div class="topbar-left"><span class="crumb" id="pageCrumb"></span><h1 id="pageTitle"></h1><p id="pageSub"></p></div><div class="top-actions" id="pageActions"></div></div><div id="content"></div></main>`;
  renderNav();renderSyncIndicator();showPage(state.page,false);
 }
@@ -3294,7 +3317,7 @@ function pageActionHtml(p){
  if(p==='costs')return`<button class="btn ghost" data-action="export-costs-csv">${ic('download','ic-sm')} CSV İndir</button><button class="btn ghost" data-action="print-costs">${ic('print','ic-sm')} Raporu Yazdır</button>`;
  return'';
 }
-async function showPage(page,update=true){if(!allowed(page))page=defaultPage();state.page=page;if(update){renderNav();$$('.sidebar').forEach(x=>x.classList.remove('open'));}const meta=NAV.find(x=>x[0]===page);const title=meta?.[2]||'';$('#pageCrumb').textContent='Mekanik + İSG Depo / '+title;$('#pageTitle').textContent=title;$('#pageSub').textContent=pageSub(page);$('#pageActions').innerHTML=pageActionHtml(page);const fn={dashboard:renderDashboard,qr:renderQr,stock:renderStock,orders:renderOrders,movements:renderMovements,approvals:renderApprovals,maintenance:renderMaintenance,ppe:renderPpe,analysis:renderAnalysis,costs:renderCosts,labels:renderLabels,connection:renderConnection}[page];await fn();}
+async function showPage(page,update=true){if(!state.user||state.user.role==='OP'){state.user=null;state.session='';document.body.classList.remove('logged');renderLogin();return;}if(!allowed(page))page=defaultPage();state.page=page;if(update){renderNav();$$('.sidebar').forEach(x=>x.classList.remove('open'));}const meta=NAV.find(x=>x[0]===page);const title=meta?.[2]||'';$('#pageCrumb').textContent='Mekanik + İSG Depo / '+title;$('#pageTitle').textContent=title;$('#pageSub').textContent=pageSub(page);$('#pageActions').innerHTML=pageActionHtml(page);const fn={dashboard:renderDashboard,qr:renderQr,stock:renderStock,orders:renderOrders,movements:renderMovements,approvals:renderApprovals,maintenance:renderMaintenance,ppe:renderPpe,analysis:renderAnalysis,costs:renderCosts,labels:renderLabels,connection:renderConnection}[page];await fn();}
 function pageSub(p){return {dashboard:'İki deponun canlı durumu, kritik stoklar ve hızlı erişim',qr:'QR okutun, PIN ile doğrulayın, malzeme çıkışı yapın veya sipariş formu oluşturun',stock:'Yetkinize göre canlı mekanik ve İSG stok kartları',orders:state.user?.role==='OP'?'Kendi adınıza oluşturduğunuz AKG Satın Alma Talep Formları ve durumları':'AKG Satın Alma Talep Formu (IZM_350600_LJT_001) oluşturma, takip ve A4 resmi baskı',movements:'Giriş, çıkış ve sayım hareketlerinin tam dökümü',approvals:'Depocu veya yönetici kararı bekleyen malzeme çıkış talepleri',maintenance:'Periyot bazlı bakım reçeteleri ve tek tuşla toplu set çıkışı',ppe:state.user?.role==='OP'?'6331 sayılı İSG Kanunu kapsamında adınıza düzenlenen KKD teslim ve imza formları':'6331 sayılı İSG Kanunu kapsamında imzalı KKD teslim tutanakları ve personel kullanımı',analysis:'Sıklık, miktar, makine dağılımı ve ABC tüketim sınıflandırması',costs:'Makine ve bölüm bazında tüketim maliyetleri, aylık harcama trendi ve stok değeri',labels:'Mekanik parçalar ve İSG dolabı için yazdırılabilir QR etiketleri',connection:'Güvenli API bağlantısı, Apps Script (Kod.gs) ve tek HTML dışa aktarım'}[p]||'';}
 function kpi(label,value,note,icon,tone='orange'){return`<article class="kpi ${tone}"><div class="kpi-head"><small>${label}</small><span class="kpi-icon">${ic(icon)}</span></div><strong>${value}</strong><p>${note}</p></article>`;}
 function renderDashboard(){
@@ -3569,7 +3592,7 @@ function newItemModal(){
 function editItemModal(item){const selected=new Set(String(item.usage||'').split('|').map(norm)),depotApproval=needsDepotApprovalUi(item),usageHtml=REGISTRATION_USAGE_UI.map(x=>`<label><input type="checkbox" name="editUsageOption" value="${esc(x)}" ${selected.has(norm(x))?'checked':''}><span>${esc(x)}</span></label>`).join('');modal('Stok Kartını Düzenle',`<form id="editItemForm" class="form-grid"><input type="hidden" name="id" value="${esc(item.id)}">${field('Parça kodu *',`<input name="code" value="${esc(item.code)}" required>`)}${field('Malzeme adı *',`<input name="name" value="${esc(item.name)}" placeholder="Malzeme adını yazın" required>`)}${field('Kategori *',`<input name="category" list="editTypes" value="${esc(item.category)}" required><datalist id="editTypes">${opts(state.data.lists.types)}</datalist>`)}${field('Firma',`<input name="company" list="editCompanies" value="${esc(item.company)}"><datalist id="editCompanies">${opts(state.data.lists.companies)}</datalist>`)}${field('Birim *',`<select name="unit" required><option value="">Seçin</option>${opts(state.data.lists.units,item.unit)}</select>`)}<div class="field form-span-2"><span>Kullanım Şekli · Çoklu seçim</span><div class="usage-grid">${usageHtml}</div><small>Mevcut değerler “ | ” ayıracına göre işaretlenmiştir.</small></div><div class="field form-span-2"><span>Depo Onayı</span><select name="depotApproval"><option value="Gereksiz" ${depotApproval?'':'selected'}>Gereksiz</option><option value="Gerekli" ${depotApproval?'selected':''}>Gerekli</option></select><small>Mevcut kullanım değerine göre otomatik seçilir.</small></div>${field('Raf *',`<input name="shelf" list="editShelves" value="${esc(item.shelf)}" required><datalist id="editShelves">${opts(state.data.lists.shelves)}</datalist>`)}${field('Makine',`<select name="machine" ${item.depot==='ISG'||/SARF/.test(norm(item.type))?'disabled':''}><option value="">Ortak kullanım</option>${opts(state.data.lists.machines,item.machine)}</select>`)}${field('Kritik / Minimum stok *',`<input name="min" type="number" min="0.01" step="0.01" value="${Number(item.min)>0?item.min:''}" placeholder="Örn: 5" required>`,'0’dan büyük olmalıdır.')}${field('Birim fiyat (₺) *',`<input name="unitPrice" type="number" min="0.01" step="0.01" value="${Number(item.unitPrice)>0?item.unitPrice:''}" placeholder="Örn: 125,00" required>`,'Maliyet hesabı için zorunludur (0’dan büyük).')}${field('Durum',`<select name="active"><option value="AKTİF" ${norm(item.active)==='PASIF'?'':'selected'}>AKTİF</option><option value="PASİF" ${norm(item.active)==='PASIF'?'selected':''}>PASİF</option></select>`)}</form>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="item-update-save">Değişiklikleri Kaydet</button>`);}
 
 function renderMovements(){const q=norm(state.movQuery||'');const rows=(state.data.movements||[]).filter(x=>(state.user.role==='YONETICI'||(state.user.role==='MEK_ADMIN'&&x.depot==='MEKANIK')||(state.user.role==='ISG_ADMIN'&&x.depot==='ISG'))&&(!q||norm([x.person,x.name,x.code,x.machine,x.source,x.depot].join(' ')).includes(q))).slice(0,200);$('#content').innerHTML=`<section class="panel table-panel print-area"><div class="toolbar"><div class="search">${ic('search','ic-sm')}<input id="movSearch" placeholder="Personel, malzeme, parça kodu, makine veya kaynak ara..." value="${esc(state.movQuery||'')}"></div><span class="meta-inline">${rows.length} kayıt</span></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Tarih</th><th>Çıkış Yapan</th><th>Malzeme</th><th>Depo</th><th>Makine / Bölüm</th><th class="num-col">Miktar</th><th>Kaynak</th></tr></thead><tbody>${rows.length?rows.map(x=>`<tr><td class="num">${fmt(x.date)}</td><td><b>${esc(x.person)}</b></td><td><b>${esc(x.name)}</b><small class="mono">${esc(x.code)}</small></td><td><span class="depot ${x.depot.toLowerCase()}">${x.depot==='ISG'?'İSG':'Mekanik'}</span></td><td>${esc(x.machine)}</td><td class="big num-col">${num(x.qty)} <small>${esc(x.unit)}</small></td><td><span class="badge neutral">${esc(x.source)}</span></td></tr>`).join(''):'<tr><td colspan="7"><div class="empty">Kriterlere uyan hareket kaydı bulunamadı.</div></td></tr>'}</tbody></table></div></section>`;}
-function renderApprovals(){const rows=[...(state.data.approvals||[])].map(x=>({...x,_st:approvalStatus(x),_dep:(norm(x.depot)==='ISG'||/ISG|KKD/.test(norm((x.machine||'')+' '+(x.itemId||''))))?'ISG':'MEKANIK'})).sort((a,b)=>(a._st==='BEKLIYOR'?0:1)-(b._st==='BEKLIYOR'?0:1));const oldGas=state.mode!=='demo'&&!['V8.7-ONAY2','V8.7-KKD','V8.8-SIPARIS','V8.8.1-MALIYET','V8.8.2-MALIYET','V8.8.3-MAIL'].includes(state.data?.apiVersion);$('#content').innerHTML=`${oldGas?`<div class="approval-warning" style="margin-bottom:16px"><b>${ic('alert','ic-sm')}</b><p><b>Google Apps Script (Kod.gs) eski sürümde çalışıyor!</b> Yeni kayıtların <b>ONAY_HAVUZU</b> tablosuna eksiksiz yazılması için <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs</b>’yi kopyalayın, Apps Script’e yapıştırıp kaydedin ve <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> adımlarını uygulayın (URL değişmez).</p></div>`:''}<section class="approval-kpis">${kpi('Bekleyen',rows.filter(x=>x._st==='BEKLIYOR').length,'Depocu veya yönetici kararı bekleyen','clock','orange')}${kpi('Onaylanan',rows.filter(x=>x._st==='ONAYLANDI').length,'Stoktan düşülen talepler','checkCircle','green')}${kpi('Reddedilen',rows.filter(x=>x._st==='REDDEDILDI').length,'Stok değişmeyen talepler','close','red')}</section><section class="panel"><div class="panel-head"><div><h2>Depocu / Yönetici Onay Havuzu</h2><p>Depo onayı gereken veya açık bakım kaydı bulunmayan çıkış talepleri</p></div><span class="meta-inline">${rows.length} talep</span></div><div class="approval-list">${rows.length?rows.map(x=>`<article><div class="approval-id"><span>${esc(x.id||'—')}</span><small>${x.date?fmt(x.date):'Tarih yok'}</small><span class="depot ${x._dep.toLowerCase()}">${x._dep==='ISG'?'İSG':'Mekanik'}</span>${x.depotApproval?'<span class="badge warning">Depo Onayı</span>':''}</div><div><b>${esc(x.name||'Eksik Talep Kaydı')}</b><p>${x.code?`<span class="mono">${esc(x.code)}</span> · `:''}${esc(x.machine||'—')}${x.qty?` · <strong>${num(x.qty)} ${esc(x.unit||'AD')}</strong>`:''}</p><small>${esc(x.requester||'Operatör yok')} — ${esc(x.reason||'')}</small></div><span class="badge ${x._st==='BEKLIYOR'?'warning':x._st==='ONAYLANDI'?'success':'danger'}">${esc(x._st)}</span>${x._st==='BEKLIYOR'?`<div class="approval-buttons"><button class="btn reject" data-approval="REDDET" data-id="${esc(x.id)}">${x.incomplete?'Reddet / Kapat':'Reddet'}</button>${x.incomplete?'':`<button class="btn approve" data-approval="ONAYLA" data-id="${esc(x.id)}">Onayla</button>`}</div>`:''}</article>`).join(''):'<div class="empty">Onay havuzunda bekleyen veya sonuçlanmış talep yok.</div>'}</div></section>`;}
+function renderApprovals(){const rows=[...(state.data.approvals||[])].map(x=>({...x,_st:approvalStatus(x),_dep:(norm(x.depot)==='ISG'||/ISG|KKD/.test(norm((x.machine||'')+' '+(x.itemId||''))))?'ISG':'MEKANIK'})).sort((a,b)=>(a._st==='BEKLIYOR'?0:1)-(b._st==='BEKLIYOR'?0:1));const oldGas=state.mode!=='demo'&&!['V8.7-ONAY2','V8.7-KKD','V8.8-SIPARIS','V8.8.1-MALIYET','V8.8.2-MALIYET','V8.8.3-MAIL','V8.8.4-OP-LOCK'].includes(state.data?.apiVersion);$('#content').innerHTML=`${oldGas?`<div class="approval-warning" style="margin-bottom:16px"><b>${ic('alert','ic-sm')}</b><p><b>Google Apps Script (Kod.gs) eski sürümde çalışıyor!</b> Yeni kayıtların <b>ONAY_HAVUZU</b> tablosuna eksiksiz yazılması için <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs</b>’yi kopyalayın, Apps Script’e yapıştırıp kaydedin ve <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> adımlarını uygulayın (URL değişmez).</p></div>`:''}<section class="approval-kpis">${kpi('Bekleyen',rows.filter(x=>x._st==='BEKLIYOR').length,'Depocu veya yönetici kararı bekleyen','clock','orange')}${kpi('Onaylanan',rows.filter(x=>x._st==='ONAYLANDI').length,'Stoktan düşülen talepler','checkCircle','green')}${kpi('Reddedilen',rows.filter(x=>x._st==='REDDEDILDI').length,'Stok değişmeyen talepler','close','red')}</section><section class="panel"><div class="panel-head"><div><h2>Depocu / Yönetici Onay Havuzu</h2><p>Depo onayı gereken veya açık bakım kaydı bulunmayan çıkış talepleri</p></div><span class="meta-inline">${rows.length} talep</span></div><div class="approval-list">${rows.length?rows.map(x=>`<article><div class="approval-id"><span>${esc(x.id||'—')}</span><small>${x.date?fmt(x.date):'Tarih yok'}</small><span class="depot ${x._dep.toLowerCase()}">${x._dep==='ISG'?'İSG':'Mekanik'}</span>${x.depotApproval?'<span class="badge warning">Depo Onayı</span>':''}</div><div><b>${esc(x.name||'Eksik Talep Kaydı')}</b><p>${x.code?`<span class="mono">${esc(x.code)}</span> · `:''}${esc(x.machine||'—')}${x.qty?` · <strong>${num(x.qty)} ${esc(x.unit||'AD')}</strong>`:''}</p><small>${esc(x.requester||'Operatör yok')} — ${esc(x.reason||'')}</small></div><span class="badge ${x._st==='BEKLIYOR'?'warning':x._st==='ONAYLANDI'?'success':'danger'}">${esc(x._st)}</span>${x._st==='BEKLIYOR'?`<div class="approval-buttons"><button class="btn reject" data-approval="REDDET" data-id="${esc(x.id)}">${x.incomplete?'Reddet / Kapat':'Reddet'}</button>${x.incomplete?'':`<button class="btn approve" data-approval="ONAYLA" data-id="${esc(x.id)}">Onayla</button>`}</div>`:''}</article>`).join(''):'<div class="empty">Onay havuzunda bekleyen veya sonuçlanmış talep yok.</div>'}</div></section>`;}
 
 const RECIPE_PERIODS=['AYLIK','3 AYLIK','6 AYLIK','YILLIK'];
 function isAllRecipePeriods(period){return norm(period)==='TUMU';}
@@ -3780,7 +3803,7 @@ async function renderPpe(){
  const pendingForms=forms.filter(x=>x.status==='İMZA BEKLİYOR');
  const signedForms=forms.filter(x=>x.status==='İMZALANDI');
  const totalSignedQty=signedForms.reduce((s,x)=>s+(Number(x.totalQty)||0),0);
- const oldGas=state.mode!=='demo'&&!['V8.7-KKD','V8.8-SIPARIS','V8.8.1-MALIYET','V8.8.2-MALIYET','V8.8.3-MAIL'].includes(state.data?.apiVersion);
+ const oldGas=state.mode!=='demo'&&!['V8.7-KKD','V8.8-SIPARIS','V8.8.1-MALIYET','V8.8.2-MALIYET','V8.8.3-MAIL','V8.8.4-OP-LOCK'].includes(state.data?.apiVersion);
  if(isOp){
   const selfCard=buildPpeFromMovements(state.data?.movements||[],[state.user.name],'all').cards[0]||{name:state.user.name,count:0,total:0,summary:[],records:[]};
   $('#content').innerHTML=`
@@ -4231,14 +4254,15 @@ function createBlankOrderDraft(seedItems=[],seedDept=''){
  const items=padOrderRows(seedItems,Math.max(14,seedItems.length));
  const dept=seedDept||defs.department||'';
  const autoCc=resolveCostCenterForDepartment(dept);
+ const reqDate=formatTrDate(new Date());
  return{
   isNew:true,formNo:nextNo,docCode:defs.docCode||'IZM_350600_LJT_001',
-  requestDate:formatTrDate(new Date()),requestedBy:reqBy,requestedByRole:state.user?.role||'',
+  requestDate:reqDate,requestedBy:reqBy,requestedByRole:state.user?.role||'',
   department:dept,costCenter:autoCc||(seedDept?'':(defs.costCenter||dept)),attachmentQty:'',
   items,totalAmount:items.reduce((s,x)=>s+x.total,0),currency:'TL',
   paymentTerm:defs.paymentTerm||'Peşin / Cash',paymentMaturity:defs.paymentMaturity||'',
   transport:defs.transport||'',deliveryPlace:defs.deliveryPlace||'',details:'',
-  approvals:{requirer:reqBy,managerName:defs.managerName||'FUAT ÇETİN',managerDate:'',approval1Name:defs.approval1Name||'İbrahim Özdemir',approval1Date:'',approval2Name:defs.approval2Name||'Yüksel Kurun',approval2Date:'',approval3Name:defs.approval3Name||'İbrahim Özdemir',approval3Date:''},
+  approvals:{requirer:reqBy,managerName:defs.managerName||'FUAT ÇETİN',managerDate:reqDate,approval1Name:defs.approval1Name||'İbrahim Özdemir',approval1Date:reqDate,approval2Name:defs.approval2Name||'Yüksel Kurun',approval2Date:reqDate,approval3Name:defs.approval3Name||'İbrahim Özdemir',approval3Date:reqDate},
   status:'TALEP_OLUSTURULDU',source:'PANEL',stockSynced:false
  };
 }
@@ -4247,7 +4271,14 @@ function openOrderEditor(orderOrNull=null,seedItems=[],seedDept=''){
   const copy=JSON.parse(JSON.stringify(orderOrNull));
   copy.isNew=false;
   copy.items=padOrderRows(copy.items||[],Math.max(14,(copy.items||[]).length));
-  copy.approvals=Object.assign({requirer:copy.requestedBy||'',managerName:'FUAT ÇETİN',managerDate:'',approval1Name:'İbrahim Özdemir',approval1Date:'',approval2Name:'Yüksel Kurun',approval2Date:'',approval3Name:'İbrahim Özdemir',approval3Date:''},copy.approvals||{});
+  const fallbackDate=copy.requestDate||formatTrDate(new Date());
+  const ap=copy.approvals||{};
+  copy.approvals=Object.assign({requirer:copy.requestedBy||'',managerName:'FUAT ÇETİN',managerDate:fallbackDate,approval1Name:'İbrahim Özdemir',approval1Date:fallbackDate,approval2Name:'Yüksel Kurun',approval2Date:fallbackDate,approval3Name:'İbrahim Özdemir',approval3Date:fallbackDate},ap,{
+   managerDate:ap.managerDate||fallbackDate,
+   approval1Date:ap.approval1Date||fallbackDate,
+   approval2Date:ap.approval2Date||fallbackDate,
+   approval3Date:ap.approval3Date||fallbackDate
+  });
   state.orderDraft=copy;
  }else{
   state.orderDraft=createBlankOrderDraft(seedItems,seedDept);
@@ -4296,7 +4327,7 @@ function costMapWarningBanner(isEditor=false){
  if(state.mode==='demo')return '';
  const mapCount=Object.keys(state.data?.lists?.machineCostCenters||{}).length;
  const ver=state.data?.apiVersion||'';
- const verOk=['V8.8.2-MALIYET','V8.8.3-MAIL'].includes(ver);
+ const verOk=['V8.8.2-MALIYET','V8.8.3-MAIL','V8.8.4-OP-LOCK'].includes(ver);
  if(verOk&&mapCount>0)return '';
  const isOp=state.user?.role==='OP';
  const macCount=(state.data?.lists?.machines||[]).length;
@@ -4304,7 +4335,7 @@ function costMapWarningBanner(isEditor=false){
  const meta=state.data?.lists?._meta;
  const diag=verOk
   ?`Bağlı sürüm: <b>${esc(ver)}</b> · Makine: <b>${macCount}</b> · Maliyet merkezi: <b>${ccCount}</b> · Eşleşme: <b>0</b>${meta?.headers?.length?` · VERİ başlıkları: <span class="mono">${esc(meta.headers.filter(Boolean).join(', '))}</span>`:''}`
-  :`Bağlı canlı <code>Kod.gs</code> sürümü: <b>${esc(ver||'Eski / V8.7')}</b> (beklenen: <b>V8.8.3-MAIL</b>). Apps Script’te yeni kodu yapıştırıp <b>Ctrl+S (Kaydet)</b> yaptıktan sonra <b>Dağıt → Dağıtımları yönet → Kalem → Yeni sürüm → Dağıt</b> yapın${isOp?'':' veya Bağlantı sekmesindeki <code>/exec</code> adresinin güncel dağıtımla aynı olduğunu kontrol edin'}.`;
+  :`Bağlı canlı <code>Kod.gs</code> sürümü: <b>${esc(ver||'Eski / V8.7')}</b> (beklenen: <b>V8.8.4-OP-LOCK</b>). Apps Script’te yeni kodu yapıştırıp <b>Ctrl+S (Kaydet)</b> yaptıktan sonra <b>Dağıt → Dağıtımları yönet → Kalem → Yeni sürüm → Dağıt</b> yapın${isOp?'':' veya Bağlantı sekmesindeki <code>/exec</code> adresinin güncel dağıtımla aynı olduğunu kontrol edin'}.`;
  return`<div class="notice" style="margin-bottom:${isEditor?12:14}px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
   <div style="flex:1;min-width:260px"><b>${verOk?'VERİ M Sütunu Eşleşmesi Bulunamadı':'Maliyet Merkezi Eşleşmesi Hazır Değil'}:</b> ${diag}</div>
   <div class="button-row" style="gap:8px;flex:none">
@@ -4497,22 +4528,22 @@ function renderOrderEditor(){
      <div class="akg-sig-col">
       <div class="akg-sig-top">Talep Edenin Amiri<br>Manager of Requirer</div>
       <div class="akg-sig-sub"><span>Onay / Approval</span><span>Tarih / Date</span></div>
-      <div class="akg-sig-inputs"><input id="poSigManager" value="${esc(d.approvals?.managerName||'FUAT ÇETİN')}" ${roAttr}><input id="poSigManagerDate" value="${esc(d.approvals?.managerDate||'')}" placeholder="GG.AA.YYYY" ${roAttr}></div>
+      <div class="akg-sig-inputs"><input id="poSigManager" value="${esc(d.approvals?.managerName||'FUAT ÇETİN')}" ${roAttr}><input id="poSigManagerDate" value="${esc(d.approvals?.managerDate||d.requestDate||formatTrDate(new Date()))}" placeholder="GG.AA.YYYY" ${roAttr}></div>
      </div>
      <div class="akg-sig-col">
       <div class="akg-sig-top">1.Onay /<br>1.Approval</div>
       <div class="akg-sig-sub"><span>Onay / Approval</span><span>Tarih / Date</span></div>
-      <div class="akg-sig-inputs"><input id="poSig1Name" value="${esc(d.approvals?.approval1Name||'İbrahim Özdemir')}" ${roAttr}><input id="poSig1Date" value="${esc(d.approvals?.approval1Date||'')}" placeholder="GG.AA.YYYY" ${roAttr}></div>
+      <div class="akg-sig-inputs"><input id="poSig1Name" value="${esc(d.approvals?.approval1Name||'İbrahim Özdemir')}" ${roAttr}><input id="poSig1Date" value="${esc(d.approvals?.approval1Date||d.requestDate||formatTrDate(new Date()))}" placeholder="GG.AA.YYYY" ${roAttr}></div>
      </div>
      <div class="akg-sig-col">
       <div class="akg-sig-top">2.Onay /<br>2.Approval</div>
       <div class="akg-sig-sub"><span>Onay / Approval</span><span>Tarih / Date</span></div>
-      <div class="akg-sig-inputs"><input id="poSig2Name" value="${esc(d.approvals?.approval2Name||'Yüksel Kurun')}" ${roAttr}><input id="poSig2Date" value="${esc(d.approvals?.approval2Date||'')}" placeholder="GG.AA.YYYY" ${roAttr}></div>
+      <div class="akg-sig-inputs"><input id="poSig2Name" value="${esc(d.approvals?.approval2Name||'Yüksel Kurun')}" ${roAttr}><input id="poSig2Date" value="${esc(d.approvals?.approval2Date||d.requestDate||formatTrDate(new Date()))}" placeholder="GG.AA.YYYY" ${roAttr}></div>
      </div>
      <div class="akg-sig-col">
       <div class="akg-sig-top">3.Onay /<br>3.Approval</div>
       <div class="akg-sig-sub"><span>Onay / Approval</span><span>Tarih / Date</span></div>
-      <div class="akg-sig-inputs"><input id="poSig3Name" value="${esc(d.approvals?.approval3Name||'İbrahim Özdemir')}" ${roAttr}><input id="poSig3Date" value="${esc(d.approvals?.approval3Date||'')}" placeholder="GG.AA.YYYY" ${roAttr}></div>
+      <div class="akg-sig-inputs"><input id="poSig3Name" value="${esc(d.approvals?.approval3Name||'İbrahim Özdemir')}" ${roAttr}><input id="poSig3Date" value="${esc(d.approvals?.approval3Date||d.requestDate||formatTrDate(new Date()))}" placeholder="GG.AA.YYYY" ${roAttr}></div>
      </div>
     </div>
    </form>
@@ -4536,13 +4567,13 @@ function syncDraftFromDom(){
  d.approvals={
   requirer:d.requestedBy,
   managerName:$('#poSigManager')?.value.trim()||'FUAT ÇETİN',
-  managerDate:$('#poSigManagerDate')?.value.trim()||'',
+  managerDate:$('#poSigManagerDate')?.value.trim()||d.requestDate,
   approval1Name:$('#poSig1Name')?.value.trim()||'İbrahim Özdemir',
-  approval1Date:$('#poSig1Date')?.value.trim()||'',
+  approval1Date:$('#poSig1Date')?.value.trim()||d.requestDate,
   approval2Name:$('#poSig2Name')?.value.trim()||'Yüksel Kurun',
-  approval2Date:$('#poSig2Date')?.value.trim()||'',
+  approval2Date:$('#poSig2Date')?.value.trim()||d.requestDate,
   approval3Name:$('#poSig3Name')?.value.trim()||'İbrahim Özdemir',
-  approval3Date:$('#poSig3Date')?.value.trim()||''
+  approval3Date:$('#poSig3Date')?.value.trim()||d.requestDate
  };
  if($('#poSigRequirer'))$('#poSigRequirer').value=d.requestedBy;
  d.totalAmount=Math.round(d.items.reduce((s,x)=>s+(Number(x.total)||0),0)*100)/100;
@@ -4633,7 +4664,7 @@ function printPurchaseOrder(order){
    <td class="c">${esc(it.deliveryDate)}</td>
   </tr>`;
  }).join('');
- const docHtml=`<!doctype html><meta charset="utf-8"><title>${esc(order.formNo||'Satın Alma Talep Formu')}</title><style>@page{size:A4 landscape;margin:7mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}html,body{margin:0;padding:0;background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;font-size:10px}.sheet{width:100%;border:1.5px solid #000}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #000;padding:3.5px 5px;vertical-align:middle;word-wrap:break-word}.c{text-align:center}.r{text-align:right}.b{font-weight:700}.mono{font-family:monospace}.red{color:#dc2626}.hdr{display:grid;grid-template-columns:170px 1fr 170px;border-bottom:1.5px solid #000}.hdr>div{display:flex;align-items:center;justify-content:center;padding:6px 8px}.hdr>div+div{border-left:1px solid #000}.hdr-title{font-size:19px;font-weight:800}.hdr-doc{font-size:11.5px;font-weight:700;font-family:monospace}.meta{display:grid;grid-template-columns:135px 1fr 135px 1.25fr 140px 1fr;border-bottom:1.5px solid #000}.meta>div{padding:4px 6px;border-right:1px solid #000;border-bottom:1px solid #000;line-height:1.25}.meta>div:nth-child(6n){border-right:0}.meta>div:nth-last-child(-n+6){border-bottom:0}.ml{font-size:9px;font-weight:700}.mv{font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;text-align:center}.mv.left{justify-content:flex-start;text-align:left}.itbl th{font-size:9px;font-weight:700;text-align:center;line-height:1.2;border-top:0}.itbl td{height:20px;font-size:9.8px;font-weight:700}.itbl td:first-child,.itbl th:first-child{border-left:0}.itbl td:last-child,.itbl th:last-child{border-right:0}.totrow td{border-top:1.5px solid #000;border-bottom:1.5px solid #000;padding:6px 7px;font-size:10px;font-weight:800}.totval{font-size:14px;font-weight:800;text-align:center}.pay{display:grid;grid-template-columns:115px 1fr 115px 1fr 80px 1fr 110px 1fr;border-bottom:1px solid #000}.pay>div{padding:4px 6px;border-right:1px solid #000;line-height:1.25;display:flex;flex-direction:column;justify-content:center}.pay>div:last-child{border-right:0}.pv{font-size:10px;font-weight:600;text-align:center;align-items:center}.det{display:grid;grid-template-columns:115px 1fr;border-bottom:1.5px solid #000;min-height:56px}.det>div{padding:6px 8px;display:flex;flex-direction:column;justify-content:center}.det>div:first-child{border-right:1px solid #000;font-size:9.5px;font-weight:700}.det-txt{font-size:11px;font-weight:700;white-space:pre-wrap}.sigs{display:grid;grid-template-columns:1.05fr 1.55fr 1.55fr 1.55fr 1.55fr}.sc{border-right:1px solid #000;display:flex;flex-direction:column}.sc:last-child{border-right:0}.st{padding:4px;text-align:center;font-size:9.5px;font-weight:700;line-height:1.2;border-bottom:1px solid #000}.ss{display:grid;grid-template-columns:1fr 76px;border-bottom:1px dashed #333;font-size:8.5px;font-weight:700;text-align:center}.ss.one{grid-template-columns:1fr}.ss span{padding:2.5px 3px}.ss span+span{border-left:1px dashed #333}.sv{display:grid;grid-template-columns:1fr 76px;min-height:40px}.sv.one{grid-template-columns:1fr}.sv span{display:flex;align-items:center;justify-content:center;text-align:center;padding:4px;font-size:10.5px;font-weight:700}.sv span+span{border-left:1px dashed #333;font-size:9.5px;font-weight:600}</style><div class="sheet"><div class="hdr"><div>${akgLogoSvg(32)}</div><div class="hdr-title">Satın Alma Talep Formu / Purchase Request Form</div><div class="hdr-doc">${esc(order.docCode||'IZM_350600_LJT_001')}</div></div><div class="meta"><div class="ml">Talep Tarihi<br>Date of Request</div><div class="mv left">${esc(order.requestDate||'')}</div><div class="ml">Talep Eden Bölüm<br>Department</div><div class="mv">${esc(order.department||'')}</div><div class="ml">Form Numarası<br>Form Number</div><div class="mv">${esc(order.formNo||'')}</div><div class="ml">Talep Eden Kişi<br>Requested by</div><div class="mv left">${esc(order.requestedBy||'')}</div><div class="ml">Maliyet Merkezi<br>Cost Center</div><div class="mv">${esc(order.costCenter||'')}</div><div class="ml">Ekli Doküman Adedi<br>Attachment Quantity</div><div class="mv">${esc(order.attachmentQty||'')}</div></div><table class="itbl"><colgroup><col style="width:26px"><col style="width:25%"><col style="width:11%"><col style="width:14%"><col style="width:6.5%"><col style="width:6%"><col style="width:10.5%"><col style="width:6%"><col style="width:9.5%"><col style="width:11.5%"></colgroup><thead><tr><th>#</th><th>Malzeme Tanımı<br>Description of Material</th><th>Malzeme Kodu<br>Material Code</th><th>Tedarikçi Firma<br>Supplier</th><th>Miktar<br>Quantity</th><th>Birim<br>Unit</th><th>Birim Fiyat (KDV Hariç)<br>Unit Price (VAT Ex.)</th><th>Para Birimi<br>Currency</th><th>Toplam Tutar<br>Total Amount</th><th>Teslim Tarihi<br>Delivery Date</th></tr></thead><tbody>${bodyRows}</tbody><tfoot><tr class="totrow"><td colspan="8" class="r">TOPLAM TUTAR (<span class="red">KDV HARİÇ</span>) / TOTAL AMOUNT (<span class="red">VAT EXCLUDED</span>)</td><td class="totval">${fmtCur2(grand)}</td><td></td></tr></tfoot></table><div class="pay"><div class="ml">Ödeme Şekli<br>Payment Term</div><div class="pv">${esc(order.paymentTerm||'')}</div><div class="ml">Ödeme Vadesi<br>Payment Maturity</div><div class="pv">${esc(order.paymentMaturity||'')}</div><div class="ml">Nakliye<br>Transport</div><div class="pv">${esc(order.transport||'')}</div><div class="ml">Teslimat Yeri<br>Delivery Place</div><div class="pv">${esc(order.deliveryPlace||'')}</div></div><div class="det"><div>Detaylar<br>Details</div><div class="det-txt">${esc(order.details||'')}</div></div><div class="sigs"><div class="sc"><div class="st">Talep Eden<br>Requirer</div><div class="ss one"><span>Onay / Approval</span></div><div class="sv one"><span>${esc(ap.requirer||order.requestedBy||'')}</span></div></div><div class="sc"><div class="st">Talep Edenin Amiri<br>Manager of Requirer</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.managerName||'FUAT ÇETİN')}</span><span>${esc(ap.managerDate||'')}</span></div></div><div class="sc"><div class="st">1.Onay /<br>1.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval1Name||'İbrahim Özdemir')}</span><span>${esc(ap.approval1Date||'')}</span></div></div><div class="sc"><div class="st">2.Onay /<br>2.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval2Name||'Yüksel Kurun')}</span><span>${esc(ap.approval2Date||'')}</span></div></div><div class="sc"><div class="st">3.Onay /<br>3.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval3Name||'İbrahim Özdemir')}</span><span>${esc(ap.approval3Date||'')}</span></div></div></div></div>`;
+ const docHtml=`<!doctype html><meta charset="utf-8"><title>${esc(order.formNo||'Satın Alma Talep Formu')}</title><style>@page{size:A4 landscape;margin:7mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}html,body{margin:0;padding:0;background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;font-size:10px}.sheet{width:100%;border:1.5px solid #000}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #000;padding:3.5px 5px;vertical-align:middle;word-wrap:break-word}.c{text-align:center}.r{text-align:right}.b{font-weight:700}.mono{font-family:monospace}.red{color:#dc2626}.hdr{display:grid;grid-template-columns:170px 1fr 170px;border-bottom:1.5px solid #000}.hdr>div{display:flex;align-items:center;justify-content:center;padding:6px 8px}.hdr>div+div{border-left:1px solid #000}.hdr-title{font-size:19px;font-weight:800}.hdr-doc{font-size:11.5px;font-weight:700;font-family:monospace}.meta{display:grid;grid-template-columns:135px 1fr 135px 1.25fr 140px 1fr;border-bottom:1.5px solid #000}.meta>div{padding:4px 6px;border-right:1px solid #000;border-bottom:1px solid #000;line-height:1.25}.meta>div:nth-child(6n){border-right:0}.meta>div:nth-last-child(-n+6){border-bottom:0}.ml{font-size:9px;font-weight:700}.mv{font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;text-align:center}.mv.left{justify-content:flex-start;text-align:left}.itbl th{font-size:9px;font-weight:700;text-align:center;line-height:1.2;border-top:0}.itbl td{height:20px;font-size:9.8px;font-weight:700}.itbl td:first-child,.itbl th:first-child{border-left:0}.itbl td:last-child,.itbl th:last-child{border-right:0}.totrow td{border-top:1.5px solid #000;border-bottom:1.5px solid #000;padding:6px 7px;font-size:10px;font-weight:800}.totval{font-size:14px;font-weight:800;text-align:center}.pay{display:grid;grid-template-columns:115px 1fr 115px 1fr 80px 1fr 110px 1fr;border-bottom:1px solid #000}.pay>div{padding:4px 6px;border-right:1px solid #000;line-height:1.25;display:flex;flex-direction:column;justify-content:center}.pay>div:last-child{border-right:0}.pv{font-size:10px;font-weight:600;text-align:center;align-items:center}.det{display:grid;grid-template-columns:115px 1fr;border-bottom:1.5px solid #000;min-height:56px}.det>div{padding:6px 8px;display:flex;flex-direction:column;justify-content:center}.det>div:first-child{border-right:1px solid #000;font-size:9.5px;font-weight:700}.det-txt{font-size:11px;font-weight:700;white-space:pre-wrap}.sigs{display:grid;grid-template-columns:1.05fr 1.55fr 1.55fr 1.55fr 1.55fr}.sc{border-right:1px solid #000;display:flex;flex-direction:column}.sc:last-child{border-right:0}.st{padding:4px;text-align:center;font-size:9.5px;font-weight:700;line-height:1.2;border-bottom:1px solid #000}.ss{display:grid;grid-template-columns:1fr 76px;border-bottom:1px dashed #333;font-size:8.5px;font-weight:700;text-align:center}.ss.one{grid-template-columns:1fr}.ss span{padding:2.5px 3px}.ss span+span{border-left:1px dashed #333}.sv{display:grid;grid-template-columns:1fr 76px;min-height:40px}.sv.one{grid-template-columns:1fr}.sv span{display:flex;align-items:center;justify-content:center;text-align:center;padding:4px;font-size:10.5px;font-weight:700}.sv span+span{border-left:1px dashed #333;font-size:9.5px;font-weight:600}</style><div class="sheet"><div class="hdr"><div>${akgLogoSvg(32)}</div><div class="hdr-title">Satın Alma Talep Formu / Purchase Request Form</div><div class="hdr-doc">${esc(order.docCode||'IZM_350600_LJT_001')}</div></div><div class="meta"><div class="ml">Talep Tarihi<br>Date of Request</div><div class="mv left">${esc(order.requestDate||'')}</div><div class="ml">Talep Eden Bölüm<br>Department</div><div class="mv">${esc(order.department||'')}</div><div class="ml">Form Numarası<br>Form Number</div><div class="mv">${esc(order.formNo||'')}</div><div class="ml">Talep Eden Kişi<br>Requested by</div><div class="mv left">${esc(order.requestedBy||'')}</div><div class="ml">Maliyet Merkezi<br>Cost Center</div><div class="mv">${esc(order.costCenter||'')}</div><div class="ml">Ekli Doküman Adedi<br>Attachment Quantity</div><div class="mv">${esc(order.attachmentQty||'')}</div></div><table class="itbl"><colgroup><col style="width:26px"><col style="width:25%"><col style="width:11%"><col style="width:14%"><col style="width:6.5%"><col style="width:6%"><col style="width:10.5%"><col style="width:6%"><col style="width:9.5%"><col style="width:11.5%"></colgroup><thead><tr><th>#</th><th>Malzeme Tanımı<br>Description of Material</th><th>Malzeme Kodu<br>Material Code</th><th>Tedarikçi Firma<br>Supplier</th><th>Miktar<br>Quantity</th><th>Birim<br>Unit</th><th>Birim Fiyat (KDV Hariç)<br>Unit Price (VAT Ex.)</th><th>Para Birimi<br>Currency</th><th>Toplam Tutar<br>Total Amount</th><th>Teslim Tarihi<br>Delivery Date</th></tr></thead><tbody>${bodyRows}</tbody><tfoot><tr class="totrow"><td colspan="8" class="r">TOPLAM TUTAR (<span class="red">KDV HARİÇ</span>) / TOTAL AMOUNT (<span class="red">VAT EXCLUDED</span>)</td><td class="totval">${fmtCur2(grand)}</td><td></td></tr></tfoot></table><div class="pay"><div class="ml">Ödeme Şekli<br>Payment Term</div><div class="pv">${esc(order.paymentTerm||'')}</div><div class="ml">Ödeme Vadesi<br>Payment Maturity</div><div class="pv">${esc(order.paymentMaturity||'')}</div><div class="ml">Nakliye<br>Transport</div><div class="pv">${esc(order.transport||'')}</div><div class="ml">Teslimat Yeri<br>Delivery Place</div><div class="pv">${esc(order.deliveryPlace||'')}</div></div><div class="det"><div>Detaylar<br>Details</div><div class="det-txt">${esc(order.details||'')}</div></div><div class="sigs"><div class="sc"><div class="st">Talep Eden<br>Requirer</div><div class="ss one"><span>Onay / Approval</span></div><div class="sv one"><span>${esc(ap.requirer||order.requestedBy||'')}</span></div></div><div class="sc"><div class="st">Talep Edenin Amiri<br>Manager of Requirer</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.managerName||'FUAT ÇETİN')}</span><span>${esc(ap.managerDate||order.requestDate||'')}</span></div></div><div class="sc"><div class="st">1.Onay /<br>1.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval1Name||'İbrahim Özdemir')}</span><span>${esc(ap.approval1Date||order.requestDate||'')}</span></div></div><div class="sc"><div class="st">2.Onay /<br>2.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval2Name||'Yüksel Kurun')}</span><span>${esc(ap.approval2Date||order.requestDate||'')}</span></div></div><div class="sc"><div class="st">3.Onay /<br>3.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval3Name||'İbrahim Özdemir')}</span><span>${esc(ap.approval3Date||order.requestDate||'')}</span></div></div></div></div>`;
  let frame=$('#orderPrintFrame');
  if(!frame){frame=document.createElement('iframe');frame.id='orderPrintFrame';frame.setAttribute('aria-hidden','true');frame.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';document.body.appendChild(frame);}
  const doc=frame.contentDocument||frame.contentWindow.document;
@@ -4769,7 +4800,7 @@ function openOrderEmailModal(order){
    <div class="form-span-2">${field('Konu *',`<input id="ordMailSubj" type="text" value="${esc(defaultSubj)}" required>`)}</div>
    <div class="form-span-2">${field('Mesaj',`<textarea id="ordMailMsg" rows="4" style="width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font:inherit">${esc(defaultMsg)}</textarea>`)}</div>
   </form>
-  ${state.mode!=='demo'&&state.data?.apiVersion!=='V8.8.3-MAIL'?`<div class="notice" style="margin-top:10px"><b>Not:</b> Canlı PDF mail gönderimi için <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs (V8.8.3-MAIL)</b> sürümünü Apps Script’e dağıtmanız gerekir.</div>`:''}
+  ${state.mode!=='demo'&&!['V8.8.3-MAIL','V8.8.4-OP-LOCK'].includes(state.data?.apiVersion)?`<div class="notice" style="margin-top:10px"><b>Not:</b> Canlı PDF mail gönderimi için <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs (V8.8.4-OP-LOCK)</b> sürümünü Apps Script’e dağıtmanız gerekir.</div>`:''}
  `,`
   <button type="button" class="btn ghost" data-close>Vazgeç</button>
   <button type="button" class="btn ghost" data-action="order-email-preview">${ic('print','ic-sm')} PDF Önizle</button>
@@ -4833,7 +4864,7 @@ function receiveOrderToStock(){
  toast(`${payload.formNo} teslim alındı ve ${stockItems.length} kalem stok girişi sıraya alındı.`);
 }
 
-function renderConnection(){const code=$('#gasCode').textContent.trim();const gasOk=state.mode==='demo'||state.data?.apiVersion==='V8.8.3-MAIL';$('#content').innerHTML=`<section class="connection-grid"><article class="panel"><div class="panel-head"><div><h2>Bağlantı Modu</h2><p>GitHub Pages yayınında Doğrudan GAS (/exec), yerel sunucuda /api/gas önerilir</p></div><span class="connection ${state.mode}"><i></i>${state.mode.toUpperCase()}</span></div><div class="mode-cards">${[['proxy','Güvenli /api/gas','GAS adresi ve proxy anahtarı sunucuda gizli kalır; V8 kayıt akışı etkindir.'],['direct','Tek HTML / Doğrudan','GitHub Pages veya tek HTML için Apps Script ALLOW_DIRECT=true ile kullanın.'],['demo','Demo / Yerel','Gerçek tabloya yazmaz; tüm ekranlar test edilir.']].map(([m,t,d])=>`<label class="${state.mode===m?'selected':''}"><input type="radio" name="mode" value="${m}" ${state.mode===m?'checked':''}><span><b>${t}</b><small>${d}</small></span></label>`).join('')}</div>${field('Apps Script /exec adresi',`<input id="directUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan mod dışında tarayıcıya açılmaz.')}<div class="button-row"><button class="btn ghost" data-action="test-connection">Bağlantıyı Test Et</button><button class="btn primary" data-action="save-connection">Ayarları Kaydet</button></div></article><article class="panel"><div class="panel-head"><div><h2>Bağımsız Tek HTML Dosyaları</h2><p>Tam yönetim paneli ve sahaya özel bağımsız QR çıkış terminali</p></div><span class="ic" style="color:var(--orange)">${ic('download','ic-lg')}</span></div><div class="download-card"><b>1. Ana Yönetim Paneli (Tek HTML)</b><p>CSS, JavaScript ve QR üreticisi tek dosyada. Demo veya canlı Google Sheets bağlantısı ile çalışır.</p><button class="btn primary large" data-action="download-html">${ic('download','ic-sm')} Ana Panel HTML İndir</button></div><div class="download-card" style="margin-top:12px"><b>2. Bağımsız Depo QR Terminali (Tek HTML)</b><p>Depodaki QR kodu okutulduğunda önce OP şifresini sorar, eşleşen parçayı açar; Depo Onayı Gerekli ise Depocu onayı ister, değilse doğrudan stoktan düşer.</p><div class="button-row"><button class="btn primary" data-action="download-qr-terminal">${ic('download','ic-sm')} QR Terminali İndir</button><button class="btn ghost" data-action="open-qr-terminal">${ic('qr','ic-sm')} Terminali Dene</button></div></div><div class="security-list"><p><span>${ic('check','ic-sm')}</span> Rol ve depo kapsamı hem arayüzde hem Kod.gs’de doğrulanır</p><p><span>${ic('check','ic-sm')}</span> PIN yerine imzalı, süreli oturum belirteci kullanılır</p><p><span>${ic('check','ic-sm')}</span> Bağımsız QR terminali <span class="mono">./qr-terminal.html</span> ve <span class="mono">?qr=KOD</span> destekler</p></div></article></section><section class="panel code-panel"><div class="panel-head"><div><h2>Google Apps Script · Kod.gs ${gasOk?'<span class="badge success">Güncel (V8.8.3-MAIL)</span>':'<span class="badge danger">Eski Sürüm Bağlı — Güncelleme Gerekli</span>'}</h2><p>Kodu kopyalayıp Apps Script’te kaydettikten sonra <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> yapın (PDF mail izni için bir kez <code>TEST_MAIL_IZNI</code> çalıştırın).</p></div><button class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kodu Kopyala</button></div><pre><code>${esc(code)}</code></pre></section>`;}
+function renderConnection(){const code=$('#gasCode').textContent.trim();const gasOk=state.mode==='demo'||state.data?.apiVersion==='V8.8.4-OP-LOCK';$('#content').innerHTML=`<section class="connection-grid"><article class="panel"><div class="panel-head"><div><h2>Bağlantı Modu</h2><p>GitHub Pages yayınında Doğrudan GAS (/exec), yerel sunucuda /api/gas önerilir</p></div><span class="connection ${state.mode}"><i></i>${state.mode.toUpperCase()}</span></div><div class="mode-cards">${[['proxy','Güvenli /api/gas','GAS adresi ve proxy anahtarı sunucuda gizli kalır; V8 kayıt akışı etkindir.'],['direct','Tek HTML / Doğrudan','GitHub Pages veya tek HTML için Apps Script ALLOW_DIRECT=true ile kullanın.'],['demo','Demo / Yerel','Gerçek tabloya yazmaz; tüm ekranlar test edilir.']].map(([m,t,d])=>`<label class="${state.mode===m?'selected':''}"><input type="radio" name="mode" value="${m}" ${state.mode===m?'checked':''}><span><b>${t}</b><small>${d}</small></span></label>`).join('')}</div>${field('Apps Script /exec adresi',`<input id="directUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan mod dışında tarayıcıya açılmaz.')}<div class="button-row"><button class="btn ghost" data-action="test-connection">Bağlantıyı Test Et</button><button class="btn primary" data-action="save-connection">Ayarları Kaydet</button></div></article><article class="panel"><div class="panel-head"><div><h2>Bağımsız Tek HTML Dosyaları</h2><p>Tam yönetim paneli ve sahaya özel bağımsız QR çıkış terminali</p></div><span class="ic" style="color:var(--orange)">${ic('download','ic-lg')}</span></div><div class="download-card"><b>1. Ana Yönetim Paneli (Tek HTML)</b><p>CSS, JavaScript ve QR üreticisi tek dosyada. Demo veya canlı Google Sheets bağlantısı ile çalışır.</p><button class="btn primary large" data-action="download-html">${ic('download','ic-sm')} Ana Panel HTML İndir</button></div><div class="download-card" style="margin-top:12px"><b>2. Bağımsız Depo QR & Sipariş Terminali (Tek HTML)</b><p>Operatörler (OP) depo sistemine girmeden yalnızca bu terminalden QR okutup stok düşer ve sipariş talebi oluşturur.</p><div class="button-row"><button class="btn primary" data-action="download-qr-terminal">${ic('download','ic-sm')} QR Terminali İndir</button><button class="btn ghost" data-action="open-qr-terminal">${ic('qr','ic-sm')} Terminali Dene</button></div></div><div class="security-list"><p><span>${ic('check','ic-sm')}</span> OP rolü hem arayüzde hem Kod.gs’de depo panelinden engellenir (yalnız QR ve Sipariş)</p><p><span>${ic('check','ic-sm')}</span> PIN yerine imzalı, süreli oturum belirteci kullanılır</p><p><span>${ic('check','ic-sm')}</span> Bağımsız QR terminali <span class="mono">./qr-terminal.html</span> ve <span class="mono">?qr=KOD</span> destekler</p></div></article></section><section class="panel code-panel"><div class="panel-head"><div><h2>Google Apps Script · Kod.gs ${gasOk?'<span class="badge success">Güncel (V8.8.4-OP-LOCK)</span>':'<span class="badge danger">Eski Sürüm Bağlı — Güncelleme Gerekli</span>'}</h2><p>Kodu kopyalayıp Apps Script’te kaydettikten sonra <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> yapın (PDF mail izni için bir kez <code>TEST_MAIL_IZNI</code> çalıştırın).</p></div><button class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kodu Kopyala</button></div><pre><code>${esc(code)}</code></pre></section>`;}
 
 let cameraStream=null,cameraTimer=null;
 async function openScanner(){modal('QR Kodunu Okut',`<div class="camera"><video id="cameraVideo" playsinline muted></video><div class="camera-frame"></div></div><p class="camera-help">Kamera izni verin ve kodu çerçeveye hizalayın. Desteklenmiyorsa kodu elle girin.</p>${field('Manuel kod','<input id="scanManual" placeholder="RUL-6205 veya ISG-DOLAP">')}`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="scan-manual-go">Devam Et</button>`);try{cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});const v=$('#cameraVideo');v.srcObject=cameraStream;await v.play();if('BarcodeDetector'in window){const det=new BarcodeDetector({formats:['qr_code']});cameraTimer=setInterval(async()=>{try{const codes=await det.detect(v);if(codes[0]?.rawValue){handleQr(codes[0].rawValue);}}catch{}},500);}}catch(e){toast('Kamera açılamadı; kodu elle girebilirsiniz.','error');}}
@@ -4849,9 +4880,9 @@ function loginSettingsModal(){
  const modeTxt=state.mode==='demo'?'Demo Modu':state.mode==='direct'?'Doğrudan GAS':'/api/gas';
  modal('Kurulum ve Ayarlar',`
   <div class="setup-sec">
-   <div class="setup-sec-head"><b>Operatör QR Uygulaması</b><small>Sisteme girmeden sadece QR çıkış</small></div>
+   <div class="setup-sec-head"><b>Operatör QR & Sipariş Terminali</b><small>OP kullanıcılar yalnız buradan QR ve sipariş işlemi yapar</small></div>
    <div class="setup-actions">
-    <button class="btn ghost" type="button" data-action="open-qr-terminal">${ic('qr','ic-sm')} Operatör QR Okuyucu</button>
+    <button class="btn ghost" type="button" data-action="go-qr-terminal">${ic('qr','ic-sm')} QR & Sipariş Terminali</button>
     <button class="btn primary pwa-install-btn" type="button" data-action="pwa-install-modal">${ic('phone','ic-sm')} Telefona QR Kur</button>
    </div>
   </div>
@@ -4862,30 +4893,44 @@ function loginSettingsModal(){
     ${field('Apps Script /exec Adresi',`<input id="loginDirectUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan modda Apps Script Web App /exec adresini yapıştırın.')}
     <div class="button-row">
      <button type="button" class="btn ghost" data-action="login-test-conn">Bağlantıyı Test Et</button>
-     <button type="button" class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kod.gs (V8.8.3) Kopyala</button>
+     <button type="button" class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kod.gs (V8.8.4) Kopyala</button>
      <button type="button" class="btn primary" data-action="login-save-conn">Ayarları Kaydet</button>
     </div>
    </div>
   </div>
   ${state.mode==='demo'?`<div class="setup-sec">
-   <div class="setup-sec-head"><b>Demo PIN’leri</b><small>Tıkla ve otomatik doldur</small></div>
+   <div class="setup-sec-head"><b>Demo Panel PIN’leri</b><small>Depo yönetimi için tıklayıp doldurun</small></div>
    <div class="demo-pins" style="margin-top:0">
-    <button type="button" data-fill-pin="1111"><span>Operatör</span><b>1111</b></button>
     <button type="button" data-fill-pin="2222"><span>Mekanik</span><b>2222</b></button>
     <button type="button" data-fill-pin="3333"><span>İSG</span><b>3333</b></button>
     <button type="button" data-fill-pin="4444"><span>Yönetici</span><b>4444</b></button>
    </div>
+   <small style="display:block;margin-top:8px;color:var(--muted)">Operatör PIN’i (<b>1111</b>) depo sistemine giriş yapamaz; yalnızca <b>Operatör QR & Sipariş Terminali</b>’nde geçerlidir.</small>
   </div>`:''}
  `,`<button class="btn ghost" data-close>Kapat</button>`);
 }
-function renderLogin(){document.body.innerHTML=`<div id="offlineBanner" class="offline-banner" ${navigator.onLine?'hidden':''}>İnternet bağlantısı yok — çevrimdışı moddasınız.</div><div id="login" class="login"><section class="login-art"><div class="art-grid"></div><div class="login-brand"><span class="brand-mark">M</span><div><b>Mekanik + İSG Depo</b><small>Depo 2027 · V8.7</small></div></div><div class="login-copy"><span class="login-kicker">Akıllı Stok · Güvenli QR Çıkış</span><h1>İki depo.<br>Tek kontrol merkezi.</h1><p>Rol bazlı yetki yönetimi, hızlı QR çıkışı, planlı bakım reçeteleri ve tüketim analizleri tek sistemde.</p></div><div class="login-stats"><div><b>4</b><span>Yetki Rolü</span></div><div><b>2</b><span>Bağımsız Depo</span></div><div><b>1</b><span>Güvenli Sistem</span></div></div></section><section class="login-form"><form id="loginForm"><span class="kicker">Güvenli Giriş</span><h2>PIN ile devam edin</h2><p>${state.mode==='demo'?'Şu an <b>Demo</b> modundasınız. Canlı bağlantı ve QR kurulumu için aşağıdan <b>Kurulum ve Ayarlar</b>’ı açın.':'PIN’iniz VERİ sayfasındaki rol ve depo yetkinizi belirler.'}</p>${field('4-8 haneli PIN',`<div class="pin-wrap"><input name="pin" type="password" inputmode="numeric" maxlength="8" autocomplete="current-password" placeholder="••••"><button type="button" data-action="toggle-pin" aria-label="PIN göster">${ic('eye')}</button></div>`)}<button class="btn primary large wide" type="submit">Güvenli Giriş →</button><button class="btn ghost large wide" type="button" data-action="login-settings-modal" style="margin-top:10px">${ic('settings','ic-sm')} Kurulum ve Ayarlar</button><div class="login-mode"><i class="${state.mode}"></i>${state.mode==='demo'?'Demo verisi etkin':state.mode==='direct'?'Canlı bağlantı: Doğrudan GAS':'Canlı bağlantı: Güvenli /api/gas'}</div></form><footer>Mekanik + İSG Depo 2027 · V8.7</footer></section></div><div id="toasts"></div><div id="modalRoot" hidden></div><div id="ppePrintRoot"></div><div class="loader"><span></span></div>`;$('#loginForm').addEventListener('submit',login);ensureSaveBar();warmupGas();}
+function showOpBlockedBanner(msg){
+ const box=$('#opBlockNotice');if(!box)return;
+ box.innerHTML=`<b>Operatör (OP) Depo Sistemine Giriş Yapamaz</b><span>${esc(msg||'Operatör hesapları yalnızca QR Kod Okutma ve Sipariş Talebi ekranını kullanabilir.')}</span><button type="button" class="btn primary wide" data-action="go-qr-terminal">${ic('qr','ic-sm')} Operatör QR & Sipariş Terminaline Git →</button>`;
+ box.hidden=false;
+}
+function renderLogin(){document.body.innerHTML=`<div id="offlineBanner" class="offline-banner" ${navigator.onLine?'hidden':''}>İnternet bağlantısı yok — çevrimdışı moddasınız.</div><div id="login" class="login"><section class="login-art"><div class="art-grid"></div><div class="login-brand"><span class="brand-mark">M</span><div><b>Mekanik + İSG Depo</b><small>Depo 2027 · V8.7</small></div></div><div class="login-copy"><span class="login-kicker">Akıllı Stok · Güvenli QR Çıkış</span><h1>İki depo.<br>Tek kontrol merkezi.</h1><p>Rol bazlı yetki yönetimi, hızlı QR çıkışı, planlı bakım reçeteleri ve tüketim analizleri tek sistemde.</p></div><div class="login-stats"><div><b>4</b><span>Yetki Rolü</span></div><div><b>2</b><span>Bağımsız Depo</span></div><div><b>1</b><span>Güvenli Sistem</span></div></div></section><section class="login-form"><form id="loginForm"><span class="kicker">Depo Yönetim Girişi</span><h2>Yetkili PIN ile devam edin</h2><p>${state.mode==='demo'?'Şu an <b>Demo</b> modundasınız. Depo sorumlusu veya yönetici PIN’i girin. Operatörler yalnızca <b>QR & Sipariş Terminali</b>’ni kullanabilir.':'Depo sorumlusu ve yönetici girişi. Operatörler (OP) depo sistemine giremez; yalnızca QR ve sipariş terminali kullanılabilir.'}</p><div id="opBlockNotice" class="op-block-notice" hidden></div>${field('4-8 haneli PIN',`<div class="pin-wrap"><input name="pin" type="password" inputmode="numeric" maxlength="8" autocomplete="current-password" placeholder="••••"><button type="button" data-action="toggle-pin" aria-label="PIN göster">${ic('eye')}</button></div>`)}<button class="btn primary large wide" type="submit">Depo Sistemine Giriş →</button><button class="btn ghost large wide" type="button" data-action="go-qr-terminal" style="margin-top:10px">${ic('qr','ic-sm')} Operatör QR & Sipariş Terminali →</button><button class="btn ghost large wide" type="button" data-action="login-settings-modal" style="margin-top:10px">${ic('settings','ic-sm')} Kurulum ve Ayarlar</button><div class="login-mode"><i class="${state.mode}"></i>${state.mode==='demo'?'Demo verisi etkin':state.mode==='direct'?'Canlı bağlantı: Doğrudan GAS':'Canlı bağlantı: Güvenli /api/gas'}</div></form><footer>Mekanik + İSG Depo 2027 · V8.7</footer></section></div><div id="toasts"></div><div id="modalRoot" hidden></div><div id="ppePrintRoot"></div><div class="loader"><span></span></div>`;$('#loginForm').addEventListener('submit',login);ensureSaveBar();warmupGas();}
 async function login(e){
  e.preventDefault();
+ const box=$('#opBlockNotice');if(box)box.hidden=true;
  const pin=String(new FormData(e.currentTarget).get('pin')||'').replace(/\s+/g,'').trim();
  if(!pin)return toast('Lütfen PIN girin.','error');
  beginSave('PIN doğrulanıyor...');
  try{
-  const r=await api('auth',{pin});
+  const r=await api('auth',{pin,client:'PANEL'});
+  if(!r?.user||r.user.role==='OP'){
+   state.user=null;state.session='';
+   const msg='Operatör (OP) hesapları depo sistemine giriş yapamaz. Yalnızca QR Kod Okuyucu ve Sipariş Terminali kullanılabilir.';
+   showOpBlockedBanner(msg);
+   endSave(false,'OP girişi engellendi');
+   toast(msg,'error');
+   return;
+  }
   state.user=r.user;state.session=r.session;
   const cached=loadBootCache(r.user.role);
   if(cached){
@@ -4915,7 +4960,13 @@ async function login(e){
   renderShell();
   endSave(true,'Giriş yapıldı ✓');
   if(state.pendingQr){const code=state.pendingQr;state.pendingQr='';setTimeout(()=>handleQr(code),120);}
- }catch(err){endSave(false,err.message);toast(err.message,'error');}
+ }catch(err){
+  state.user=null;state.session='';
+  if(/Operatör \(OP\)|OP_PANEL_BLOCKED|depo sistemine giriş yapamaz/i.test(String(err.message||''))){
+   showOpBlockedBanner(err.message);
+  }
+  endSave(false,err.message);toast(err.message,'error');
+ }
 }
 
 async function actionHandler(e){const page=e.target.closest('[data-page]')?.dataset.page;if(page)return showPage(page);if(e.target.closest('[data-close]'))return closeModal();const a=e.target.closest('[data-action]')?.dataset.action;if(a){
@@ -5101,7 +5152,7 @@ async function actionHandler(e){const page=e.target.closest('[data-page]')?.data
   if(a==='order-copy-text')return copyOrderSummary(syncDraftFromDom());
   if(a==='order-receive-stock')return receiveOrderToStock();
   if(a==='maintenance-pick')return showPage('maintenance');if(a==='stock-print-modal')return stockPrintModal();if(a==='stock-print-run')return printStockList();if(a==='print-ppe'||a==='print-movements'||a==='print-costs')return window.print();if(a==='export-costs-csv')return exportCostsCsv();if(a==='print-cabinet')return printLabels([{code:'ISG-DOLAP',name:'İSG DOLABI',shelf:'Tek Sabit QR'}],'İSG DOLABI QR ETİKETİ');if(a==='labels-toggle-all'){const boxes=$$('.label-select input[type="checkbox"]');const allChecked=boxes.length&&boxes.every(x=>x.checked);boxes.forEach(x=>x.checked=!allChecked);const btn=e.target.closest('[data-action="labels-toggle-all"]');if(btn)btn.textContent=allChecked?'Tümünü Seç':'Seçimi Temizle';return;}if(a==='print-selected'){const ids=$$('.label-select input:checked').map(x=>x.value),items=state.data.stock.filter(x=>ids.includes(x.id));return items.length?printLabels(items):toast('En az bir etiket seçin.','error');}if(a==='label-one'){const item=state.data.stock.find(x=>x.id===e.target.closest('[data-id]').dataset.id);return printLabels([item]);}
-  if(a==='copy-gas'){navigator.clipboard.writeText($('#gasCode').textContent).then(()=>toast('Kod.gs panoya kopyalandı.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));return;}if(a==='login-settings-modal')return loginSettingsModal();if(a==='pwa-install-modal')return installAppModal();if(a==='pwa-install-now'){location.href=qrAppUrl();return;}if(a==='copy-qr-url'){navigator.clipboard.writeText(qrAppUrl()).then(()=>toast('Operatör QR kurulum linki kopyalandı.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));return;}if(a==='share-qr-url'){const u=qrAppUrl();if(navigator.share){navigator.share({title:'Operatör QR Okuyucu',text:'Operatör QR uygulamasını telefonunuza kurmak için bu bağlantıyı açıp "Kur" butonuna basın:',url:u}).catch(()=>{});}else{navigator.clipboard.writeText(u).then(()=>toast('Link panoya kopyalandı; WhatsApp veya SMS ile operatöre gönderebilirsiniz.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));}return;}if(a==='download-html'){const url=URL.createObjectURL(new Blob([ORIGINAL_HTML],{type:'text/html;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='Mekanik_Depo_V8.7_Tek_HTML.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);return;}if(a==='open-qr-terminal'){const u=qrAppUrl();if(window.innerWidth<=768){location.href=u;return;}modal('Operatör QR Okuyucu',`<div style="border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#0F172A;max-width:430px;margin:0 auto"><iframe src="${esc(u)}" allow="camera" title="Operatör QR Okuyucu" style="width:100%;height:min(76vh,700px);border:0;display:block"></iframe></div>`,`<button class="btn ghost" data-action="pwa-install-modal">${ic('phone','ic-sm')} Operatör Telefonuna Kur</button><button class="btn ghost" data-action="download-qr-terminal">${ic('download','ic-sm')} HTML İndir</button><a class="btn ghost" href="${esc(u)}" target="_blank" rel="noopener">Yeni Sekmede Aç</a><button class="btn primary" data-close>Kapat</button>`);return;}if(a==='download-qr-terminal'){beginSave('QR Terminali indiriliyor...');try{let res=await fetch('./qr-terminal.html');if(!res.ok)res=await fetch('./public/qr-terminal.html');if(!res.ok)throw Error('QR Terminal dosyası okunamadı.');const html=(await res.text()).replace(/<script[^>]*src="\/@vite\/client"[^>]*><\/script>\s*/gi,''),url=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download='Operator_QR_Okuyucu.html';link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);endSave(true,'Operatör QR indirildi ✓');toast('Operatör QR Okuyucu (Operator_QR_Okuyucu.html) indirildi.');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(a==='save-connection'){state.mode=$('[name=mode]:checked').value;state.directUrl=$('#directUrl').value.trim();localStorage.setItem('depo.mode',state.mode);localStorage.setItem('depo.directUrl',state.directUrl);toast('Bağlantı ayarı kaydedildi; yeniden giriş yapın.');return;}if(a==='test-connection'){const old=state.directUrl,oldMode=state.mode;state.mode=$('[name=mode]:checked')?.value||state.mode;state.directUrl=$('#directUrl').value.trim();beginSave('Bağlantı test ediliyor...');try{const h=await api('health');const vTxt=h?.apiVersion?` (${h.apiVersion})`:' (Eski sürüm)';endSave(true,'Bağlantı başarılı'+vTxt+' ✓');toast('Bağlantı yanıt verdi'+vTxt);}catch(x){endSave(false,x.message);toast(x.message,'error');}finally{state.directUrl=old;state.mode=oldMode;}return;}if(a==='login-save-conn'){const mode=$('#loginMode')?.value||'demo',url=($('#loginDirectUrl')?.value||'').trim();if(mode==='direct'&&!url)return toast('Doğrudan mod için Apps Script /exec adresi girin.','error');state.mode=mode;state.directUrl=url;localStorage.setItem('depo.mode',state.mode);localStorage.setItem('depo.directUrl',state.directUrl);closeModal();renderLogin();toast('Bağlantı ayarı kaydedildi ('+(mode==='demo'?'Demo':mode==='direct'?'Doğrudan GAS':'/api/gas')+').');return;}if(a==='login-test-conn'){const oldMode=state.mode,oldUrl=state.directUrl;state.mode=$('#loginMode')?.value||state.mode;state.directUrl=($('#loginDirectUrl')?.value||'').trim();beginSave('Bağlantı test ediliyor...');try{const h=await api('health');const vTxt=h?.apiVersion?` (${h.apiVersion})`:' (Eski sürüm)';endSave(true,'Bağlantı başarılı'+vTxt+' ✓');toast('Bağlantı başarılı'+vTxt);}catch(x){endSave(false,x.message);toast(x.message,'error');}finally{state.mode=oldMode;state.directUrl=oldUrl;}return;}
+  if(a==='copy-gas'){navigator.clipboard.writeText($('#gasCode').textContent).then(()=>toast('Kod.gs panoya kopyalandı.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));return;}if(a==='login-settings-modal')return loginSettingsModal();if(a==='pwa-install-modal')return installAppModal();if(a==='pwa-install-now'||a==='go-qr-terminal'){location.href=qrAppUrl();return;}if(a==='copy-qr-url'){navigator.clipboard.writeText(qrAppUrl()).then(()=>toast('Operatör QR kurulum linki kopyalandı.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));return;}if(a==='share-qr-url'){const u=qrAppUrl();if(navigator.share){navigator.share({title:'Operatör QR Okuyucu',text:'Operatör QR uygulamasını telefonunuza kurmak için bu bağlantıyı açıp "Kur" butonuna basın:',url:u}).catch(()=>{});}else{navigator.clipboard.writeText(u).then(()=>toast('Link panoya kopyalandı; WhatsApp veya SMS ile operatöre gönderebilirsiniz.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));}return;}if(a==='download-html'){const url=URL.createObjectURL(new Blob([ORIGINAL_HTML],{type:'text/html;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='Mekanik_Depo_V8.7_Tek_HTML.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);return;}if(a==='open-qr-terminal'){const u=qrAppUrl();if(window.innerWidth<=768){location.href=u;return;}modal('Operatör QR Okuyucu',`<div style="border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#0F172A;max-width:430px;margin:0 auto"><iframe src="${esc(u)}" allow="camera" title="Operatör QR Okuyucu" style="width:100%;height:min(76vh,700px);border:0;display:block"></iframe></div>`,`<button class="btn ghost" data-action="pwa-install-modal">${ic('phone','ic-sm')} Operatör Telefonuna Kur</button><button class="btn ghost" data-action="download-qr-terminal">${ic('download','ic-sm')} HTML İndir</button><a class="btn ghost" href="${esc(u)}" target="_blank" rel="noopener">Yeni Sekmede Aç</a><button class="btn primary" data-close>Kapat</button>`);return;}if(a==='download-qr-terminal'){beginSave('QR Terminali indiriliyor...');try{let res=await fetch('./qr-terminal.html');if(!res.ok)res=await fetch('./public/qr-terminal.html');if(!res.ok)throw Error('QR Terminal dosyası okunamadı.');const html=(await res.text()).replace(/<script[^>]*src="\/@vite\/client"[^>]*><\/script>\s*/gi,''),url=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download='Operator_QR_Okuyucu.html';link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);endSave(true,'Operatör QR indirildi ✓');toast('Operatör QR Okuyucu (Operator_QR_Okuyucu.html) indirildi.');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(a==='save-connection'){state.mode=$('[name=mode]:checked').value;state.directUrl=$('#directUrl').value.trim();localStorage.setItem('depo.mode',state.mode);localStorage.setItem('depo.directUrl',state.directUrl);toast('Bağlantı ayarı kaydedildi; yeniden giriş yapın.');return;}if(a==='test-connection'){const old=state.directUrl,oldMode=state.mode;state.mode=$('[name=mode]:checked')?.value||state.mode;state.directUrl=$('#directUrl').value.trim();beginSave('Bağlantı test ediliyor...');try{const h=await api('health');const vTxt=h?.apiVersion?` (${h.apiVersion})`:' (Eski sürüm)';endSave(true,'Bağlantı başarılı'+vTxt+' ✓');toast('Bağlantı yanıt verdi'+vTxt);}catch(x){endSave(false,x.message);toast(x.message,'error');}finally{state.directUrl=old;state.mode=oldMode;}return;}if(a==='login-save-conn'){const mode=$('#loginMode')?.value||'demo',url=($('#loginDirectUrl')?.value||'').trim();if(mode==='direct'&&!url)return toast('Doğrudan mod için Apps Script /exec adresi girin.','error');state.mode=mode;state.directUrl=url;localStorage.setItem('depo.mode',state.mode);localStorage.setItem('depo.directUrl',state.directUrl);closeModal();renderLogin();toast('Bağlantı ayarı kaydedildi ('+(mode==='demo'?'Demo':mode==='direct'?'Doğrudan GAS':'/api/gas')+').');return;}if(a==='login-test-conn'){const oldMode=state.mode,oldUrl=state.directUrl;state.mode=$('#loginMode')?.value||state.mode;state.directUrl=($('#loginDirectUrl')?.value||'').trim();beginSave('Bağlantı test ediliyor...');try{const h=await api('health');const vTxt=h?.apiVersion?` (${h.apiVersion})`:' (Eski sürüm)';endSave(true,'Bağlantı başarılı'+vTxt+' ✓');toast('Bağlantı başarılı'+vTxt);}catch(x){endSave(false,x.message);toast(x.message,'error');}finally{state.mode=oldMode;state.directUrl=oldUrl;}return;}
  }
   const mailPreset=e.target.closest('[data-mail-preset]');if(mailPreset)return toggleMailPreset(mailPreset.dataset.mailPreset);
   const sqRetry=e.target.closest('[data-sync-retry]');if(sqRetry)return retrySyncJob(sqRetry.dataset.syncRetry);
