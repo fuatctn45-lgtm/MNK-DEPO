@@ -1982,14 +1982,14 @@ function createOrderDraft(seedItem = null) {
   })] : [];
   const items = padOrderRows(seedRows, Math.max(14, seedRows.length));
   const seedDept = String(seedItem?.machine || '').split('|')[0].trim() || defs.department || '';
-  const autoCc = resolveCostCenterForDepartment(seedDept);
+  const autoCc = seedDept ? resolveCostCenterForDepartment(seedDept) : '';
   return {
     formNo: nextOrderFormNo(),
     docCode: defs.docCode || 'IZM_350600_LJT_001',
     requestDate: reqDate,
     requestedBy: reqBy,
     department: seedDept,
-    costCenter: autoCc || (seedDept === defs.department ? (defs.costCenter || '') : ''),
+    costCenter: autoCc,
     attachmentQty: '',
     paymentTerm: defs.paymentTerm || 'Peşin / Cash',
     paymentMaturity: defs.paymentMaturity || '',
@@ -2618,13 +2618,9 @@ function renderOrder() {
   d.approvals.requirer = opName;
   const cleanTxt = s => String(s || '').replace(/\s+/g, ' ').trim();
   const dDeptClean = cleanTxt(d.department);
-  if (dDeptClean && (!d.costCenter || flatKey(d.costCenter) === flatKey(dDeptClean))) {
-    const autoCc = resolveCostCenterForDepartment(dDeptClean);
-    if (autoCc) d.costCenter = autoCc;
-  }
+  d.costCenter = dDeptClean ? resolveCostCenterForDepartment(dDeptClean) : '';
   const machines = (state.machines?.length ? state.machines : DEMO.machines).map(cleanTxt).filter(Boolean);
-  const costCenters = [...new Set([...(state.costCenters || []).map(cleanTxt), ...Object.values(state.machineCostCenters || {}).map(cleanTxt), cleanTxt(d.costCenter)].filter(Boolean))];
-  const deptOptions = [...new Set([...machines, ...costCenters, dDeptClean].filter(Boolean))];
+  const deptOptions = [...new Set([...machines, dDeptClean].filter(Boolean))];
   const suppliers = [...new Set(['ÜNLÜ TEKNİK', ...(state.companies || []), ...(state.stock || []).map(x => x.company).filter(Boolean)])];
   const units = [...new Set(['AD', 'MT', 'KG', 'LİTRE', 'ÇİFT', 'PK', 'SET', ...(state.units || [])])];
   const missingCostMap = state.mode !== 'demo' && !Object.keys(state.machineCostCenters || {}).length;
@@ -2731,8 +2727,8 @@ function renderOrder() {
           <select id="poDepartment"><option value="">Bölüm / Makine seçiniz...</option>${deptOptions.map(x => `<option value="${esc(x)}" ${flatKey(dDeptClean) === flatKey(x) ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>
         </label>
         <label class="mpo-field">
-          <span>Maliyet Merkezi</span>
-          <input id="poCostCenter" value="${esc(d.costCenter || '')}" list="poCostCenterList" placeholder="Bölüm seçilince otomatik gelir">
+          <span>Maliyet Merkezi (Makineye Göre · Kilitli)</span>
+          <input id="poCostCenter" value="${esc(d.costCenter || '')}" placeholder="Makine seçilince otomatik gelir" readonly tabindex="-1" style="cursor:not-allowed">
         </label>
         <div class="mpo-grid-2">
           <label class="mpo-field">
@@ -2858,7 +2854,7 @@ function renderOrder() {
             <div class="akg-meta-lbl"><span>Talep Eden Kişi</span><span>Requested by</span></div>
             <div class="akg-meta-val"><input id="poRequestedBy" value="${esc(opName)}" readonly></div>
             <div class="akg-meta-lbl"><span>Maliyet Merkezi</span><span>Cost Center</span></div>
-            <div class="akg-meta-val"><input id="poCostCenter" value="${esc(d.costCenter || '')}" list="poCostCenterList" placeholder="Bölüm seçilince otomatik gelir"></div>
+            <div class="akg-meta-val"><input id="poCostCenter" value="${esc(d.costCenter || '')}" placeholder="Makine seçilince otomatik gelir" readonly tabindex="-1" title="Makineye göre otomatik belirlenir, değiştirilemez" style="cursor:not-allowed"></div>
             <div class="akg-meta-lbl"><span>Ekli Doküman Adedi</span><span>Attachment Quantity</span></div>
             <div class="akg-meta-val"><input id="poAttachmentQty" value="${esc(d.attachmentQty || '')}" placeholder="0"></div>
           </div>
@@ -2943,7 +2939,6 @@ function renderOrder() {
     ${renderOpStrip()}
     <div class="card-body">
       ${missingCostMap ? `<div class="callout amber">${ic('alert','ic-sm')}<div><b>Maliyet Merkezi Eşleşmesi Hazır Değil</b>Ana paneldeki Bağlantı sekmesinden güncel <b>Kod.gs (V8.8.4-OP-LOCK)</b> sürümünü dağıttığınızda VERİ M sütunu maliyet merkezi otomatik gelir.</div></div>` : ''}
-      <datalist id="poCostCenterList">${costCenters.map(x => `<option value="${esc(x)}"></option>`).join('')}</datalist>
       <datalist id="poSupplierList">${suppliers.map(x => `<option value="${esc(x)}"></option>`).join('')}</datalist>
       <datalist id="poUnitList">${units.map(x => `<option value="${esc(x)}"></option>`).join('')}</datalist>
 
@@ -3382,7 +3377,8 @@ function syncOrderDraftFromDom() {
   d.department = $('#poDepartment')?.value.trim() || '';
   d.formNo = $('#poFormNo')?.value.trim() || d.formNo;
   d.requestedBy = state.user?.name || $('#poRequestedBy')?.value.trim() || d.requestedBy || '';
-  d.costCenter = $('#poCostCenter')?.value.trim() || '';
+  d.costCenter = d.department ? resolveCostCenterForDepartment(d.department) : '';
+  if ($('#poCostCenter')) $('#poCostCenter').value = d.costCenter;
   d.attachmentQty = $('#poAttachmentQty')?.value.trim() || '';
   d.paymentTerm = $('#poPaymentTerm')?.value || 'Peşin / Cash';
   d.paymentMaturity = $('#poPaymentMaturity')?.value || '';
@@ -3493,10 +3489,11 @@ async function submitOrderForm() {
   if (!valid) return;
   const { dept, filledItems } = valid;
 
+  const lockedCc = resolveCostCenterForDepartment(dept);
   saveOrderDefaults({
     docCode: d.docCode,
     department: dept,
-    costCenter: d.costCenter || dept,
+    costCenter: lockedCc,
     deliveryPlace: d.deliveryPlace,
     paymentTerm: d.paymentTerm,
     paymentMaturity: d.paymentMaturity,
@@ -3514,7 +3511,7 @@ async function submitOrderForm() {
     requestDate: d.requestDate || todayTr(),
     requestedBy: opName,
     department: dept,
-    costCenter: String(d.costCenter || '').trim() || dept,
+    costCenter: lockedCc,
     attachmentQty: String(d.attachmentQty || '').trim(),
     paymentTerm: d.paymentTerm || 'Peşin / Cash',
     paymentMaturity: d.paymentMaturity || '',
@@ -3922,8 +3919,7 @@ document.addEventListener('click', async e => {
       if (!state.orderDraft.department && it.machine) {
         const firstMac = String(it.machine).split('|')[0].trim();
         state.orderDraft.department = firstMac;
-        const autoCc = resolveCostCenterForDepartment(firstMac);
-        if (autoCc) state.orderDraft.costCenter = autoCc;
+        state.orderDraft.costCenter = resolveCostCenterForDepartment(firstMac);
       }
       closeQrModal();
       render();
@@ -4169,11 +4165,9 @@ document.addEventListener('change', e => {
     e.target.classList.remove('po-field-err');
     const dep = e.target.value.trim();
     state.orderDraft.department = dep;
-    const cc = resolveCostCenterForDepartment(dep);
-    if (cc) {
-      state.orderDraft.costCenter = cc;
-      if ($('#poCostCenter')) $('#poCostCenter').value = cc;
-    }
+    const cc = dep ? resolveCostCenterForDepartment(dep) : '';
+    state.orderDraft.costCenter = cc;
+    if ($('#poCostCenter')) $('#poCostCenter').value = cc;
     return;
   }
   if (e.target.dataset?.poField && state.orderDraft) {

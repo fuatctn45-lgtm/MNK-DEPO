@@ -4286,12 +4286,12 @@ function createBlankOrderDraft(seedItems=[],seedDept=''){
  const nextNo=`SAT-${yr}-${String(maxN+1).padStart(3,'0')}`;
  const items=padOrderRows(seedItems,Math.max(14,seedItems.length));
  const dept=seedDept||defs.department||'';
- const autoCc=resolveCostCenterForDepartment(dept);
+ const autoCc=dept?resolveCostCenterForDepartment(dept):'';
  const reqDate=formatTrDate(new Date());
  return{
   isNew:true,formNo:nextNo,docCode:defs.docCode||'IZM_350600_LJT_001',
   requestDate:reqDate,requestedBy:reqBy,requestedByRole:state.user?.role||'',
-  department:dept,costCenter:autoCc||(seedDept?'':(defs.costCenter||dept)),attachmentQty:'',
+  department:dept,costCenter:autoCc,attachmentQty:'',
   items,totalAmount:items.reduce((s,x)=>s+x.total,0),currency:'TL',
   paymentTerm:defs.paymentTerm||'Peşin / Cash',paymentMaturity:defs.paymentMaturity||'',
   transport:defs.transport||'',deliveryPlace:defs.deliveryPlace||'',details:'',
@@ -4446,12 +4446,10 @@ function renderOrderEditor(){
  const disAttr=readOnly?'disabled':'';
  const cleanTxt=s=>String(s||'').replace(/\s+/g,' ').trim();
  const dDeptClean=cleanTxt(d.department);
- if(dDeptClean&&(!d.costCenter||flatKey(d.costCenter)===flatKey(dDeptClean))){
-  const autoCc=resolveCostCenterForDepartment(dDeptClean);
-  if(autoCc)d.costCenter=autoCc;
- }
- const depts=[...new Set([...(state.data?.lists?.machines||[]).map(cleanTxt),...(state.data?.lists?.costCenters||[]).map(cleanTxt),dDeptClean].filter(Boolean))];
- const costCenters=[...new Set([...(state.data?.lists?.costCenters||[]).map(cleanTxt),...Object.values(state.data?.lists?.machineCostCenters||{}).map(cleanTxt),cleanTxt(d.costCenter)].filter(Boolean))];
+ const resolvedCc=dDeptClean?resolveCostCenterForDepartment(dDeptClean):'';
+ if(d.isNew)d.costCenter=resolvedCc;
+ else if(resolvedCc)d.costCenter=resolvedCc;
+ const depts=[...new Set([...(state.data?.lists?.machines||[]).map(cleanTxt),dDeptClean].filter(Boolean))];
  const suppliers=[...new Set(['ÜNLÜ TEKNİK',...(state.data?.lists?.companies||[]),...(state.data?.stock||[]).map(x=>x.company).filter(Boolean)])];
  const units=[...new Set(['AD','MT','KG','LİTRE','ÇİFT','PK','SET',...(state.data?.lists?.units||[])])];
  const rowsHtml=d.items.map((it,idx)=>`
@@ -4471,7 +4469,6 @@ function renderOrderEditor(){
  const hasStockItems=d.items.some(x=>x.itemId&&Number(x.qty)>0);
  $('#content').innerHTML=`
   ${costMapWarningBanner(true)}
-  <datalist id="poCostCenterList">${costCenters.map(x=>`<option value="${esc(x)}"></option>`).join('')}</datalist>
   <datalist id="poSupplierList">${suppliers.map(x=>`<option value="${esc(x)}"></option>`).join('')}</datalist>
   <datalist id="poUnitList">${units.map(x=>`<option value="${esc(x)}"></option>`).join('')}</datalist>
   <div class="po-actions-bar">
@@ -4499,13 +4496,13 @@ function renderOrderEditor(){
      <div class="akg-meta-lbl"><span>Talep Tarihi</span><span>Date of Request</span></div>
      <div class="akg-meta-val"><input id="poRequestDate" value="${esc(d.requestDate)}" ${roAttr}></div>
      <div class="akg-meta-lbl"><span>Talep Eden Bölüm</span><span>Department</span></div>
-     <div class="akg-meta-val"><select id="poDepartment" ${disAttr}><option value="">Bölüm / Makine seçiniz...</option>${depts.map(x=>`<option value="${esc(x)}" ${flatKey(dDeptClean)===flatKey(x)?'selected':''}>${esc(x)}</option>`).join('')}</select></div>
+     <div class="akg-meta-val"><select id="poDepartment" ${disAttr}><option value="">Makine / Bölüm seçiniz...</option>${depts.map(x=>`<option value="${esc(x)}" ${flatKey(dDeptClean)===flatKey(x)?'selected':''}>${esc(x)}</option>`).join('')}</select></div>
      <div class="akg-meta-lbl"><span>Form Numarası</span><span>Form Number</span></div>
      <div class="akg-meta-val"><input id="poFormNo" value="${esc(d.formNo)}" class="mono" ${!d.isNew||isOp?'readonly':''}></div>
      <div class="akg-meta-lbl"><span>Talep Eden Kişi</span><span>Requested by</span></div>
      <div class="akg-meta-val"><input id="poRequestedBy" value="${esc(d.requestedBy)}" ${isOp||readOnly?'readonly':''}></div>
      <div class="akg-meta-lbl"><span>Maliyet Merkezi</span><span>Cost Center</span></div>
-     <div class="akg-meta-val"><input id="poCostCenter" value="${esc(d.costCenter)}" list="poCostCenterList" placeholder="Bölüm seçilince otomatik gelir" ${roAttr}></div>
+     <div class="akg-meta-val"><input id="poCostCenter" value="${esc(d.costCenter)}" placeholder="Makine seçilince otomatik gelir" readonly tabindex="-1" title="Makineye göre otomatik belirlenir, değiştirilemez" style="cursor:not-allowed"></div>
      <div class="akg-meta-lbl"><span>Ekli Doküman Adedi</span><span>Attachment Quantity</span></div>
      <div class="akg-meta-val"><input id="poAttachmentQty" value="${esc(d.attachmentQty)}" placeholder="0" ${roAttr}></div>
     </div>
@@ -4589,7 +4586,9 @@ function syncDraftFromDom(){
  d.department=$('#poDepartment')?.value.trim()||'';
  d.formNo=$('#poFormNo')?.value.trim()||d.formNo;
  d.requestedBy=state.user?.role==='OP'?state.user.name:($('#poRequestedBy')?.value.trim()||state.user?.name||'');
- d.costCenter=$('#poCostCenter')?.value.trim()||d.department;
+ const resolvedCc=d.department?resolveCostCenterForDepartment(d.department):'';
+ d.costCenter=d.isNew?resolvedCc:(resolvedCc||d.costCenter||'');
+ if($('#poCostCenter'))$('#poCostCenter').value=d.costCenter;
  d.attachmentQty=$('#poAttachmentQty')?.value.trim()||'';
  d.paymentTerm=$('#poPaymentTerm')?.value||'Peşin / Cash';
  d.paymentMaturity=$('#poPaymentMaturity')?.value||'';
@@ -5308,8 +5307,7 @@ async function actionHandler(e){const page=e.target.closest('[data-page]')?.data
     if(!state.orderDraft.department&&it.machine){
      const firstMac=String(it.machine).split('|')[0].trim();
      state.orderDraft.department=firstMac;
-     const autoCc=resolveCostCenterForDepartment(firstMac);
-     if(autoCc)state.orderDraft.costCenter=autoCc;
+     state.orderDraft.costCenter=resolveCostCenterForDepartment(firstMac);
     }
     closeModal();renderOrderEditor();
    }
@@ -5349,7 +5347,7 @@ async function actionHandler(e){const page=e.target.closest('[data-page]')?.data
  }
  const ai=e.target.closest('[data-analysis-item]');if(ai)return analysisDetail(ai.dataset.analysisItem);const cg=e.target.closest('[data-cost-group]');if(cg){state.costFilter.group=cg.dataset.costGroup;return renderCosts();}const ck=e.target.closest('[data-cost-key]');if(ck)return costDetailModal(ck.dataset.costKind,ck.dataset.costKey);const q=e.target.closest('[data-qty]');if(q){const i=$('[name=qty]');i.value=Math.max(.01,Number(i.value)+Number(q.dataset.qty));}
 }
-async function changeHandler(e){if(e.target.id==='poDepartment'&&state.orderDraft){const dep=e.target.value.trim();state.orderDraft.department=dep;const cc=resolveCostCenterForDepartment(dep);if(cc){state.orderDraft.costCenter=cc;if($('#poCostCenter'))$('#poCostCenter').value=cc;}return;}if(e.target.dataset?.poField&&state.orderDraft){const idx=Number(e.target.dataset.idx),f=e.target.dataset.poField;if(state.orderDraft.items[idx]){state.orderDraft.items[idx][f]=['qty','unitPrice'].includes(f)?(Number(e.target.value)||0):e.target.value;if(['qty','unitPrice'].includes(f))recalcOrderRow(idx);}return;}if(e.target.id==='poStatusSelect'&&state.orderDraft){state.orderDraft.status=e.target.value;return;}if(e.target.name==='spScope'||['spDepot','spCategory','spOnlyMissing'].includes(e.target.id)){return syncStockPrintModal();}if(e.target.id==='lblMode'){saveLabelCfg({...state.labelCfg,mode:e.target.value});return updateLabelPreview();}if(e.target.matches('[data-label-field]')){saveLabelCfg({...state.labelCfg,[e.target.dataset.labelField]:e.target.checked});return updateLabelPreview();}if(e.target.closest('.label-select')){return updateLabelPreview();}if(e.target.name==='ppeSignMode'){const now=e.target.value==='now',box=$('#ppeSignNowBox'),btn=$('#ppeCreateSubmitBtn');if(box)box.hidden=!now;if(btn)btn.textContent=now?'İmzala ve Teslim Et':'Onaya Gönder';if(now)setTimeout(()=>{activeSigPad=initSigPad($('#ppeCreateSigCanvas'));},40);else activeSigPad=null;return;}if(e.target.name==='usageOption'){if(e.target.checked&&e.target.value==='Tekli Makine')$('[name="usageOption"][value="Çoklu Makine"]').checked=false;if(e.target.checked&&e.target.value==='Çoklu Makine')$('[name="usageOption"][value="Tekli Makine"]').checked=false;return syncItemForm();}if(e.target.name==='machineOption'){if(selectedRegistrationUsage().includes('Tekli Makine')&&e.target.checked)$$('[name="machineOption"]').forEach(x=>{if(x!==e.target)x.checked=false;});return syncItemForm();}if(e.target.id==='stockStatus'){state.stockFilter.status=e.target.value;return renderStock();}if(e.target.id==='stockCategory'){state.stockFilter.category=e.target.value;return renderStock();}if(e.target.id==='stockUsage'){state.stockFilter.usage=e.target.value;return renderStock();}if(e.target.matches('[data-filter-depot]')){state.stockFilter.depot=e.target.dataset.filterDepot;return renderStock();}if(e.target.id==='recipeMachine'||e.target.id==='recipePeriod'){const m=$('#recipeMachine').value,p=$('#recipePeriod').value;syncRecipeMachineSelection(m);$('#recipePanel').innerHTML=recipeTable(m,p,recipeRows(m,p));return;}if(e.target.matches('[data-ppe]')){const nextRange=e.target.dataset.ppe||'30d';state.ppeRange=nextRange;beginSave('KKD analizi yükleniyor...');try{await loadPpeAnalysis(nextRange,true);await renderPpe();endSave(true,'Güncellendi ✓');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(['anaRange','anaDepot'].includes(e.target.id)){beginSave('Tüketim analizi yükleniyor...');try{state.analysis=await api('movementAnalysis',{range:$('#anaRange').value,depot:$('#anaDepot').value});await renderAnalysis();endSave(true,'Güncellendi ✓');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(e.target.id==='anaSort')$('#analysisBars').innerHTML=analysisBars(state.analysis.rows,e.target.value);if(['costRange','costDepot'].includes(e.target.id)){state.costFilter.range=$('#costRange')?.value||state.costFilter.range;if($('#costDepot'))state.costFilter.depot=$('#costDepot').value;beginSave('Maliyet analizi yükleniyor...');try{await loadCostAnalysis(true);await renderCosts();endSave(true,'Güncellendi ✓');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(e.target.id==='costSort'){state.costFilter.sort=e.target.value;return renderCosts();}}
+async function changeHandler(e){if(e.target.id==='poDepartment'&&state.orderDraft){const dep=e.target.value.trim();state.orderDraft.department=dep;const cc=dep?resolveCostCenterForDepartment(dep):'';state.orderDraft.costCenter=cc;if($('#poCostCenter'))$('#poCostCenter').value=cc;return;}if(e.target.dataset?.poField&&state.orderDraft){const idx=Number(e.target.dataset.idx),f=e.target.dataset.poField;if(state.orderDraft.items[idx]){state.orderDraft.items[idx][f]=['qty','unitPrice'].includes(f)?(Number(e.target.value)||0):e.target.value;if(['qty','unitPrice'].includes(f))recalcOrderRow(idx);}return;}if(e.target.id==='poStatusSelect'&&state.orderDraft){state.orderDraft.status=e.target.value;return;}if(e.target.name==='spScope'||['spDepot','spCategory','spOnlyMissing'].includes(e.target.id)){return syncStockPrintModal();}if(e.target.id==='lblMode'){saveLabelCfg({...state.labelCfg,mode:e.target.value});return updateLabelPreview();}if(e.target.matches('[data-label-field]')){saveLabelCfg({...state.labelCfg,[e.target.dataset.labelField]:e.target.checked});return updateLabelPreview();}if(e.target.closest('.label-select')){return updateLabelPreview();}if(e.target.name==='ppeSignMode'){const now=e.target.value==='now',box=$('#ppeSignNowBox'),btn=$('#ppeCreateSubmitBtn');if(box)box.hidden=!now;if(btn)btn.textContent=now?'İmzala ve Teslim Et':'Onaya Gönder';if(now)setTimeout(()=>{activeSigPad=initSigPad($('#ppeCreateSigCanvas'));},40);else activeSigPad=null;return;}if(e.target.name==='usageOption'){if(e.target.checked&&e.target.value==='Tekli Makine')$('[name="usageOption"][value="Çoklu Makine"]').checked=false;if(e.target.checked&&e.target.value==='Çoklu Makine')$('[name="usageOption"][value="Tekli Makine"]').checked=false;return syncItemForm();}if(e.target.name==='machineOption'){if(selectedRegistrationUsage().includes('Tekli Makine')&&e.target.checked)$$('[name="machineOption"]').forEach(x=>{if(x!==e.target)x.checked=false;});return syncItemForm();}if(e.target.id==='stockStatus'){state.stockFilter.status=e.target.value;return renderStock();}if(e.target.id==='stockCategory'){state.stockFilter.category=e.target.value;return renderStock();}if(e.target.id==='stockUsage'){state.stockFilter.usage=e.target.value;return renderStock();}if(e.target.matches('[data-filter-depot]')){state.stockFilter.depot=e.target.dataset.filterDepot;return renderStock();}if(e.target.id==='recipeMachine'||e.target.id==='recipePeriod'){const m=$('#recipeMachine').value,p=$('#recipePeriod').value;syncRecipeMachineSelection(m);$('#recipePanel').innerHTML=recipeTable(m,p,recipeRows(m,p));return;}if(e.target.matches('[data-ppe]')){const nextRange=e.target.dataset.ppe||'30d';state.ppeRange=nextRange;beginSave('KKD analizi yükleniyor...');try{await loadPpeAnalysis(nextRange,true);await renderPpe();endSave(true,'Güncellendi ✓');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(['anaRange','anaDepot'].includes(e.target.id)){beginSave('Tüketim analizi yükleniyor...');try{state.analysis=await api('movementAnalysis',{range:$('#anaRange').value,depot:$('#anaDepot').value});await renderAnalysis();endSave(true,'Güncellendi ✓');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(e.target.id==='anaSort')$('#analysisBars').innerHTML=analysisBars(state.analysis.rows,e.target.value);if(['costRange','costDepot'].includes(e.target.id)){state.costFilter.range=$('#costRange')?.value||state.costFilter.range;if($('#costDepot'))state.costFilter.depot=$('#costDepot').value;beginSave('Maliyet analizi yükleniyor...');try{await loadCostAnalysis(true);await renderCosts();endSave(true,'Güncellendi ✓');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(e.target.id==='costSort'){state.costFilter.sort=e.target.value;return renderCosts();}}
 async function clickStockOp(e){
  const b=e.target.closest('[data-stock-op]');if(!b)return;
  const form=$('#stockOpForm');if(form&&!form.reportValidity())return;
