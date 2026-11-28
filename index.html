@@ -849,6 +849,34 @@ mark.search-hl{background:#FFE600;color:#0F172A;font-weight:700;padding:0 3px;bo
 .sp-summary{margin-top:14px;padding:10px 13px;border-radius:10px;background:var(--surface-alt);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--ink2)}
 .sp-summary b{color:var(--ink)}
 @media (max-width:600px){.sp-grid{grid-template-columns:1fr}}
+.sync-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#cbd5e1;transition:background .18s var(--ease),border-color .18s var(--ease),color .18s var(--ease)}
+.sync-pill:hover{background:rgba(255,255,255,.12);color:#fff}
+.sync-pill.idle .ic{color:#4ade80}
+.sync-pill.saving{background:rgba(234,88,12,.22);border-color:rgba(251,146,60,.65);color:#ffedd5}
+.sync-pill.saving:hover{background:rgba(234,88,12,.32)}
+.sync-pill.done{background:rgba(22,163,74,.22);border-color:rgba(74,222,128,.55);color:#dcfce7}
+.sync-pill.error{background:rgba(220,38,38,.25);border-color:rgba(248,113,113,.65);color:#fee2e2}
+.sq-spin{width:12px;height:12px;border-radius:50%;flex:none;border:2px solid rgba(255,237,213,.32);border-top-color:#fb923c;animation:spin .65s linear infinite}
+.sq-cnt{font-style:normal;min-width:19px;height:19px;padding:0 5px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;background:#ea580c;color:#fff;box-shadow:0 0 0 2px rgba(15,23,42,.35)}
+.sync-pill.error .sq-cnt{background:#dc2626}
+.sq-list{display:grid;gap:8px;max-height:54vh;overflow:auto}
+.sq-row{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sq-row.saving{border-color:var(--orange-border);background:var(--orange-soft)}
+.sq-row.queued{border-color:#cbd5e1;background:var(--surface-alt)}
+.sq-row.error{border-color:#fca5a5;background:#fef2f2}
+.sq-row.done{border-color:#bbf7d0;background:#f0fdf4}
+.sq-row-info{min-width:0;flex:1}
+.sq-row-info b{display:block;font-size:13.5px;color:var(--ink)}
+.sq-row-info small{display:block;font-size:12px;color:var(--muted);margin-top:2px;word-break:break-word}
+.sq-row-err{color:#b91c1c;font-size:12px;font-weight:600;margin-top:4px}
+.sq-row-right{display:flex;align-items:center;gap:6px;flex:none}
+.sq-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:999px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.sq-tag.saving{background:var(--orange);color:#fff}
+.sq-tag.queued{background:#e2e8f0;color:#334155}
+.sq-tag.done{background:#dcfce7;color:#166534}
+.sq-tag.error{background:#fee2e2;color:#991b1b}
+.sync-row-tag{display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:1px 6px;border-radius:999px;font-size:10.5px;font-weight:700;background:var(--orange-soft);color:var(--orange);border:1px solid var(--orange-border);vertical-align:middle}
+@media (max-width:540px){.sync-pill.idle .sq-lbl{display:none}.sync-pill{padding:5px 8px}}
 </style>
 <script type="text/plain" id="gasCode">/*
  * MEKANİK + İSG DEPO V8.7 — Google Apps Script backend
@@ -2402,26 +2430,149 @@ function endSave(ok=true,msg='Kaydedildi ✓'){
  if(savePending>0)showSaveBar('saving',savePending>1?`Kayıt ediliyor (${savePending} işlem)...`:lastSaveLabel);
  else showSaveBar(ok?'done':'err',msg);
 }
+const syncQueue=[];
+let syncDraining=false, syncDoneTimer=null, syncSeq=0, syncDoneFlash=false, syncDirtyView=false;
+function syncQueuePendingCount(){return syncQueue.filter(j=>j.status==='queued'||j.status==='saving').length;}
+function syncQueueErrorCount(){return syncQueue.filter(j=>j.status==='error').length;}
+function renderSyncIndicator(){
+ const btn=$('#syncQueueBtn');
+ const pending=syncQueuePendingCount(), errors=syncQueueErrorCount();
+ if(btn){
+  btn.classList.remove('idle','saving','done','error');
+  if(pending>0){
+   btn.classList.add('saving');
+   btn.innerHTML=`<span class="sq-spin" aria-hidden="true"></span><span class="sq-lbl">Kaydediliyor</span><em class="sq-cnt">${pending}</em>`;
+   btn.title=`${pending} kayıt sırada / kaydediliyor (detay için tıklayın)`;
+  }else if(errors>0){
+   btn.classList.add('error');
+   btn.innerHTML=`${ic('alert','ic-sm')}<span class="sq-lbl">Kayıt Hatası</span><em class="sq-cnt">${errors}</em>`;
+   btn.title=`${errors} kayıt başarısız (tekrar denemek için tıklayın)`;
+  }else if(syncDoneFlash){
+   btn.classList.add('done');
+   btn.innerHTML=`${ic('check','ic-sm')}<span class="sq-lbl">Kaydedildi</span>`;
+   btn.title='Tüm kayıtlar sunucuya aktarıldı';
+  }else{
+   btn.classList.add('idle');
+   btn.innerHTML=`${ic('check','ic-sm')}<span class="sq-lbl">Senkron</span>`;
+   btn.title='Kayıt kuyruğu temiz (geçmişi görmek için tıklayın)';
+  }
+ }
+ if($('#syncQueueBody'))renderSyncQueueBody();
+}
+function enqueueSave({label,detail='',run,onSuccess,onError}){
+ const job={id:'SQ-'+(++syncSeq),label:label||'Kayıt',detail,status:'queued',error:'',ts:new Date(),doneAt:null,run,onSuccess,onError};
+ syncQueue.unshift(job);
+ const doneJobs=syncQueue.filter(j=>j.status==='done');
+ if(doneJobs.length>15){
+  const drop=new Set(doneJobs.slice(15).map(j=>j.id));
+  for(let i=syncQueue.length-1;i>=0;i--)if(drop.has(syncQueue[i].id))syncQueue.splice(i,1);
+ }
+ clearTimeout(syncDoneTimer);syncDoneFlash=false;
+ renderSyncIndicator();
+ drainSyncQueue();
+ return job;
+}
+async function drainSyncQueue(){
+ if(syncDraining)return;
+ syncDraining=true;
+ let ranAny=false;
+ try{
+  while(true){
+   const next=[...syncQueue].reverse().find(j=>j.status==='queued');
+   if(!next)break;
+   ranAny=true;
+   next.status='saving';next.error='';
+   renderSyncIndicator();
+   try{
+    const res=await next.run();
+    next.status='done';next.doneAt=new Date();
+    if(next.onSuccess)await next.onSuccess(res);
+   }catch(err){
+    next.status='error';next.error=err?.message||'Kayıt sırasında hata oluştu.';
+    if(next.onError)await next.onError(err);
+    toast(`${next.label} kaydedilemedi: ${next.error}`,'error');
+   }
+   renderSyncIndicator();
+  }
+ }finally{
+  syncDraining=false;
+ }
+ if(ranAny&&syncQueuePendingCount()===0){
+  if(syncQueueErrorCount()===0){
+   syncDoneFlash=true;
+   renderSyncIndicator();
+   clearTimeout(syncDoneTimer);
+   syncDoneTimer=setTimeout(()=>{syncDoneFlash=false;renderSyncIndicator();},2600);
+  }
+  scheduleBgSync(550);
+ }
+}
+function retrySyncJob(id){
+ const job=syncQueue.find(j=>j.id===id&&j.status==='error');
+ if(!job)return;
+ job.status='queued';job.error='';
+ renderSyncIndicator();
+ drainSyncQueue();
+}
+function retryAllSyncJobs(){
+ let n=0;
+ syncQueue.forEach(j=>{if(j.status==='error'){j.status='queued';j.error='';n++;}});
+ if(n){renderSyncIndicator();drainSyncQueue();}
+}
+function dismissSyncJob(id){
+ const idx=syncQueue.findIndex(j=>j.id===id&&j.status!=='saving');
+ if(idx>=0){syncQueue.splice(idx,1);renderSyncIndicator();}
+}
+function clearDoneSyncJobs(){
+ for(let i=syncQueue.length-1;i>=0;i--)if(syncQueue[i].status==='done')syncQueue.splice(i,1);
+ renderSyncIndicator();
+}
+function renderSyncQueueBody(){
+ const box=$('#syncQueueBody');if(!box)return;
+ const pending=syncQueuePendingCount(), errors=syncQueueErrorCount();
+ const queuedOrdered=[...syncQueue].reverse().filter(j=>j.status==='queued');
+ const fmtT=d=>d?new Intl.DateTimeFormat('tr-TR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(d):'';
+ const summary=`<div class="sp-summary" style="margin-top:0;margin-bottom:12px"><span>${pending>0?`<b>${pending}</b> kayıt arka planda sırayla gönderiliyor…`:errors>0?`<b>${errors}</b> kayıt hata nedeniyle bekliyor.`:'Tüm kayıtlar sunucuyla senkronize.'}</span><span>Toplam geçmiş: <b>${syncQueue.length}</b></span></div>`;
+ const rowsHtml=syncQueue.length?syncQueue.map(j=>{
+  const qPos=j.status==='queued'?queuedOrdered.findIndex(x=>x.id===j.id)+1:0;
+  const tag=j.status==='saving'?`<span class="sq-tag saving"><span class="sq-spin" style="width:10px;height:10px;border-width:1.8px"></span> Kaydediliyor</span>`:j.status==='queued'?`<span class="sq-tag queued">Sırada #${qPos}</span>`:j.status==='done'?`<span class="sq-tag done">Kaydedildi ✓</span>`:`<span class="sq-tag error">Hata</span>`;
+  const actions=j.status==='error'?`<button type="button" class="btn primary sm" data-sync-retry="${esc(j.id)}">Tekrar Dene</button><button type="button" class="btn ghost sm" data-sync-dismiss="${esc(j.id)}">Kaldır</button>`:'';
+  return`<div class="sq-row ${j.status}"><div class="sq-row-info"><b>${esc(j.label)}</b><small>${esc(j.detail)}${j.detail?' · ':''}${fmtT(j.doneAt||j.ts)}</small>${j.error?`<div class="sq-row-err">${esc(j.error)}</div>`:''}</div><div class="sq-row-right">${tag}${actions}</div></div>`;
+ }).join(''):'<div class="empty">Henüz kuyrukta veya geçmişte kayıt işlemi yok.</div>';
+ box.innerHTML=summary+`<div class="sq-list">${rowsHtml}</div>`;
+}
+function syncQueueModal(){
+ modal('Kayıt Kuyruğu (Arka Plan Senkronizasyon)',`<div id="syncQueueBody"></div>`,`<button class="btn ghost" data-action="sync-clear-done">Tamamlananları Temizle</button>${syncQueueErrorCount()?`<button class="btn primary" data-action="sync-retry-all">Hatalıları Tekrar Dene</button>`:''}<button class="btn ghost" data-close>Kapat</button>`);
+ renderSyncQueueBody();
+}
+function refreshViewQuietly(){
+ if(!state.user)return;
+ renderNav();
+ if($('#modalRoot')?.hidden)showPage(state.page,false);
+ else syncDirtyView=true;
+}
+window.addEventListener('beforeunload',e=>{if(syncQueuePendingCount()>0){e.preventDefault();e.returnValue='';}});
 function scheduleBgSync(delay=700){
  if(!state.user||!state.session)return;
  clearTimeout(bgSyncTimer);
  const sess=state.session, role=state.user.role;
  bgSyncTimer=setTimeout(async()=>{
-  if(!state.user||state.session!==sess||savePending>0)return;
+  if(!state.user||state.session!==sess||savePending>0||syncQueuePendingCount()>0)return;
   try{
    const fresh=await api('bootstrap',{},sess);
-   if(state.session!==sess||savePending>0)return;
+   if(state.session!==sess||savePending>0||syncQueuePendingCount()>0)return;
    state.data=fresh;state.analysis=null;state.ppe=null;state.cost=null;
    saveBootCache(role,fresh);
    renderNav();
    if($('#modalRoot')?.hidden)await showPage(state.page,false);
+   else syncDirtyView=true;
   }catch{}
  },delay);
 }
 function toast(message,type='ok'){const t=document.createElement('div');t.className='toast '+type;t.innerHTML=`<b>${ic(type==='ok'?'check':'alert','ic-sm')}</b><span>${esc(message)}</span>`;$('#toasts').append(t);setTimeout(()=>t.remove(),4300);}
 function modal(title,body,actions=''){const root=$('#modalRoot');root.innerHTML=`<div class="modal-back"><section class="modal" role="dialog" aria-modal="true"><header><h3>${esc(title)}</h3><button class="icon-btn" data-close aria-label="Kapat">${ic('close')}</button></header><div class="modal-body">${body}</div>${actions?`<footer>${actions}</footer>`:''}</section></div>`;root.hidden=false;setTimeout(()=>root.querySelector('input,select,button')?.focus(),30);}
 let activeSigPad=null;
-function closeModal(){const r=$('#modalRoot');r.hidden=true;r.innerHTML='';activeSigPad=null;stopCamera();}
+function closeModal(){const r=$('#modalRoot');r.hidden=true;r.innerHTML='';activeSigPad=null;stopCamera();if(syncDirtyView&&state.user){syncDirtyView=false;showPage(state.page,false);}}
 function field(label,control,hint=''){return`<label class="field"><span>${label}</span>${control}${hint?`<small>${hint}</small>`:''}</label>`;}
 function opts(values=[],current=''){return values.map(x=>`<option ${String(x)===String(current)?'selected':''}>${esc(x)}</option>`).join('');}
 
@@ -2525,8 +2676,8 @@ function installAppModal(){
 }
 
 function renderShell(){
- const app=$('#app');app.innerHTML=`<div id="offlineBanner" class="offline-banner" ${navigator.onLine?'hidden':''}>İnternet bağlantısı yok — çevrimdışı moddasınız. Canlı stok işlemleri için bağlantı gerekir.</div><header class="sidebar"><div class="nav-top"><div class="nav-left"><div class="brand"><span class="brand-mark">M</span><div><b>Mekanik + İSG Depo</b><small>Depo 2027 · V8.7</small></div></div><button class="nav-menu-btn" id="navMenuBtn" type="button" data-action="menu" aria-haspopup="true" aria-expanded="false">${ic('menu','ic-sm')}<span>Menü</span><span class="nav-menu-cur" id="navMenuCur"></span><em class="nav-menu-badge" id="navMenuBadge" hidden>0</em><i class="nav-caret">▾</i></button></div><div class="nav-right"><span class="connection ${state.mode}"><i></i>${state.mode==='demo'?'Demo Modu':state.mode==='proxy'?'Canlı Bağlantı':'Doğrudan GAS'}</span><div class="side-foot"><div class="avatar">${esc(state.user.name[0])}</div><div><b>${esc(state.user.name)}</b><small>${esc(ROLE_LABEL[state.user.role])}</small></div><button class="icon-btn" data-action="logout" title="Çıkış" aria-label="Çıkış">${ic('logout')}</button></div></div></div><nav id="nav" class="nav-dropdown"></nav></header><main class="main"><div class="topbar"><div class="topbar-left"><span class="crumb" id="pageCrumb"></span><h1 id="pageTitle"></h1><p id="pageSub"></p></div><div class="top-actions" id="pageActions"></div></div><div id="content"></div></main>`;
- renderNav();showPage(state.page,false);
+ const app=$('#app');app.innerHTML=`<div id="offlineBanner" class="offline-banner" ${navigator.onLine?'hidden':''}>İnternet bağlantısı yok — çevrimdışı moddasınız. Canlı stok işlemleri için bağlantı gerekir.</div><header class="sidebar"><div class="nav-top"><div class="nav-left"><div class="brand"><span class="brand-mark">M</span><div><b>Mekanik + İSG Depo</b><small>Depo 2027 · V8.7</small></div></div><button class="nav-menu-btn" id="navMenuBtn" type="button" data-action="menu" aria-haspopup="true" aria-expanded="false">${ic('menu','ic-sm')}<span>Menü</span><span class="nav-menu-cur" id="navMenuCur"></span><em class="nav-menu-badge" id="navMenuBadge" hidden>0</em><i class="nav-caret">▾</i></button></div><div class="nav-right"><button type="button" class="sync-pill idle" id="syncQueueBtn" data-action="sync-queue-modal" title="Kayıt kuyruğu"></button><span class="connection ${state.mode}"><i></i>${state.mode==='demo'?'Demo Modu':state.mode==='proxy'?'Canlı Bağlantı':'Doğrudan GAS'}</span><div class="side-foot"><div class="avatar">${esc(state.user.name[0])}</div><div><b>${esc(state.user.name)}</b><small>${esc(ROLE_LABEL[state.user.role])}</small></div><button class="icon-btn" data-action="logout" title="Çıkış" aria-label="Çıkış">${ic('logout')}</button></div></div></div><nav id="nav" class="nav-dropdown"></nav></header><main class="main"><div class="topbar"><div class="topbar-left"><span class="crumb" id="pageCrumb"></span><h1 id="pageTitle"></h1><p id="pageSub"></p></div><div class="top-actions" id="pageActions"></div></div><div id="content"></div></main>`;
+ renderNav();renderSyncIndicator();showPage(state.page,false);
 }
 function pendingPpeCount(){return(state.data?.ppeForms||[]).filter(x=>x.status==='İMZA BEKLİYOR').length;}
 function renderNav(){
@@ -2659,7 +2810,7 @@ function renderStock(){
  const cats=[...catMap.values()].sort((a,b)=>a.localeCompare(b,'tr'));
  const useMap=new Map();[...REGISTRATION_USAGE_UI,'Depo Onayı Gerekli',...state.data.stock.flatMap(x=>String(x.usage||'').split('|').map(u=>usageLabelUi(u)[0]))].forEach(v=>{const s=String(v||'').trim();if(s&&!useMap.has(norm(s)))useMap.set(norm(s),s);});
  const usages=[...useMap.values()];
- $('#content').innerHTML=`<section class="panel table-panel"><div class="toolbar"><div class="seg">${['TUMU',...depots].map(x=>`<button class="${state.stockFilter.depot===x?'active':''}" data-filter-depot="${x}">${x==='TUMU'?'Tümü':x==='ISG'?'İSG Depo':'Mekanik'}</button>`).join('')}</div><div class="search">${ic('search','ic-sm')}<input id="stockSearch" placeholder="Kod, malzeme, kullanım şekli, makine veya raf ara..." value="${esc(q)}"></div><select id="stockCategory" aria-label="Malzeme Türü"><option value="">Malzeme Türü</option>${cats.map(c=>`<option value="${esc(c)}" ${norm(state.stockFilter.category)===norm(c)?'selected':''}>${esc(c)}</option>`).join('')}</select><select id="stockUsage" aria-label="Malzeme Depo Şekli"><option value="">Malzeme Depo Şekli</option>${usages.map(u=>`<option value="${esc(u)}" ${norm(state.stockFilter.usage)===norm(u)?'selected':''}>${esc(u)}</option>`).join('')}</select><select id="stockStatus"><option value="TUMU">Tüm durumlar</option><option ${state.stockFilter.status==='TAM'?'selected':''}>TAM</option><option ${state.stockFilter.status==='EKSİK'?'selected':''}>EKSİK</option></select></div><div class="table-scroll"><table class="data-table stock-table"><thead><tr><th>Durum</th><th>Parça / Malzeme</th><th>Depo</th><th>Kullanım Şekli</th><th class="num-col">Stok</th><th class="num-col">Min</th><th class="num-col">Giren</th><th class="num-col">Çıkan</th><th>Raf</th><th>Makine</th></tr></thead><tbody>${rows.length?rows.map(x=>`<tr data-item="${x.id}" class="${stockRowClass(x)}"><td><span class="badge ${x.stock<=x.min?'danger':'success'}">${x.stock<=x.min?'Eksik':'Tam'}</span></td><td><b>${hl(x.name,q)}</b><small><span class="mono">${hl(x.code,q)}</span> · ${hl(x.category,q)}${needsDepotApprovalUi(x)?' · <strong style="color:var(--yellow)">Depo Onayı</strong>':''}</small></td><td><span class="depot ${x.depot.toLowerCase()}">${x.depot==='ISG'?'İSG':'Mekanik'}</span></td><td>${usageChipsHtml(x.usage,q)}</td><td class="big num-col">${num(x.stock)} <small>${esc(x.unit)}</small></td><td class="big num-col">${num(x.min)}</td><td class="big num-col">${num(x.incoming)}</td><td class="big num-col">${num(x.outgoing)}</td><td><b class="mono">${hl(x.shelf,q)}</b></td><td>${hl(x.machine||'Ortak kullanım',q)}</td></tr>`).join(''):'<tr><td colspan="10"><div class="empty">Arama kriterlerine uyan stok kartı bulunamadı.</div></td></tr>'}</tbody></table></div><div class="table-foot"><span>${rows.length} stok kartı listeleniyor</span><div class="stock-legend"><span><i class="sw-eksik"></i>Eksik</span><span><i class="sw-tam"></i>Tam</span><span><i class="sw-kritik"></i>Kritik</span><span><i class="sw-planli"></i>Planlı Bakım</span></div><span>Detay ve işlem için herhangi bir satıra tıklayın.</span></div></section>`;
+ $('#content').innerHTML=`<section class="panel table-panel"><div class="toolbar"><div class="seg">${['TUMU',...depots].map(x=>`<button class="${state.stockFilter.depot===x?'active':''}" data-filter-depot="${x}">${x==='TUMU'?'Tümü':x==='ISG'?'İSG Depo':'Mekanik'}</button>`).join('')}</div><div class="search">${ic('search','ic-sm')}<input id="stockSearch" placeholder="Kod, malzeme, kullanım şekli, makine veya raf ara..." value="${esc(q)}"></div><select id="stockCategory" aria-label="Malzeme Türü"><option value="">Malzeme Türü</option>${cats.map(c=>`<option value="${esc(c)}" ${norm(state.stockFilter.category)===norm(c)?'selected':''}>${esc(c)}</option>`).join('')}</select><select id="stockUsage" aria-label="Malzeme Depo Şekli"><option value="">Malzeme Depo Şekli</option>${usages.map(u=>`<option value="${esc(u)}" ${norm(state.stockFilter.usage)===norm(u)?'selected':''}>${esc(u)}</option>`).join('')}</select><select id="stockStatus"><option value="TUMU">Tüm durumlar</option><option ${state.stockFilter.status==='TAM'?'selected':''}>TAM</option><option ${state.stockFilter.status==='EKSİK'?'selected':''}>EKSİK</option></select></div><div class="table-scroll"><table class="data-table stock-table"><thead><tr><th>Durum</th><th>Parça / Malzeme</th><th>Depo</th><th>Kullanım Şekli</th><th class="num-col">Stok</th><th class="num-col">Min</th><th class="num-col">Giren</th><th class="num-col">Çıkan</th><th>Raf</th><th>Makine</th></tr></thead><tbody>${rows.length?rows.map(x=>`<tr data-item="${x.id}" class="${stockRowClass(x)}"><td><span class="badge ${x.stock<=x.min?'danger':'success'}">${x.stock<=x.min?'Eksik':'Tam'}</span></td><td><b>${hl(x.name,q)}</b>${x._syncing?'<span class="sync-row-tag">Kaydediliyor…</span>':''}<small><span class="mono">${hl(x.code,q)}</span> · ${hl(x.category,q)}${needsDepotApprovalUi(x)?' · <strong style="color:var(--yellow)">Depo Onayı</strong>':''}</small></td><td><span class="depot ${x.depot.toLowerCase()}">${x.depot==='ISG'?'İSG':'Mekanik'}</span></td><td>${usageChipsHtml(x.usage,q)}</td><td class="big num-col">${num(x.stock)} <small>${esc(x.unit)}</small></td><td class="big num-col">${num(x.min)}</td><td class="big num-col">${num(x.incoming)}</td><td class="big num-col">${num(x.outgoing)}</td><td><b class="mono">${hl(x.shelf,q)}</b></td><td>${hl(x.machine||'Ortak kullanım',q)}</td></tr>`).join(''):'<tr><td colspan="10"><div class="empty">Arama kriterlerine uyan stok kartı bulunamadı.</div></td></tr>'}</tbody></table></div><div class="table-foot"><span>${rows.length} stok kartı listeleniyor</span><div class="stock-legend"><span><i class="sw-eksik"></i>Eksik</span><span><i class="sw-tam"></i>Tam</span><span><i class="sw-kritik"></i>Kritik</span><span><i class="sw-planli"></i>Planlı Bakım</span></div><span>Detay ve işlem için herhangi bir satıra tıklayın.</span></div></section>`;
 }
 const STOCK_PRINT_SCOPES=[
  ['missing','Eksik Olanlar','Stok miktarı minimum veya altında olanlar','#FFE5E5'],
@@ -2788,7 +2939,7 @@ function printStockList(){
  closeModal();
  setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print();}catch{toast('Yazdırma penceresi açılamadı.','error');}},160);
 }
-function itemDetail(item){modal('Stok Kartı',`<div class="item-detail-head"><div><span class="depot ${item.depot.toLowerCase()}">${item.depot==='ISG'?'İSG Depo':'Mekanik Depo'}</span>${needsDepotApprovalUi(item)?' <span class="badge warning">Depo Onayı Gerekli</span>':''}<h2>${esc(item.name)}</h2><p><span class="mono">${esc(item.code)}</span> · ${esc(item.category)} · ${esc(item.usage)}</p></div><div class="stock-number"><small>Anlık Stok</small><b>${num(item.stock)}</b><span>${esc(item.unit)}</span></div></div><div class="detail-grid"><div><small>Raf Konumu</small><b class="mono">${esc(item.shelf)}</b></div><div><small>Makine</small><b>${esc(item.machine||'Ortak kullanım')}</b></div><div><small>Minimum Stok</small><b>${num(item.min)} ${esc(item.unit)}</b></div><div><small>Tedarikçi / Firma</small><b>${esc(item.company||'—')}</b></div><div><small>Birim Fiyat</small><b>${num(item.unitPrice||0)}</b></div><div><small>Toplam Stok Değeri</small><b>${num((item.stock||0)*(item.unitPrice||0))}</b></div></div><div class="modal-actions-grid"><button data-action="stock-in" data-id="${item.id}">${ic('plus','ic-sm')} Adet Ekle</button><button data-action="stock-count" data-id="${item.id}">${ic('list','ic-sm')} Stok Sayımı</button><button data-action="item-edit" data-id="${item.id}">${ic('edit','ic-sm')} Kartı Düzenle</button><button data-action="label-one" data-id="${item.id}">${ic('qr','ic-sm')} QR Etiketi</button></div>`,`<button class="btn ghost" data-close>Kapat</button><button class="btn primary" data-checkout="${item.id}">Stoktan Düş</button>`);}
+function itemDetail(item){const syncing=!!item._syncing;modal('Stok Kartı',`${syncing?'<div class="notice" style="margin-bottom:12px"><b>Kayıt arka planda kaydediliyor…</b> Sunucudan gerçek QR kodu atandığında düzenleme ve etiket yazdırma otomatik açılır.</div>':''}<div class="item-detail-head"><div><span class="depot ${item.depot.toLowerCase()}">${item.depot==='ISG'?'İSG Depo':'Mekanik Depo'}</span>${needsDepotApprovalUi(item)?' <span class="badge warning">Depo Onayı Gerekli</span>':''}${syncing?' <span class="badge warning">Kaydediliyor…</span>':''}<h2>${esc(item.name)}</h2><p><span class="mono">${esc(item.code)}</span> · ${esc(item.category)} · ${esc(item.usage)}</p></div><div class="stock-number"><small>Anlık Stok</small><b>${num(item.stock)}</b><span>${esc(item.unit)}</span></div></div><div class="detail-grid"><div><small>Raf Konumu</small><b class="mono">${esc(item.shelf)}</b></div><div><small>Makine</small><b>${esc(item.machine||'Ortak kullanım')}</b></div><div><small>Minimum Stok</small><b>${num(item.min)} ${esc(item.unit)}</b></div><div><small>Tedarikçi / Firma</small><b>${esc(item.company||'—')}</b></div><div><small>Birim Fiyat</small><b>${num(item.unitPrice||0)}</b></div><div><small>Toplam Stok Değeri</small><b>${num((item.stock||0)*(item.unitPrice||0))}</b></div></div><div class="modal-actions-grid"><button data-action="stock-in" data-id="${item.id}" ${syncing?'disabled':''}>${ic('plus','ic-sm')} Adet Ekle</button><button data-action="stock-count" data-id="${item.id}" ${syncing?'disabled':''}>${ic('list','ic-sm')} Stok Sayımı</button><button data-action="item-edit" data-id="${item.id}" ${syncing?'disabled':''}>${ic('edit','ic-sm')} Kartı Düzenle</button><button data-action="label-one" data-id="${item.id}" ${syncing?'disabled':''}>${ic('qr','ic-sm')} QR Etiketi</button></div>`,`<button class="btn ghost" data-close>Kapat</button><button class="btn primary" data-checkout="${item.id}" ${syncing?'disabled':''}>Stoktan Düş</button>`);}
 const REGISTRATION_USAGE_UI=['Kritik Malzeme','Planlı Bakım','Sarf','İSG','Tekli Makine','Çoklu Makine'];
 function needsDepotApprovalUi(item){return norm(item?.usage||'').includes('DEPO_ONAYI_GEREKLI');}
 function selectedRegistrationUsage(){return $$('[name="usageOption"]:checked').map(x=>x.value);}
@@ -3453,7 +3604,7 @@ function qrMatrix(text){const CH='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:'
 function qrSvg(text,q=1){const m=qrMatrix(text),n=m.length;let p='';for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(m[y][x])p+=`M${x+q},${y+q}h1v1h-1z`;return`<svg viewBox="0 0 ${n+q*2} ${n+q*2}" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg" aria-label="QR ${esc(text)}"><rect width="100%" height="100%" fill="#fff"/><path d="${p}" fill="#0f172a"/></svg>`;}
 
 async function refreshData(){await bootstrap();renderNav();await showPage(state.page,false);}
-function logout(){clearTimeout(bgSyncTimer);state.user=null;state.session='';state.data=null;stopCamera();document.body.classList.remove('logged');renderLogin();}
+function logout(){if(syncQueuePendingCount()>0){toast(`Kaydedilmeyi bekleyen ${syncQueuePendingCount()} işlem var; tamamlanınca çıkış yapabilirsiniz.`,'error');return syncQueueModal();}clearTimeout(bgSyncTimer);syncQueue.length=0;syncDoneFlash=false;state.user=null;state.session='';state.data=null;stopCamera();document.body.classList.remove('logged');renderLogin();}
 function loginSettingsModal(){
  const modeTxt=state.mode==='demo'?'Demo Modu':state.mode==='direct'?'Doğrudan GAS':'/api/gas';
  modal('Kurulum ve Ayarlar',`
@@ -3604,7 +3755,70 @@ async function actionHandler(e){const page=e.target.closest('[data-page]')?.data
   }
   if(a==='submit-checkout')return submitCheckout();if(a==='gate-confirm'){const p=JSON.parse($('#modalRoot').dataset.checkout||'{}');return submitCheckout({...p,managerPin:$('#managerPin')?.value});}if(a==='gate-pool'){const p=JSON.parse($('#modalRoot').dataset.checkout||'{}');return submitCheckout({...p,sendApproval:true});}if(a==='cabinet-submit'){const id=$('[name=cabItem]:checked')?.value,qty=$('#cabQty')?.value||1,item=state.data.stock.find(x=>x.id===id);closeModal();checkoutModal(item);$('[name=qty]').value=qty;return;}
   if(a==='stock-in'||a==='stock-count'){const id=e.target.closest('[data-id]').dataset.id,item=state.data.stock.find(x=>x.id===id),count=a==='stock-count';modal(count?'Stok Sayımı':'Malzeme Girişi',`<form id="stockOpForm"><div class="item-summary"><div><b>${esc(item.name)}</b><small class="mono">${esc(item.code)}${Number(item.unitPrice)>0?' · Mevcut: '+num(item.unitPrice)+' ₺':''}</small></div><strong>${num(item.stock)} ${esc(item.unit)}</strong></div>${field(count?'Fiili stok':'Giriş miktarı (Adet) *',`<input id="stockValue" type="number" min="${count?'0':'0.01'}" step="0.01" value="${count?item.stock:''}" placeholder="${count?'Fiili stok':'Giriş adedi (zorunlu)'}" required>`)}${count?'':field('Yeni Birim Fiyat (₺) *',`<input id="stockPrice" type="number" min="0.01" step="0.01" value="" placeholder="${Number(item.unitPrice)>0?'Önceki: '+num(item.unitPrice)+' ₺ — yeni fiyat girin':'Yeni birim fiyat (zorunlu)'}" required>`,'Maliyet hesabı için her girişte yeni birim fiyat girilmesi zorunludur.')+field('Kritik Stok (Min) *',`<input id="stockMin" type="number" min="0.01" step="0.01" value="${Number(item.min)>0?item.min:''}" placeholder="Örn: 5 (zorunlu)" required>`,'Kritik stok eşiği 0’dan büyük olmalıdır.')}</form>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-stock-op="${count?'stockCount':'stockIn'}" data-id="${id}">Kaydet</button>`);return;}
-  if(a==='item-save'){const f=$('#itemForm');if(!f.reportValidity())return;const usage=selectedRegistrationUsage(),machines=selectedRegistrationMachines();if(!usage.length)return toast('En az bir kullanım şekli seçin.','error');if(usage.includes('Tekli Makine')&&usage.includes('Çoklu Makine'))return toast('Tekli ve Çoklu Makine birlikte seçilemez.','error');if(registrationNeedsMachine(usage)&&!machines.length)return toast('Makine/Makineler alanından seçim yapın.','error');if(usage.includes('Tekli Makine')&&machines.length!==1)return toast('Tekli Makine için yalnız bir makine seçin.','error');if(usage.includes('Çoklu Makine')&&machines.length<2)return toast('Çoklu Makine için en az iki makine seçin.','error');const p=Object.fromEntries(new FormData(f)),depotApproval=p.depotApproval==='Gerekli';delete p.depotApproval;p.code=String(p.code||'').trim();p.name=String(p.name||'').trim();p.unit=String(p.unit||'').trim();p.initial=Number(p.initial);p.min=Number(p.min);p.unitPrice=Number(p.unitPrice);if(!p.name)return toast('Malzeme adı zorunludur.','error');if(!p.unit)return toast('Birim seçimi zorunludur.','error');if(!(p.initial>0))return toast('Stok miktarı (adet) 0’dan büyük olmalıdır.','error');if(!(p.min>0))return toast('Kritik stok 0’dan büyük olmalıdır.','error');if(!(p.unitPrice>0))return toast('Maliyet hesabı için birim fiyat 0’dan büyük olmalıdır.','error');if(depotApproval)usage.push('Depo Onayı Gerekli');p.usage=[...new Set(usage)].join(' | ');p.machines=machines;p.machine=machines.join(' | ');beginSave('Yeni stok kartı kaydediliyor...');try{const r=await api('itemCreate',p);closeModal();let item=state.data.stock.find(x=>x.id===r.id);if(item){item.stock=(Number(item.stock)||0)+p.initial;item.incoming=(Number(item.incoming)||0)+p.initial;item.unitPrice=p.unitPrice;item.min=p.min;}else if(r.id){const depot=usage.includes('İSG')?'ISG':'MEKANIK';item={id:r.id,depot,type:depot==='ISG'?'İSG MALZEME':(machines.length?'MAKİNE PARÇASI':'SARF / ORTAK KULLANIM'),code:p.code,name:p.name,category:p.category,company:p.company||'',unit:p.unit||'AD',usage:p.usage,shelf:p.shelf||'',machine:p.machine||'',min:p.min,stock:p.initial,incoming:p.initial,outgoing:0,unitPrice:p.unitPrice};state.data.stock.unshift(item);}state.cost=null;saveBootCache(state.user?.role,state.data);renderNav();await showPage(state.page,false);endSave(true,r.existing?'Mevcut stoğa eklendi ✓':'Stok kartı kaydedildi ✓');if(r.existing){toast('Aynı parça kodu bulundu; mevcut stoğa giriş eklendi.');if(item)itemDetail(item);}else if(item){modal('Kayıt Tamamlandı',`<div class="created-qr">${qrSvg(item.id)}<div><h3>${esc(item.id)}</h3><p><b>${esc(item.name)}</b></p><p><span class="mono">${esc(item.code)}</span> · ${num(item.stock)} ${esc(item.unit)}</p><p>Yeni stok kartı, ilk giriş hareketi ve QR hazır.</p></div></div>`,`<button class="btn ghost" data-close>Kapat</button><button class="btn primary" data-action="label-one" data-id="${esc(item.id)}">QR Etiketini Yazdır</button>`);toast('Yeni stok kartı ve QR oluşturuldu.');}scheduleBgSync();}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}
+  if(a==='item-save'){
+   const f=$('#itemForm');if(!f.reportValidity())return;
+   const usage=selectedRegistrationUsage(),machines=selectedRegistrationMachines();
+   if(!usage.length)return toast('En az bir kullanım şekli seçin.','error');
+   if(usage.includes('Tekli Makine')&&usage.includes('Çoklu Makine'))return toast('Tekli ve Çoklu Makine birlikte seçilemez.','error');
+   if(registrationNeedsMachine(usage)&&!machines.length)return toast('Makine/Makineler alanından seçim yapın.','error');
+   if(usage.includes('Tekli Makine')&&machines.length!==1)return toast('Tekli Makine için yalnız bir makine seçin.','error');
+   if(usage.includes('Çoklu Makine')&&machines.length<2)return toast('Çoklu Makine için en az iki makine seçin.','error');
+   const p=Object.fromEntries(new FormData(f)),depotApproval=p.depotApproval==='Gerekli';
+   delete p.depotApproval;p.code=String(p.code||'').trim();p.name=String(p.name||'').trim();p.unit=String(p.unit||'').trim();p.initial=Number(p.initial);p.min=Number(p.min);p.unitPrice=Number(p.unitPrice);
+   if(!p.name)return toast('Malzeme adı zorunludur.','error');
+   if(!p.unit)return toast('Birim seçimi zorunludur.','error');
+   if(!(p.initial>0))return toast('Stok miktarı (adet) 0’dan büyük olmalıdır.','error');
+   if(!(p.min>0))return toast('Kritik stok 0’dan büyük olmalıdır.','error');
+   if(!(p.unitPrice>0))return toast('Maliyet hesabı için birim fiyat 0’dan büyük olmalıdır.','error');
+   if(depotApproval)usage.push('Depo Onayı Gerekli');
+   p.usage=[...new Set(usage)].join(' | ');p.machines=machines;p.machine=machines.join(' | ');
+   const depot=usage.includes('İSG')?'ISG':'MEKANIK';
+   const existingMatch=p.code?state.data.stock.find(x=>norm(x.code)===norm(p.code)&&x.depot===depot):null;
+   const existingSnap=existingMatch?{...existingMatch}:null;
+   let tempItem=null;
+   if(existingMatch){
+    existingMatch.stock=(Number(existingMatch.stock)||0)+p.initial;
+    existingMatch.incoming=(Number(existingMatch.incoming)||0)+p.initial;
+    existingMatch.unitPrice=p.unitPrice;existingMatch.min=p.min;
+   }else{
+    const tempId='TMP-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,5);
+    tempItem={id:tempId,depot,type:depot==='ISG'?'İSG MALZEME':(machines.length?'MAKİNE PARÇASI':'SARF / ORTAK KULLANIM'),code:p.code||'—',name:p.name,category:p.category||'',company:p.company||'',unit:p.unit||'AD',usage:p.usage,shelf:p.shelf||'',machine:p.machine||'',min:p.min,stock:p.initial,incoming:p.initial,outgoing:0,unitPrice:p.unitPrice,_syncing:true};
+    state.data.stock.unshift(tempItem);
+   }
+   closeModal();state.cost=null;
+   saveBootCache(state.user?.role,state.data);
+   renderNav();showPage(state.page,false);
+   enqueueSave({
+    label:existingMatch?'Mevcut Stoğa Giriş':'Yeni Stok Kartı',
+    detail:`${p.name} · ${num(p.initial)} ${p.unit}`,
+    run:()=>api('itemCreate',p),
+    onSuccess:r=>{
+     if(tempItem){
+      const realExisting=r?.id?state.data?.stock?.find(x=>x.id===r.id&&x!==tempItem):null;
+      if(realExisting){
+       realExisting.stock=(Number(realExisting.stock)||0)+p.initial;
+       realExisting.incoming=(Number(realExisting.incoming)||0)+p.initial;
+       realExisting.unitPrice=p.unitPrice;realExisting.min=p.min;
+       const idx=state.data.stock.indexOf(tempItem);if(idx>=0)state.data.stock.splice(idx,1);
+      }else{
+       if(r?.id)tempItem.id=r.id;
+       delete tempItem._syncing;
+      }
+     }
+     state.cost=null;
+     saveBootCache(state.user?.role,state.data);
+     refreshViewQuietly();
+    },
+    onError:()=>{
+     if(existingMatch&&existingSnap)Object.assign(existingMatch,existingSnap);
+     if(tempItem&&state.data?.stock){const idx=state.data.stock.indexOf(tempItem);if(idx>=0)state.data.stock.splice(idx,1);}
+     refreshViewQuietly();
+    }
+   });
+   const pendingN=syncQueuePendingCount();
+   toast(pendingN>1?`Sıraya alındı: ${p.name} (${pendingN} kayıt sırada)`:`Sıraya alındı: ${p.name}`);
+   return;
+  }
   if(a==='item-edit'){const item=state.data.stock.find(x=>x.id===e.target.closest('[data-id]').dataset.id);return editItemModal(item);}
   if(a==='item-update-save'){
    const f=$('#editItemForm');if(!f.reportValidity())return;
@@ -3619,15 +3833,22 @@ async function actionHandler(e){const page=e.target.closest('[data-page]')?.data
    const snapshot=item?{...item}:null;
    if(item){Object.assign(item,{name:p.name,code:p.code,category:p.category??item.category,company:p.company??item.company,unit:p.unit,shelf:p.shelf??item.shelf,machine:p.machine??'',usage:p.usage,min:p.min,unitPrice:p.unitPrice,active:p.active??item.active});}
    closeModal();state.cost=null;renderNav();showPage(state.page,false);
-   beginSave('Stok kartı kaydediliyor...');
-   api('itemUpdate',p).then(()=>{saveBootCache(state.user?.role,state.data);endSave(true,'Stok kartı güncellendi ✓');scheduleBgSync();}).catch(x=>{if(item&&snapshot)Object.assign(item,snapshot);endSave(false,x.message);toast(x.message,'error');showPage(state.page,false);});
+   enqueueSave({
+    label:'Stok Kartı Güncelleme',
+    detail:`${p.name} (${p.code||p.id})`,
+    run:()=>api('itemUpdate',p),
+    onSuccess:()=>{saveBootCache(state.user?.role,state.data);},
+    onError:()=>{if(item&&snapshot)Object.assign(item,snapshot);refreshViewQuietly();}
+   });
    return;
   }
-  if(a==='recipe-edit')return recipeEditModal();if(a==='recipe-line-add'){return $('#recipeEditRows').insertAdjacentHTML('beforeend',recipeEditRow());}if(a==='remove-line')return e.target.closest('.recipe-edit-row').remove();if(a==='recipe-save'){const f=$('#recipeForm'),fd=new FormData(f),ids=fd.getAll('itemId'),qs=fd.getAll('qty');if(!f.reportValidity())return;const p={machine:fd.get('machine'),period:fd.get('period'),items:ids.map((id,i)=>({itemId:id,qty:Number(qs[i])}))};closeModal();beginSave('Bakım reçetesi kaydediliyor...');api('recipeSave',p).then(async()=>{await refreshData();endSave(true,'Bakım reçetesi kaydedildi ✓');}).catch(x=>{endSave(false,x.message);toast(x.message,'error');});return;}
+  if(a==='recipe-edit')return recipeEditModal();if(a==='recipe-line-add'){return $('#recipeEditRows').insertAdjacentHTML('beforeend',recipeEditRow());}if(a==='remove-line')return e.target.closest('.recipe-edit-row').remove();if(a==='recipe-save'){const f=$('#recipeForm'),fd=new FormData(f),ids=fd.getAll('itemId'),qs=fd.getAll('qty');if(!f.reportValidity())return;const p={machine:fd.get('machine'),period:fd.get('period'),items:ids.map((id,i)=>({itemId:id,qty:Number(qs[i])}))};closeModal();enqueueSave({label:'Bakım Reçetesi',detail:`${p.machine} · ${p.period}`,run:()=>api('recipeSave',p),onSuccess:()=>{refreshViewQuietly();}});return;}
   if(a==='recipe-bulk'){const machine=$('#recipeMachine').value,period=$('#recipePeriod').value;if(isAllRecipePeriods(period))return toast('Seti toplu düşmek için tek bir periyot seçin.','error');beginSave('Bakım seti çıkışı kaydediliyor...');try{const r=await api('recipeBulkCheckout',{machine,period});endSave(true,'Bakım seti stoktan düşüldü ✓');toast('Bakım seti toplu olarak stoktan düşüldü.');scheduleBgSync(100);if(r.autoLogout)setTimeout(logout,700);}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}
-  if(a==='maintenance-pick')return showPage('maintenance');if(a==='stock-print-modal')return stockPrintModal();if(a==='stock-print-run')return printStockList();if(a==='print-ppe'||a==='print-movements'||a==='print-costs')return window.print();if(a==='export-costs-csv')return exportCostsCsv();if(a==='print-cabinet')return printLabels([{code:'ISG-DOLAP',name:'İSG DOLABI',shelf:'Tek Sabit QR'}],'İSG DOLABI QR ETİKETİ');if(a==='labels-toggle-all'){const boxes=$$('.label-select input[type="checkbox"]');const allChecked=boxes.length&&boxes.every(x=>x.checked);boxes.forEach(x=>x.checked=!allChecked);const btn=e.target.closest('[data-action="labels-toggle-all"]');if(btn)btn.textContent=allChecked?'Tümünü Seç':'Seçimi Temizle';return;}if(a==='print-selected'){const ids=$$('.label-select input:checked').map(x=>x.value),items=state.data.stock.filter(x=>ids.includes(x.id));return items.length?printLabels(items):toast('En az bir etiket seçin.','error');}if(a==='label-one'){const item=state.data.stock.find(x=>x.id===e.target.closest('[data-id]').dataset.id);return printLabels([item]);}
+  if(a==='sync-queue-modal')return syncQueueModal();if(a==='sync-retry-all')return retryAllSyncJobs();if(a==='sync-clear-done')return clearDoneSyncJobs();if(a==='maintenance-pick')return showPage('maintenance');if(a==='stock-print-modal')return stockPrintModal();if(a==='stock-print-run')return printStockList();if(a==='print-ppe'||a==='print-movements'||a==='print-costs')return window.print();if(a==='export-costs-csv')return exportCostsCsv();if(a==='print-cabinet')return printLabels([{code:'ISG-DOLAP',name:'İSG DOLABI',shelf:'Tek Sabit QR'}],'İSG DOLABI QR ETİKETİ');if(a==='labels-toggle-all'){const boxes=$$('.label-select input[type="checkbox"]');const allChecked=boxes.length&&boxes.every(x=>x.checked);boxes.forEach(x=>x.checked=!allChecked);const btn=e.target.closest('[data-action="labels-toggle-all"]');if(btn)btn.textContent=allChecked?'Tümünü Seç':'Seçimi Temizle';return;}if(a==='print-selected'){const ids=$$('.label-select input:checked').map(x=>x.value),items=state.data.stock.filter(x=>ids.includes(x.id));return items.length?printLabels(items):toast('En az bir etiket seçin.','error');}if(a==='label-one'){const item=state.data.stock.find(x=>x.id===e.target.closest('[data-id]').dataset.id);return printLabels([item]);}
   if(a==='copy-gas'){navigator.clipboard.writeText($('#gasCode').textContent).then(()=>toast('Kod.gs panoya kopyalandı.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));return;}if(a==='login-settings-modal')return loginSettingsModal();if(a==='pwa-install-modal')return installAppModal();if(a==='pwa-install-now'){location.href=qrAppUrl();return;}if(a==='copy-qr-url'){navigator.clipboard.writeText(qrAppUrl()).then(()=>toast('Operatör QR kurulum linki kopyalandı.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));return;}if(a==='share-qr-url'){const u=qrAppUrl();if(navigator.share){navigator.share({title:'Operatör QR Okuyucu',text:'Operatör QR uygulamasını telefonunuza kurmak için bu bağlantıyı açıp "Kur" butonuna basın:',url:u}).catch(()=>{});}else{navigator.clipboard.writeText(u).then(()=>toast('Link panoya kopyalandı; WhatsApp veya SMS ile operatöre gönderebilirsiniz.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));}return;}if(a==='download-html'){const url=URL.createObjectURL(new Blob([ORIGINAL_HTML],{type:'text/html;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='Mekanik_Depo_V8.7_Tek_HTML.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);return;}if(a==='open-qr-terminal'){const u=qrAppUrl();if(window.innerWidth<=768){location.href=u;return;}modal('Operatör QR Okuyucu',`<div style="border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#0F172A;max-width:430px;margin:0 auto"><iframe src="${esc(u)}" allow="camera" title="Operatör QR Okuyucu" style="width:100%;height:min(76vh,700px);border:0;display:block"></iframe></div>`,`<button class="btn ghost" data-action="pwa-install-modal">${ic('phone','ic-sm')} Operatör Telefonuna Kur</button><button class="btn ghost" data-action="download-qr-terminal">${ic('download','ic-sm')} HTML İndir</button><a class="btn ghost" href="${esc(u)}" target="_blank" rel="noopener">Yeni Sekmede Aç</a><button class="btn primary" data-close>Kapat</button>`);return;}if(a==='download-qr-terminal'){beginSave('QR Terminali indiriliyor...');try{let res=await fetch('./qr-terminal.html');if(!res.ok)res=await fetch('./public/qr-terminal.html');if(!res.ok)throw Error('QR Terminal dosyası okunamadı.');const html=(await res.text()).replace(/<script[^>]*src="\/@vite\/client"[^>]*><\/script>\s*/gi,''),url=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download='Operator_QR_Okuyucu.html';link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);endSave(true,'Operatör QR indirildi ✓');toast('Operatör QR Okuyucu (Operator_QR_Okuyucu.html) indirildi.');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(a==='save-connection'){state.mode=$('[name=mode]:checked').value;state.directUrl=$('#directUrl').value.trim();localStorage.setItem('depo.mode',state.mode);localStorage.setItem('depo.directUrl',state.directUrl);toast('Bağlantı ayarı kaydedildi; yeniden giriş yapın.');return;}if(a==='test-connection'){const old=state.directUrl,oldMode=state.mode;state.mode=$('[name=mode]:checked')?.value||state.mode;state.directUrl=$('#directUrl').value.trim();beginSave('Bağlantı test ediliyor...');try{await api('health');endSave(true,'Bağlantı başarılı ✓');toast('Bağlantı yanıt verdi.');}catch(x){endSave(false,x.message);toast(x.message,'error');}finally{state.directUrl=old;state.mode=oldMode;}return;}if(a==='login-save-conn'){const mode=$('#loginMode')?.value||'demo',url=($('#loginDirectUrl')?.value||'').trim();if(mode==='direct'&&!url)return toast('Doğrudan mod için Apps Script /exec adresi girin.','error');state.mode=mode;state.directUrl=url;localStorage.setItem('depo.mode',state.mode);localStorage.setItem('depo.directUrl',state.directUrl);closeModal();renderLogin();toast('Bağlantı ayarı kaydedildi ('+(mode==='demo'?'Demo':mode==='direct'?'Doğrudan GAS':'/api/gas')+').');return;}if(a==='login-test-conn'){const oldMode=state.mode,oldUrl=state.directUrl;state.mode=$('#loginMode')?.value||state.mode;state.directUrl=($('#loginDirectUrl')?.value||'').trim();beginSave('Bağlantı test ediliyor...');try{await api('health');endSave(true,'Bağlantı başarılı ✓');toast('Bağlantı başarılı.');}catch(x){endSave(false,x.message);toast(x.message,'error');}finally{state.mode=oldMode;state.directUrl=oldUrl;}return;}
  }
+  const sqRetry=e.target.closest('[data-sync-retry]');if(sqRetry)return retrySyncJob(sqRetry.dataset.syncRetry);
+  const sqDismiss=e.target.closest('[data-sync-dismiss]');if(sqDismiss)return dismissSyncJob(sqDismiss.dataset.syncDismiss);
   const fillPin=e.target.closest('[data-fill-pin]');if(fillPin){closeModal();const inp=$('#loginForm [name="pin"]');if(inp){inp.value=fillPin.dataset.fillPin;inp.focus();}return;}
   const lblPreset=e.target.closest('[data-label-preset]');if(lblPreset){saveLabelCfg({...state.labelCfg,w:Number(lblPreset.dataset.w),h:Number(lblPreset.dataset.h)});if($('#lblWidth'))$('#lblWidth').value=state.labelCfg.w;if($('#lblHeight'))$('#lblHeight').value=state.labelCfg.h;updateLabelPreview();return;}
   const lblPos=e.target.closest('[data-label-pos]');if(lblPos){saveLabelCfg({...state.labelCfg,textPos:lblPos.dataset.labelPos});updateLabelPreview();return;}
@@ -3651,8 +3872,13 @@ async function actionHandler(e){const page=e.target.closest('[data-page]')?.data
   if(row)row.status=decision==='ONAYLA'?'ONAYLANDI':'REDDEDILDI';
   if(decision==='ONAYLA'&&item)item.stock=Math.max(0,(Number(item.stock)||0)-Number(row.qty||0));
   renderNav();showPage(state.page,false);
-  beginSave(decision==='ONAYLA'?'Onay kaydediliyor...':'Red kaydediliyor...');
-  api('approvalDecide',{id,decision}).then(()=>{saveBootCache(state.user?.role,state.data);endSave(true,decision==='ONAYLA'?'Talep onaylandı ve stoktan düşüldü ✓':'Talep reddedildi ✓');scheduleBgSync();}).catch(x=>{if(row)row.status=prevStatus;if(item&&prevStock!==null)item.stock=prevStock;endSave(false,x.message);toast(x.message,'error');renderNav();showPage(state.page,false);});
+  enqueueSave({
+   label:decision==='ONAYLA'?'Talep Onayı':'Talep Reddi',
+   detail:`${row?.name||id} · ${num(row?.qty||0)} ${row?.unit||''}`,
+   run:()=>api('approvalDecide',{id,decision}),
+   onSuccess:()=>{saveBootCache(state.user?.role,state.data);},
+   onError:()=>{if(row)row.status=prevStatus;if(item&&prevStock!==null)item.stock=prevStock;refreshViewQuietly();}
+  });
   return;
  }
  const ai=e.target.closest('[data-analysis-item]');if(ai)return analysisDetail(ai.dataset.analysisItem);const cg=e.target.closest('[data-cost-group]');if(cg){state.costFilter.group=cg.dataset.costGroup;return renderCosts();}const ck=e.target.closest('[data-cost-key]');if(ck)return costDetailModal(ck.dataset.costKind,ck.dataset.costKey);const q=e.target.closest('[data-qty]');if(q){const i=$('[name=qty]');i.value=Math.max(.01,Number(i.value)+Number(q.dataset.qty));}
@@ -3674,8 +3900,13 @@ async function clickStockOp(e){
   const minChanged=item&&minVal!==Number(item.min);
   if(item){item.stock=(Number(item.stock)||0)+val;item.incoming=(Number(item.incoming)||0)+val;item.unitPrice=price;item.min=minVal;}
   closeModal();state.analysis=null;state.cost=null;renderNav();showPage(state.page,false);
-  beginSave('Malzeme girişi kaydediliyor...');
-  Promise.all([api('stockIn',payload),minChanged?api('itemUpdate',{id,min:minVal}):Promise.resolve()]).then(()=>{saveBootCache(state.user?.role,state.data);endSave(true,'Malzeme girişi ve yeni fiyat kaydedildi ✓');scheduleBgSync();}).catch(x=>{if(item&&prev)Object.assign(item,prev);endSave(false,x.message);toast(x.message,'error');renderNav();showPage(state.page,false);});
+  enqueueSave({
+   label:'Malzeme Girişi',
+   detail:`${item?.name||id} · +${num(val)} ${item?.unit||''} · ${money(price)}`,
+   run:async()=>{await api('stockIn',payload);if(minChanged)await api('itemUpdate',{id,min:minVal});},
+   onSuccess:()=>{saveBootCache(state.user?.role,state.data);},
+   onError:()=>{if(item&&prev)Object.assign(item,prev);refreshViewQuietly();}
+  });
   return;
  }
  if(rawVal===''||Number.isNaN(val)||val<0){$('#stockValue')?.focus();return toast('Geçerli bir fiili stok değeri girin.','error');}
@@ -3684,8 +3915,13 @@ async function clickStockOp(e){
  const prev=item?{stock:item.stock}:null;
  if(item)item.stock=val;
  closeModal();state.analysis=null;state.cost=null;renderNav();showPage(state.page,false);
- beginSave('Stok sayımı kaydediliyor...');
- api(op,payload).then(()=>{saveBootCache(state.user?.role,state.data);endSave(true,'Stok sayımı kaydedildi ✓');scheduleBgSync();}).catch(x=>{if(item&&prev)Object.assign(item,prev);endSave(false,x.message);toast(x.message,'error');renderNav();showPage(state.page,false);});
+ enqueueSave({
+  label:'Stok Sayımı',
+  detail:`${item?.name||id} · Fiili: ${num(val)} ${item?.unit||''}`,
+  run:()=>api(op,payload),
+  onSuccess:()=>{saveBootCache(state.user?.role,state.data);},
+  onError:()=>{if(item&&prev)Object.assign(item,prev);refreshViewQuietly();}
+ });
 }
 function keepInputFocus(id,fn){const el=$('#'+id),pos=el?.selectionStart;fn();const next=$('#'+id);if(next){next.focus();if(typeof pos==='number')next.setSelectionRange(pos,pos);}}
 function inputHandler(e){if(e.target.id==='lblWidth'||e.target.id==='lblHeight'||e.target.id==='lblCopies'){const w=Number($('#lblWidth')?.value),h=Number($('#lblHeight')?.value),copies=Number($('#lblCopies')?.value);if(w>=25&&h>=15){saveLabelCfg({...state.labelCfg,w,h,copies:copies>=1?copies:state.labelCfg.copies});updateLabelPreview();}return;}if(e.target.id==='lblFontRange'){saveLabelCfg({...state.labelCfg,fontPt:Number(e.target.value)});updateLabelPreview();return;}if(e.target.id==='lblCustomText'){saveLabelCfg({...state.labelCfg,customText:e.target.value});updateLabelPreview();return;}if(e.target.id==='itemInitial'||e.target.id==='itemUnitPrice')updateRegistrationTotal();if(e.target.id==='itemMachineSearch')filterRegistrationMachines(e.target.value);if(e.target.id==='stockSearch'){state.stockFilter.query=e.target.value;clearTimeout(inputHandler.t);inputHandler.t=setTimeout(()=>keepInputFocus('stockSearch',renderStock),90);}if(e.target.id==='movSearch'){state.movQuery=e.target.value;clearTimeout(inputHandler.mt);inputHandler.mt=setTimeout(()=>keepInputFocus('movSearch',renderMovements),90);}if(e.target.id==='ppeSearch'){state.ppeFilter.query=e.target.value;clearTimeout(inputHandler.pt);inputHandler.pt=setTimeout(()=>keepInputFocus('ppeSearch',renderPpe),90);}if(e.target.id==='ppeUsageSearch'){state.ppeUsageQuery=e.target.value;clearTimeout(inputHandler.put);inputHandler.put=setTimeout(()=>keepInputFocus('ppeUsageSearch',renderPpe),90);}if(e.target.id==='costSearch'){state.costFilter.query=e.target.value;clearTimeout(inputHandler.ct);inputHandler.ct=setTimeout(()=>keepInputFocus('costSearch',renderCosts),90);}}
