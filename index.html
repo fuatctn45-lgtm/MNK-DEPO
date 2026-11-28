@@ -4549,8 +4549,8 @@ function renderOrderEditor(){
      <div class="akg-pay-val"><input id="poDeliveryPlace" value="${esc(d.deliveryPlace)}" placeholder="Örn: İzmir Fabrika" ${roAttr}></div>
     </div>
     <div class="akg-details">
-     <div class="akg-details-lbl"><span>Detaylar</span><span>Details</span></div>
-     <div class="akg-details-val"><textarea id="poDetails" placeholder="Kullanılacak makine, arıza veya satın alma gerekçesini yazın..." ${roAttr}>${esc(d.details)}</textarea></div>
+     <div class="akg-details-lbl"><span>Detaylar *</span><span>Details</span><small id="poDetailsCount" style="margin-top:4px;font-size:10.5px;font-weight:700;color:${String(d.details||'').trim().length>=10?'#15803d':'#b45309'}">${String(d.details||'').trim().length>=10?`✓ ${String(d.details||'').trim().length} krk`:`${String(d.details||'').trim().length}/10 krk`}</small></div>
+     <div class="akg-details-val"><textarea id="poDetails" minlength="10" required placeholder="Kullanılacak makine, arıza veya satın alma gerekçesini en az 10 karakter yazın..." ${roAttr}>${esc(d.details)}</textarea></div>
     </div>
     <div class="akg-sigs">
      <div class="akg-sig-col">
@@ -4636,17 +4636,59 @@ function renderOrderPickerRows(list,rowIdx,q=''){
  const rows=list.filter(x=>!q||norm([x.name,x.code,x.company,x.shelf,x.category].join(' ')).includes(norm(q))).slice(0,40);
  return rows.length?rows.map(x=>`<button type="button" class="po-picker-row" data-po-pick-item="${esc(x.id)}" data-po-pick-row="${rowIdx}"><div><b>${esc(x.name)}</b><small><span class="mono">${esc(x.code)}</span> · ${esc(x.company||'Firma yok')} · Stok: ${num(x.stock)} / Min: ${num(x.min)} ${esc(x.unit)}</small></div><strong class="mono">${x.unitPrice?money(x.unitPrice):'0,00 ₺'}</strong></button>`).join(''):'<div class="empty">Eşleşen stok kartı bulunamadı.</div>';
 }
-function saveOrderFromEditor(){
- const d=syncDraftFromDom();if(!d)return;
- const filledItems=d.items.filter(x=>String(x.name||'').trim()||String(x.code||'').trim()).map(x=>({
+function updateOrderDetailsCounterUi(){
+ const el=$('#poDetails'),cnt=$('#poDetailsCount');
+ if(!el||!cnt)return;
+ const len=String(el.value||'').trim().length;
+ cnt.style.color=len>=10?'#15803d':len>0?'#dc2626':'#b45309';
+ cnt.textContent=len>=10?`✓ ${len} krk`:`${len}/10 krk`;
+ if(len>=10)el.style.outline='';
+}
+function validateOrderDraftUi(d){
+ if(!d)return null;
+ const fallbackDate=d.requestDate||formatTrDate(new Date());
+ const filledItems=(d.items||[]).filter(x=>String(x.name||'').trim()||String(x.code||'').trim()).map(x=>({
   itemId:x.itemId||'',name:String(x.name||'').trim(),code:String(x.code||'').trim(),
   supplier:String(x.supplier||'').trim(),qty:Number(x.qty)||0,unit:String(x.unit||'AD').trim()||'AD',
   unitPrice:Number(x.unitPrice)||0,currency:x.currency||'TL',
   total:Math.round((Number(x.qty)||0)*(Number(x.unitPrice)||0)*100)/100,
-  deliveryDate:String(x.deliveryDate||'').trim()
+  deliveryDate:String(x.deliveryDate||'').trim()||fallbackDate
  }));
- if(!filledItems.length)return toast('Sipariş formuna en az bir malzeme satırı yazın.','error');
- if(filledItems.some(x=>!(x.qty>0)))return toast('Eklenen her malzeme için 0’dan büyük miktar girin.','error');
+ const details=String(d.details||'').trim();
+ if(!filledItems.length&&!details){
+  $('#poDetails')?.focus();
+  toast('Sipariş formu boş! En az bir malzeme ve en az 10 karakter Detaylar / Açıklama girin.','error');
+  return null;
+ }
+ if(!filledItems.length){
+  $('[data-po-field="name"]')?.focus();
+  toast('Form boş! Sipariş formuna en az bir malzeme satırı seçin veya yazın.','error');
+  return null;
+ }
+ const badQtyIdx=(d.items||[]).findIndex(x=>(String(x.name||'').trim()||String(x.code||'').trim())&&!(Number(x.qty)>0));
+ if(badQtyIdx>=0){
+  $(`[data-po-field="qty"][data-idx="${badQtyIdx}"]`)?.focus();
+  toast('Eklenen her malzeme için 0’dan büyük miktar girin.','error');
+  return null;
+ }
+ if(!details){
+  const el=$('#poDetails');
+  if(el){el.style.outline='2px solid #dc2626';el.focus();}
+  toast('Detaylar / Açıklama alanı zorunludur (en az 10 karakter yazın).','error');
+  return null;
+ }
+ if(details.length<10){
+  const el=$('#poDetails');
+  if(el){el.style.outline='2px solid #dc2626';el.focus();}
+  toast(`Detaylar / Açıklama en az 10 karakter olmalıdır (şu an ${details.length} karakter).`,'error');
+  return null;
+ }
+ return filledItems;
+}
+function saveOrderFromEditor(){
+ const d=syncDraftFromDom();if(!d)return;
+ const filledItems=validateOrderDraftUi(d);
+ if(!filledItems)return;
  saveOrderDefaults({docCode:d.docCode,department:d.department,costCenter:d.costCenter,deliveryPlace:d.deliveryPlace,paymentTerm:d.paymentTerm,paymentMaturity:d.paymentMaturity,transport:d.transport,managerName:d.approvals.managerName,approval1Name:d.approvals.approval1Name,approval2Name:d.approvals.approval2Name,approval3Name:d.approvals.approval3Name});
  const payload={...d,items:filledItems,totalAmount:Math.round(filledItems.reduce((s,x)=>s+x.total,0)*100)/100,currency:filledItems[0]?.currency||'TL',createdAt:d.createdAt||new Date().toISOString()};
  delete payload.isNew;
@@ -5237,8 +5279,8 @@ async function actionHandler(e){const page=e.target.closest('[data-page]')?.data
   if(a==='order-save')return saveOrderFromEditor();
   if(a==='order-add-row'){syncDraftFromDom();if(state.orderDraft){state.orderDraft.items.push(emptyOrderRow());renderOrderEditor();}return;}
   if(a==='order-fill-missing'){syncDraftFromDom();if(state.orderDraft){const missing=(state.data?.stock||[]).filter(x=>Number(x.stock)<=Number(x.min));if(!missing.length)return toast('Eksik stok kalemi bulunamadı.');const seeds=missing.slice(0,25).map(it=>emptyOrderRow({itemId:it.id,name:it.name,code:it.code,supplier:it.company||'',qty:Math.max(1,(Number(it.min)||1)-Math.max(0,Number(it.stock)||0)),unit:it.unit||'AD',unitPrice:Number(it.unitPrice)||0,currency:'TL',deliveryDate:formatTrDate(new Date())}));state.orderDraft.items=padOrderRows(seeds,Math.max(14,seeds.length));renderOrderEditor();toast(`${seeds.length} eksik stok satırlara dolduruldu.`);}return;}
-  if(a==='order-print-draft')return printPurchaseOrder(syncDraftFromDom());
-  if(a==='order-email-draft')return openOrderEmailModal(syncDraftFromDom());
+  if(a==='order-print-draft'){const d=syncDraftFromDom();if(!d||!validateOrderDraftUi(d))return;return printPurchaseOrder(d);}
+  if(a==='order-email-draft'){const d=syncDraftFromDom();if(!d||!validateOrderDraftUi(d))return;return openOrderEmailModal(d);}
   if(a==='order-email-preview')return printPurchaseOrder(activeEmailOrder);
   if(a==='order-email-send')return submitOrderEmail();
   if(a==='order-email-all')return toggleAllMailPresets();
@@ -5348,7 +5390,7 @@ async function clickStockOp(e){
  });
 }
 function keepInputFocus(id,fn){const el=$('#'+id),pos=el?.selectionStart;fn();const next=$('#'+id);if(next){next.focus();if(typeof pos==='number')next.setSelectionRange(pos,pos);}}
-function inputHandler(e){if(e.target.id==='cabModalSearch'){const box=$('#cabModalList');if(box)box.innerHTML=renderCabinetModalRows((state.data?.stock||[]).filter(isIsgItemUi),e.target.value);return;}if(e.target.id==='ordMailTo'){syncMailPresetChips();return;}if(e.target.id==='poPickSearch'){const rIdx=Number($('#modalRoot')?.dataset.poPickRow||0);const box=$('#poPickList');if(box)box.innerHTML=renderOrderPickerRows(state.data?.stock||[],rIdx,e.target.value);return;}if(e.target.dataset?.poField&&state.orderDraft){const idx=Number(e.target.dataset.idx),f=e.target.dataset.poField;if(state.orderDraft.items[idx]){state.orderDraft.items[idx][f]=['qty','unitPrice'].includes(f)?(Number(e.target.value)||0):e.target.value;if(['qty','unitPrice'].includes(f))recalcOrderRow(idx);}return;}if(e.target.id==='poRequestedBy'&&$('#poSigRequirer')){$('#poSigRequirer').value=e.target.value;return;}if(e.target.id==='orderSearch'){state.orderFilter.query=e.target.value;clearTimeout(inputHandler.ot);inputHandler.ot=setTimeout(()=>keepInputFocus('orderSearch',renderOrders),90);return;}if(e.target.id==='lblWidth'||e.target.id==='lblHeight'||e.target.id==='lblCopies'){const w=Number($('#lblWidth')?.value),h=Number($('#lblHeight')?.value),copies=Number($('#lblCopies')?.value);if(w>=25&&h>=15){saveLabelCfg({...state.labelCfg,w,h,copies:copies>=1?copies:state.labelCfg.copies});updateLabelPreview();}return;}if(e.target.id==='lblFontRange'){saveLabelCfg({...state.labelCfg,fontPt:Number(e.target.value)});updateLabelPreview();return;}if(e.target.id==='lblCustomText'){saveLabelCfg({...state.labelCfg,customText:e.target.value});updateLabelPreview();return;}if(e.target.id==='itemInitial'||e.target.id==='itemUnitPrice')updateRegistrationTotal();if(e.target.id==='itemMachineSearch')filterRegistrationMachines(e.target.value);if(e.target.id==='stockSearch'){state.stockFilter.query=e.target.value;clearTimeout(inputHandler.t);inputHandler.t=setTimeout(()=>keepInputFocus('stockSearch',renderStock),90);}if(e.target.id==='movSearch'){state.movQuery=e.target.value;clearTimeout(inputHandler.mt);inputHandler.mt=setTimeout(()=>keepInputFocus('movSearch',renderMovements),90);}if(e.target.id==='ppeSearch'){state.ppeFilter.query=e.target.value;clearTimeout(inputHandler.pt);inputHandler.pt=setTimeout(()=>keepInputFocus('ppeSearch',renderPpe),90);}if(e.target.id==='ppeUsageSearch'){state.ppeUsageQuery=e.target.value;clearTimeout(inputHandler.put);inputHandler.put=setTimeout(()=>keepInputFocus('ppeUsageSearch',renderPpe),90);}if(e.target.id==='costSearch'){state.costFilter.query=e.target.value;clearTimeout(inputHandler.ct);inputHandler.ct=setTimeout(()=>keepInputFocus('costSearch',renderCosts),90);}}
+function inputHandler(e){if(e.target.id==='cabModalSearch'){const box=$('#cabModalList');if(box)box.innerHTML=renderCabinetModalRows((state.data?.stock||[]).filter(isIsgItemUi),e.target.value);return;}if(e.target.id==='ordMailTo'){syncMailPresetChips();return;}if(e.target.id==='poDetails'){if(state.orderDraft)state.orderDraft.details=e.target.value;updateOrderDetailsCounterUi();return;}if(e.target.id==='poPickSearch'){const rIdx=Number($('#modalRoot')?.dataset.poPickRow||0);const box=$('#poPickList');if(box)box.innerHTML=renderOrderPickerRows(state.data?.stock||[],rIdx,e.target.value);return;}if(e.target.dataset?.poField&&state.orderDraft){const idx=Number(e.target.dataset.idx),f=e.target.dataset.poField;if(state.orderDraft.items[idx]){state.orderDraft.items[idx][f]=['qty','unitPrice'].includes(f)?(Number(e.target.value)||0):e.target.value;if(['name','code'].includes(f)&&String(e.target.value||'').trim()&&!String(state.orderDraft.items[idx].deliveryDate||'').trim()){const autoDate=state.orderDraft.requestDate||formatTrDate(new Date());state.orderDraft.items[idx].deliveryDate=autoDate;const dtInp=$(`[data-po-field="deliveryDate"][data-idx="${idx}"]`);if(dtInp&&!dtInp.value.trim())dtInp.value=autoDate;}if(['qty','unitPrice'].includes(f))recalcOrderRow(idx);}return;}if(e.target.id==='poRequestedBy'&&$('#poSigRequirer')){$('#poSigRequirer').value=e.target.value;return;}if(e.target.id==='orderSearch'){state.orderFilter.query=e.target.value;clearTimeout(inputHandler.ot);inputHandler.ot=setTimeout(()=>keepInputFocus('orderSearch',renderOrders),90);return;}if(e.target.id==='lblWidth'||e.target.id==='lblHeight'||e.target.id==='lblCopies'){const w=Number($('#lblWidth')?.value),h=Number($('#lblHeight')?.value),copies=Number($('#lblCopies')?.value);if(w>=25&&h>=15){saveLabelCfg({...state.labelCfg,w,h,copies:copies>=1?copies:state.labelCfg.copies});updateLabelPreview();}return;}if(e.target.id==='lblFontRange'){saveLabelCfg({...state.labelCfg,fontPt:Number(e.target.value)});updateLabelPreview();return;}if(e.target.id==='lblCustomText'){saveLabelCfg({...state.labelCfg,customText:e.target.value});updateLabelPreview();return;}if(e.target.id==='itemInitial'||e.target.id==='itemUnitPrice')updateRegistrationTotal();if(e.target.id==='itemMachineSearch')filterRegistrationMachines(e.target.value);if(e.target.id==='stockSearch'){state.stockFilter.query=e.target.value;clearTimeout(inputHandler.t);inputHandler.t=setTimeout(()=>keepInputFocus('stockSearch',renderStock),90);}if(e.target.id==='movSearch'){state.movQuery=e.target.value;clearTimeout(inputHandler.mt);inputHandler.mt=setTimeout(()=>keepInputFocus('movSearch',renderMovements),90);}if(e.target.id==='ppeSearch'){state.ppeFilter.query=e.target.value;clearTimeout(inputHandler.pt);inputHandler.pt=setTimeout(()=>keepInputFocus('ppeSearch',renderPpe),90);}if(e.target.id==='ppeUsageSearch'){state.ppeUsageQuery=e.target.value;clearTimeout(inputHandler.put);inputHandler.put=setTimeout(()=>keepInputFocus('ppeUsageSearch',renderPpe),90);}if(e.target.id==='costSearch'){state.costFilter.query=e.target.value;clearTimeout(inputHandler.ct);inputHandler.ct=setTimeout(()=>keepInputFocus('costSearch',renderCosts),90);}}
 
 document.addEventListener('click',e=>{if(!e.target.closest('.sidebar')){$('.sidebar.open')?.classList.remove('open');$('#navMenuBtn')?.setAttribute('aria-expanded','false');}if(e.target.closest('#nav [data-action="pwa-install-modal"]')){$('.sidebar.open')?.classList.remove('open');$('#navMenuBtn')?.setAttribute('aria-expanded','false');}actionHandler(e);clickStockOp(e);const d=e.target.closest('[data-filter-depot],[data-ppe]');if(d)changeHandler({target:d});if(e.target.closest('[data-action="toggle-pin"]')){const i=$('[name=pin]');i.type=i.type==='password'?'text':'password';}});
 document.addEventListener('change',changeHandler);document.addEventListener('input',inputHandler);document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('.sidebar.open')){$('.sidebar.open').classList.remove('open');$('#navMenuBtn')?.setAttribute('aria-expanded','false');}if(!$('#modalRoot')?.hidden)closeModal();}});

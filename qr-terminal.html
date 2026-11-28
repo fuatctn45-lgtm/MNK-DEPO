@@ -893,6 +893,11 @@ body.busy .busy-bar{display:block}
 .mpo-field textarea{min-height:84px;resize:vertical;line-height:1.4}
 .mpo-field input:focus,.mpo-field select:focus,.mpo-field textarea:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(234,88,12,.14)}
 .mpo-field input[readonly]{background:#EEF2F6;color:#475569;border-color:var(--border)}
+.mpo-field-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.po-det-cnt{font-size:11.5px;font-weight:700;color:var(--amber);font-variant-numeric:tabular-nums}
+.po-det-cnt.ok{color:var(--green)}
+.po-det-cnt.err{color:var(--red)}
+.po-field-err{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(220,38,38,.16)!important;background:#FEF2F2!important}
 .mpo-item-card{
   background:#fff;border:1.5px solid var(--border);border-radius:13px;
   padding:12px;display:flex;flex-direction:column;gap:9px;
@@ -1963,6 +1968,7 @@ function resolveCostCenterForDepartment(dept) {
 function createOrderDraft(seedItem = null) {
   const defs = loadOrderDefaults();
   const reqBy = state.user?.name || '';
+  const reqDate = todayTr();
   const seedRows = seedItem ? [makeOrderRow({
     itemId: seedItem.id || '',
     name: seedItem.name || '',
@@ -1971,12 +1977,12 @@ function createOrderDraft(seedItem = null) {
     qty: Math.max(1, Number(((Number(seedItem.min) || 1) - (Number(seedItem.stock) || 0)).toFixed(2)) || 1),
     unit: seedItem.unit || 'AD',
     unitPrice: Number(seedItem.unitPrice) || 0,
-    currency: 'TL'
+    currency: 'TL',
+    deliveryDate: reqDate
   })] : [];
   const items = padOrderRows(seedRows, Math.max(14, seedRows.length));
   const seedDept = String(seedItem?.machine || '').split('|')[0].trim() || defs.department || '';
   const autoCc = resolveCostCenterForDepartment(seedDept);
-  const reqDate = todayTr();
   return {
     formNo: nextOrderFormNo(),
     docCode: defs.docCode || 'IZM_350600_LJT_001',
@@ -2756,8 +2762,11 @@ function renderOrder() {
 
       <div class="mpo-card">
         <label class="mpo-field">
-          <span>Detaylar / Açıklama</span>
-          <textarea id="poDetails" placeholder="Kullanılacak makine, arıza veya satın alma gerekçesini yazın...">${esc(d.details || '')}</textarea>
+          <span class="mpo-field-head">
+            <span>Detaylar / Açıklama *</span>
+            <small id="poDetailsCount" class="po-det-cnt ${(String(d.details || '').trim().length >= 10) ? 'ok' : ''}">${String(d.details || '').trim().length >= 10 ? `✓ ${String(d.details || '').trim().length} karakter` : `${String(d.details || '').trim().length} / 10 karakter (zorunlu)`}</small>
+          </span>
+          <textarea id="poDetails" minlength="10" required placeholder="Kullanılacak makine, arıza veya satın alma gerekçesini en az 10 karakter yazın...">${esc(d.details || '')}</textarea>
         </label>
       </div>
 
@@ -2893,8 +2902,11 @@ function renderOrder() {
             <div class="akg-pay-val"><input id="poDeliveryPlace" value="${esc(d.deliveryPlace || '')}" placeholder="Örn: İzmir Fabrika"></div>
           </div>
           <div class="akg-details">
-            <div class="akg-details-lbl"><span>Detaylar</span><span>Details</span></div>
-            <div class="akg-details-val"><textarea id="poDetails" placeholder="Kullanılacak makine, arıza veya satın alma gerekçesini yazın...">${esc(d.details || '')}</textarea></div>
+            <div class="akg-details-lbl">
+              <span>Detaylar *</span><span>Details</span>
+              <small id="poDetailsCount" class="po-det-cnt ${(String(d.details || '').trim().length >= 10) ? 'ok' : ''}" style="margin-top:4px">${String(d.details || '').trim().length >= 10 ? `✓ ${String(d.details || '').trim().length} krk` : `${String(d.details || '').trim().length}/10 krk`}</small>
+            </div>
+            <div class="akg-details-val"><textarea id="poDetails" minlength="10" required placeholder="Kullanılacak makine, arıza veya satın alma gerekçesini en az 10 karakter yazın...">${esc(d.details || '')}</textarea></div>
           </div>
           <div class="akg-sigs">
             <div class="akg-sig-col">
@@ -3402,13 +3414,37 @@ function syncOrderDraftFromDom() {
   return d;
 }
 
-async function submitOrderForm() {
-  const d = syncOrderDraftFromDom();
-  if (!d) return;
-  const opName = state.user?.name || '';
-  if (!opName) return toast('Önce operatör PIN ile giriş yapın.', 'err');
+function updateOrderDetailsCounter() {
+  const el = $('#poDetails');
+  const cnt = $('#poDetailsCount');
+  if (!el || !cnt) return;
+  const len = String(el.value || '').trim().length;
+  const isSheet = state.orderViewMode === 'sheet';
+  cnt.classList.toggle('ok', len >= 10);
+  cnt.classList.toggle('err', len > 0 && len < 10);
+  cnt.textContent = len >= 10
+    ? (isSheet ? `✓ ${len} krk` : `✓ ${len} karakter`)
+    : (isSheet ? `${len}/10 krk` : `${len} / 10 karakter (zorunlu)`);
+  if (len >= 10) el.classList.remove('po-field-err');
+}
+
+function focusOrderErrorField(el, msg) {
+  if (el) {
+    el.classList.add('po-field-err');
+    try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch {}
+    setTimeout(() => { try { el.focus(); } catch {} }, 120);
+  }
+  vibrate([30, 30, 30]);
+  toast(msg, 'err');
+  return null;
+}
+
+function validateOrderDraft(d) {
+  if (!d) return null;
+  $$('.po-field-err').forEach(x => x.classList.remove('po-field-err'));
   const dept = String(d.department || '').trim();
-  if (!dept) return toast('Talep eden bölüm veya makineyi seçin.', 'err');
+  const details = String(d.details || '').trim();
+  const fallbackDate = d.requestDate || todayTr();
   const filledItems = (d.items || []).filter(r => String(r.name || '').trim() || String(r.code || '').trim()).map((r, i) => ({
     no: i + 1,
     itemId: String(r.itemId || ''),
@@ -3420,10 +3456,42 @@ async function submitOrderForm() {
     unitPrice: Number(r.unitPrice) || 0,
     currency: String(r.currency || 'TL').trim() || 'TL',
     total: Math.round((Number(r.qty) || 0) * (Number(r.unitPrice) || 0) * 100) / 100,
-    deliveryDate: String(r.deliveryDate || '').trim()
+    deliveryDate: String(r.deliveryDate || '').trim() || fallbackDate
   }));
-  if (!filledItems.length) return toast('Sipariş formuna en az bir malzeme satırı yazın.', 'err');
-  if (filledItems.some(x => !(x.qty > 0))) return toast('Eklenen her malzeme için 0’dan büyük miktar girin.', 'err');
+  if (!filledItems.length && !dept && !details) {
+    return focusOrderErrorField($('#poDepartment') || $('[data-po-field="name"]'), 'Sipariş formu boş! Bölüm/makine, malzeme ve en az 10 karakter açıklama girin.');
+  }
+  if (!dept) {
+    return focusOrderErrorField($('#poDepartment'), 'Talep eden bölüm veya makineyi seçin.');
+  }
+  if (!filledItems.length) {
+    return focusOrderErrorField($('[data-po-field="name"]'), 'Form boş! En az bir malzeme seçin veya yazın.');
+  }
+  const badQtyIdx = (d.items || []).findIndex(r => (String(r.name || '').trim() || String(r.code || '').trim()) && !(Number(r.qty) > 0));
+  if (badQtyIdx >= 0) {
+    return focusOrderErrorField($(`[data-po-field="qty"][data-idx="${badQtyIdx}"]`), 'Eklenen her malzeme için 0’dan büyük miktar girin.');
+  }
+  if (!details) {
+    const cnt = $('#poDetailsCount');
+    if (cnt) cnt.classList.add('err');
+    return focusOrderErrorField($('#poDetails'), 'Detaylar / Açıklama alanı zorunludur (en az 10 karakter yazın).');
+  }
+  if (details.length < 10) {
+    const cnt = $('#poDetailsCount');
+    if (cnt) cnt.classList.add('err');
+    return focusOrderErrorField($('#poDetails'), `Detaylar / Açıklama en az 10 karakter olmalıdır (şu an ${details.length} karakter).`);
+  }
+  return { dept, details, filledItems };
+}
+
+async function submitOrderForm() {
+  const d = syncOrderDraftFromDom();
+  if (!d) return;
+  const opName = state.user?.name || '';
+  if (!opName) return toast('Önce operatör PIN ile giriş yapın.', 'err');
+  const valid = validateOrderDraft(d);
+  if (!valid) return;
+  const { dept, filledItems } = valid;
 
   saveOrderDefaults({
     docCode: d.docCode,
@@ -3848,7 +3916,8 @@ document.addEventListener('click', async e => {
         unit: it.unit || 'AD',
         unitPrice: Number(it.unitPrice) || 0,
         currency: 'TL',
-        total: Math.round(defQty * (Number(it.unitPrice) || 0) * 100) / 100
+        total: Math.round(defQty * (Number(it.unitPrice) || 0) * 100) / 100,
+        deliveryDate: state.orderDraft.items[idx].deliveryDate || state.orderDraft.requestDate || todayTr()
       };
       if (!state.orderDraft.department && it.machine) {
         const firstMac = String(it.machine).split('|')[0].trim();
@@ -3942,12 +4011,14 @@ document.addEventListener('click', async e => {
   if (act === 'ord-submit') return submitOrderForm();
   if (act === 'ord-print-draft') {
     const d = syncOrderDraftFromDom();
-    if (d) printPurchaseOrder(d);
+    if (!d || !validateOrderDraft(d)) return;
+    printPurchaseOrder(d);
     return;
   }
   if (act === 'ord-email-draft') {
     const d = syncOrderDraftFromDom();
-    if (d) openOrderEmailModal(d, state.session);
+    if (!d || !validateOrderDraft(d)) return;
+    openOrderEmailModal(d, state.session);
     return;
   }
   if (act === 'ord-email-preview') {
@@ -4071,10 +4142,22 @@ document.addEventListener('input', e => {
     if (listEl) listEl.innerHTML = renderOrderPickerRows(state.stock || [], rowIdx, e.target.value);
     return;
   }
+  if (e.target.id === 'poDetails' && state.orderDraft) {
+    state.orderDraft.details = e.target.value;
+    updateOrderDetailsCounter();
+    return;
+  }
   if (e.target.dataset?.poField && state.orderDraft) {
     const idx = Number(e.target.dataset.idx), f = e.target.dataset.poField;
+    e.target.classList.remove('po-field-err');
     if (state.orderDraft.items[idx]) {
       state.orderDraft.items[idx][f] = (f === 'qty' || f === 'unitPrice') ? (Number(e.target.value) || 0) : e.target.value;
+      if ((f === 'name' || f === 'code') && String(e.target.value || '').trim() && !String(state.orderDraft.items[idx].deliveryDate || '').trim()) {
+        const autoDate = state.orderDraft.requestDate || todayTr();
+        state.orderDraft.items[idx].deliveryDate = autoDate;
+        const dtInp = $(`[data-po-field="deliveryDate"][data-idx="${idx}"]`);
+        if (dtInp && !dtInp.value.trim()) dtInp.value = autoDate;
+      }
       if (f === 'qty' || f === 'unitPrice') recalcOrderRow(idx);
     }
     return;
@@ -4083,6 +4166,7 @@ document.addEventListener('input', e => {
 
 document.addEventListener('change', e => {
   if (e.target.id === 'poDepartment' && state.orderDraft) {
+    e.target.classList.remove('po-field-err');
     const dep = e.target.value.trim();
     state.orderDraft.department = dep;
     const cc = resolveCostCenterForDepartment(dep);
