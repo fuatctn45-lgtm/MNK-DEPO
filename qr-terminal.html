@@ -1059,6 +1059,18 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt
 const norm = s => String(s ?? '').trim().toLocaleUpperCase('tr-TR')
   .replace(/İ/g,'I').replace(/Ş/g,'S').replace(/Ğ/g,'G').replace(/Ü/g,'U').replace(/Ö/g,'O').replace(/Ç/g,'C')
   .replace(/[^A-Z0-9]+/g,'_').replace(/^_|_$/g,'');
+function isIsgCabinetCode(code) {
+  const q = norm(typeof extractCodeFromQr === 'function' ? extractCodeFromQr(code) : code);
+  if (!q) return false;
+  if (['ISG_DOLAP','ISGDOLAP','ISG_DOLABI','ISGDOLABI','KKD_DOLAP','KKDDOLAP','KKD_DOLABI','ISG'].includes(q)) return true;
+  return /^(ISG|KKD)/.test(q) && /DOLAP|DOLABI|CABINET/.test(q);
+}
+function isIsgItem(x) {
+  if (!x) return false;
+  if (norm(x.depot) === 'ISG') return true;
+  const hay = norm([x.depot, x.id, x.type, x.category, x.usage, x.shelf].join(' '));
+  return /(^|_)(ISG|KKD)($|_)|IS_GUVENLIG|KISISEL_KORUYUCU/.test(hay) || /^ISG/.test(norm(x.id)) || /^ISG/.test(norm(x.code));
+}
 const num = v => new Intl.NumberFormat('tr-TR',{maximumFractionDigits:2}).format(Number(v)||0);
 const uid = p => p + '-' + Math.random().toString(36).slice(2,8).toUpperCase();
 const nowStr = () => new Date().toLocaleString('tr-TR');
@@ -1241,7 +1253,9 @@ const SVG = {
   mail: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
   print: '<polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>',
   search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
-  logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'
+  logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+  shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  refresh: '<polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>'
 };
 const ic = (name, cls='') => `<span class="ic ${cls}" aria-hidden="true"><svg viewBox="0 0 24 24">${SVG[name]||''}</svg></span>`;
 
@@ -1356,6 +1370,8 @@ const state = {
   camActive: false,
   camStoppedByUser: false,
   camError: '',
+  cabinetQuery: '',
+  cabinetShowAll: false,
   torchSupported: false,
   torchOn: false,
   showPin: false,
@@ -2013,6 +2029,8 @@ function resetToScan() {
   state.pendingCheckout = null;
   state.receipt = null;
   state.showPin = false;
+  state.cabinetQuery = '';
+  state.cabinetShowAll = false;
   state.step = 'scan';
   if (location.search) {
     try { history.replaceState(null, '', location.pathname); } catch {}
@@ -2022,8 +2040,10 @@ function resetToScan() {
 
 function resolveScannedItem() {
   const code = state.scannedQr;
-  if (norm(code) === 'ISG_DOLAP') {
+  if (isIsgCabinetCode(code)) {
     state.item = null;
+    state.cabinetQuery = '';
+    state.cabinetShowAll = false;
     state.step = 'cabinet';
     render();
     return;
@@ -2284,14 +2304,15 @@ function renderSettings() {
 
 function renderPin() {
   const isOrder = state.intent === 'order';
+  const isCab = !isOrder && isIsgCabinetCode(state.scannedQr);
   return `
   <section class="card">
     <div class="qr-banner">
       <div class="qr-banner-left">
-        <div class="qr-badge-ic">${ic(isOrder ? 'fileText' : 'qr')}</div>
+        <div class="qr-badge-ic">${ic(isOrder ? 'fileText' : isCab ? 'shield' : 'qr')}</div>
         <div>
-          <small>${isOrder ? 'Satın Alma Talebi' : 'Okutulan QR'}</small>
-          <strong class="${isOrder ? '' : 'mono'}">${esc(isOrder ? 'Sipariş Formu Oluştur' : state.scannedQr)}</strong>
+          <small>${isOrder ? 'Satın Alma Talebi' : isCab ? 'İSG Dolabı QR' : 'Okutulan QR'}</small>
+          <strong class="${isOrder ? '' : 'mono'}">${esc(isOrder ? 'Sipariş Formu Oluştur' : isCab ? 'İSG DOLABI · ' + state.scannedQr : state.scannedQr)}</strong>
         </div>
       </div>
       <button class="qr-change" type="button" data-action="reset-scan">${isOrder ? 'İptal' : 'Yeniden Okut'}</button>
@@ -2299,7 +2320,7 @@ function renderPin() {
     <div class="card-head">
       <div>
         <h2>Operatör Şifresi (PIN)</h2>
-        <p>${isOrder ? 'Sipariş veren operatör adınızı doğrulamak için OP PIN’inizi tuşlayın' : 'Parçayı açmak için OP PIN’inizi tuşlayın'}</p>
+        <p>${isOrder ? 'Sipariş veren operatör adınızı doğrulamak için OP PIN’inizi tuşlayın' : isCab ? 'İSG Dolabı malzeme listesini açmak için OP PIN’inizi tuşlayın' : 'Parçayı açmak için OP PIN’inizi tuşlayın'}</p>
       </div>
       <span style="color:var(--orange);display:inline-flex">${ic('lock')}</span>
     </div>
@@ -2315,7 +2336,7 @@ function renderPin() {
           <button type="button" data-key="0">0</button>
           <button type="button" class="fn" data-key="DEL">Sil</button>
         </div>
-        <button class="btn ${isOrder ? 'blue' : 'primary'} wide" type="submit">${isOrder ? 'Sipariş Formunu Aç' : 'Parçayı Getir'} ${ic('arrow','ic-sm')}</button>
+        <button class="btn ${isOrder ? 'blue' : 'primary'} wide" type="submit">${isOrder ? 'Sipariş Formunu Aç' : isCab ? 'İSG Malzeme Listesini Aç' : 'Parçayı Getir'} ${ic('arrow','ic-sm')}</button>
       </form>
       ${state.mode === 'demo' ? `
       <div class="demo-hint">
@@ -2346,7 +2367,7 @@ function renderOpStrip() {
 
 function renderPart() {
   const item = state.item;
-  const isIsg = item.depot === 'ISG';
+  const isIsg = isIsgItem(item);
   const consumable = isConsumable(item);
   const reqDepot = needsDepotApproval(item) && !isUserDepotApprover(state.user, item.depot);
   const low = item.stock <= item.min;
@@ -2418,31 +2439,53 @@ function renderPart() {
   </section>`;
 }
 
+function getCabinetItems() {
+  const all = Array.isArray(state.stock) ? state.stock : [];
+  if (state.cabinetShowAll) return all;
+  return all.filter(isIsgItem);
+}
+
+function renderCabinetRows(items, query = '') {
+  const q = norm(query);
+  const filtered = q ? items.filter(x => norm([x.name, x.code, x.id, x.shelf, x.category, x.company].join(' ')).includes(q)) : items;
+  if (!filtered.length) {
+    return `<div class="callout amber" style="margin:0">${ic('alert','ic-sm')}<div>Aramaya uygun İSG ekipmanı bulunamadı.</div></div>`;
+  }
+  const firstAvailIdx = filtered.findIndex(x => Number(x.stock) > 0);
+  const checkIdx = firstAvailIdx >= 0 ? firstAvailIdx : 0;
+  return filtered.map((x, i) => `
+    <label class="cab-item">
+      <input type="radio" name="cabItem" value="${esc(x.id)}" ${i === checkIdx ? 'checked' : ''} ${Number(x.stock) <= 0 ? 'disabled' : ''}>
+      <div>
+        <b>${esc(x.name)}</b>
+        <small class="mono">${esc(x.code || x.id)}${x.shelf ? ' · Raf ' + esc(x.shelf) : ''}${needsDepotApproval(x) ? ' · Depo Onayı' : ''}</small>
+      </div>
+      <strong class="num">${num(x.stock)} ${esc(x.unit || 'AD')}</strong>
+    </label>`).join('');
+}
+
 function renderCabinet() {
-  const isgItems = state.stock.filter(x => x.depot === 'ISG');
+  const isgItems = getCabinetItems();
+  const isMekOnly = state.user?.role === 'MEK_ADMIN';
   return `
   <section class="card">
     ${renderOpStrip()}
     <div class="card-head">
       <div>
         <h2>İSG Dolabı · ISG-DOLAP</h2>
-        <p>Alacağınız KKD ekipmanını seçin; doğrudan düşer</p>
+        <p>${state.cabinetShowAll ? 'Tüm stok kartları listeleniyor' : 'Alacağınız KKD ekipmanını seçin; doğrudan düşer'}</p>
       </div>
       <span class="tag blue">${isgItems.length}</span>
     </div>
     <div class="card-body">
       ${isgItems.length ? `
       <form id="cabinetForm">
-        <div class="cab-list">
-          ${isgItems.map((x, i) => `
-          <label class="cab-item">
-            <input type="radio" name="cabItem" value="${esc(x.id)}" ${i === 0 ? 'checked' : ''} ${x.stock <= 0 ? 'disabled' : ''}>
-            <div>
-              <b>${esc(x.name)}</b>
-              <small class="mono">${esc(x.code)} · Raf ${esc(x.shelf)}${needsDepotApproval(x) ? ' · Depo Onayı' : ''}</small>
-            </div>
-            <strong class="num">${num(x.stock)} ${esc(x.unit)}</strong>
-          </label>`).join('')}
+        ${isgItems.length > 5 ? `
+        <label class="field" style="margin-bottom:10px">
+          <input id="cabSearch" class="input" type="search" value="${esc(state.cabinetQuery)}" placeholder="İSG ekipmanı ara (eldiven, gözlük, maske...)" autocomplete="off">
+        </label>` : ''}
+        <div class="cab-list" id="cabList">
+          ${renderCabinetRows(isgItems, state.cabinetQuery)}
         </div>
         <label class="field">
           <span>Adet</span>
@@ -2457,8 +2500,12 @@ function renderCabinet() {
           <button class="btn ghost wide" type="button" data-action="reset-scan">Vazgeç</button>
         </div>
       </form>` : `
-      <div class="callout red">${ic('alert','ic-sm')}<div><b>İSG Ekipmanı Bulunamadı</b>Listelenecek İSG kartı yok.</div></div>
-      <button class="btn ghost wide" type="button" data-action="reset-scan">Yeni QR Okut</button>`}
+      <div class="callout red">${ic('alert','ic-sm')}<div><b>İSG Ekipmanı Bulunamadı</b>${isMekOnly ? 'Mekanik Depo Sorumlusu hesabı İSG deposunu göremez. Operatör (OP) veya İSG Sorumlusu PIN’i ile giriş yapın.' : `Yüklenen ${state.stock.length} stok kartı içinde İSG/KKD olarak işaretli ürün bulunamadı.`}</div></div>
+      <div class="btn-stack">
+        ${!isMekOnly ? `<button class="btn primary wide" type="button" data-action="refresh-cabinet">${ic('refresh','ic-sm')} Canlı Stoku Yenile</button>` : ''}
+        ${!isMekOnly && state.stock.length ? `<button class="btn blue wide" type="button" data-action="cabinet-show-all">${ic('search','ic-sm')} Tüm Stok Kartlarını Göster (${state.stock.length})</button>` : ''}
+        <button class="btn ghost wide" type="button" data-action="reset-scan">Yeni QR Okut</button>
+      </div>`}
     </div>
   </section>`;
 }
@@ -2959,7 +3006,10 @@ function printPurchaseOrder(order) {
       <td class="c">${esc(it.deliveryDate)}</td>
     </tr>`;
   }).join('');
-  const docHtml = `<!doctype html><meta charset="utf-8"><title>${esc(order.formNo || 'Satın Alma Talep Formu')}</title><style>@page{size:A4 landscape;margin:7mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}html,body{margin:0;padding:0;background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;font-size:10px}.sheet{width:100%;border:1.5px solid #000}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #000;padding:3.5px 5px;vertical-align:middle;word-wrap:break-word}.c{text-align:center}.r{text-align:right}.b{font-weight:700}.mono{font-family:monospace}.red{color:#dc2626}.hdr{display:grid;grid-template-columns:170px 1fr 170px;border-bottom:1.5px solid #000}.hdr>div{display:flex;align-items:center;justify-content:center;padding:6px 8px}.hdr>div+div{border-left:1px solid #000}.hdr-title{font-size:19px;font-weight:800}.hdr-doc{font-size:11.5px;font-weight:700;font-family:monospace}.meta{display:grid;grid-template-columns:135px 1fr 135px 1.25fr 140px 1fr;border-bottom:1.5px solid #000}.meta>div{padding:4px 6px;border-right:1px solid #000;border-bottom:1px solid #000;line-height:1.25}.meta>div:nth-child(6n){border-right:0}.meta>div:nth-last-child(-n+6){border-bottom:0}.ml{font-size:9px;font-weight:700}.mv{font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;text-align:center}.mv.left{justify-content:flex-start;text-align:left}.itbl th{font-size:9px;font-weight:700;text-align:center;line-height:1.2;border-top:0}.itbl td{height:20px;font-size:9.8px;font-weight:700}.itbl td:first-child,.itbl th:first-child{border-left:0}.itbl td:last-child,.itbl th:last-child{border-right:0}.totrow td{border-top:1.5px solid #000;border-bottom:1.5px solid #000;padding:6px 7px;font-size:10px;font-weight:800}.totval{font-size:14px;font-weight:800;text-align:center}.pay{display:grid;grid-template-columns:115px 1fr 115px 1fr 80px 1fr 110px 1fr;border-bottom:1px solid #000}.pay>div{padding:4px 6px;border-right:1px solid #000;line-height:1.25;display:flex;flex-direction:column;justify-content:center}.pay>div:last-child{border-right:0}.pv{font-size:10px;font-weight:600;text-align:center;align-items:center}.det{display:grid;grid-template-columns:115px 1fr;border-bottom:1.5px solid #000;min-height:56px}.det>div{padding:6px 8px;display:flex;flex-direction:column;justify-content:center}.det>div:first-child{border-right:1px solid #000;font-size:9.5px;font-weight:700}.det-txt{font-size:11px;font-weight:700;white-space:pre-wrap}.sigs{display:grid;grid-template-columns:1.05fr 1.55fr 1.55fr 1.55fr 1.55fr}.sc{border-right:1px solid #000;display:flex;flex-direction:column}.sc:last-child{border-right:0}.st{padding:4px;text-align:center;font-size:9.5px;font-weight:700;line-height:1.2;border-bottom:1px solid #000}.ss{display:grid;grid-template-columns:1fr 76px;border-bottom:1px dashed #333;font-size:8.5px;font-weight:700;text-align:center}.ss.one{grid-template-columns:1fr}.ss span{padding:2.5px 3px}.ss span+span{border-left:1px dashed #333}.sv{display:grid;grid-template-columns:1fr 76px;min-height:40px}.sv.one{grid-template-columns:1fr}.sv span{display:flex;align-items:center;justify-content:center;text-align:center;padding:4px;font-size:10.5px;font-weight:700}.sv span+span{border-left:1px dashed #333;font-size:9.5px;font-weight:600}</style><div class="sheet"><div class="hdr"><div>${akgLogoSvg(32)}</div><div class="hdr-title">Satın Alma Talep Formu / Purchase Request Form</div><div class="hdr-doc">${esc(order.docCode || 'IZM_350600_LJT_001')}</div></div><div class="meta"><div class="ml">Talep Tarihi<br>Date of Request</div><div class="mv left">${esc(order.requestDate || '')}</div><div class="ml">Talep Eden Bölüm<br>Department</div><div class="mv">${esc(order.department || '')}</div><div class="ml">Form Numarası<br>Form Number</div><div class="mv">${esc(order.formNo || '')}</div><div class="ml">Talep Eden Kişi<br>Requested by</div><div class="mv left">${esc(order.requestedBy || '')}</div><div class="ml">Maliyet Merkezi<br>Cost Center</div><div class="mv">${esc(order.costCenter || '')}</div><div class="ml">Ekli Doküman Adedi<br>Attachment Quantity</div><div class="mv">${esc(order.attachmentQty || '')}</div></div><table class="itbl"><colgroup><col style="width:26px"><col style="width:25%"><col style="width:11%"><col style="width:14%"><col style="width:6.5%"><col style="width:6%"><col style="width:10.5%"><col style="width:6%"><col style="width:9.5%"><col style="width:11.5%"></colgroup><thead><tr><th>#</th><th>Malzeme Tanımı<br>Description of Material</th><th>Malzeme Kodu<br>Material Code</th><th>Tedarikçi Firma<br>Supplier</th><th>Miktar<br>Quantity</th><th>Birim<br>Unit</th><th>Birim Fiyat (KDV Hariç)<br>Unit Price (VAT Ex.)</th><th>Para Birimi<br>Currency</th><th>Toplam Tutar<br>Total Amount</th><th>Teslim Tarihi<br>Delivery Date</th></tr></thead><tbody>${bodyRows}</tbody><tfoot><tr class="totrow"><td colspan="8" class="r">TOPLAM TUTAR (<span class="red">KDV HARİÇ</span>) / TOTAL AMOUNT (<span class="red">VAT EXCLUDED</span>)</td><td class="totval">${fmtCur2(grand)}</td><td></td></tr></tfoot></table><div class="pay"><div class="ml">Ödeme Şekli<br>Payment Term</div><div class="pv">${esc(order.paymentTerm || '')}</div><div class="ml">Ödeme Vadesi<br>Payment Maturity</div><div class="pv">${esc(order.paymentMaturity || '')}</div><div class="ml">Nakliye<br>Transport</div><div class="pv">${esc(order.transport || '')}</div><div class="ml">Teslimat Yeri<br>Delivery Place</div><div class="pv">${esc(order.deliveryPlace || '')}</div></div><div class="det"><div>Detaylar<br>Details</div><div class="det-txt">${esc(order.details || '')}</div></div><div class="sigs"><div class="sc"><div class="st">Talep Eden<br>Requirer</div><div class="ss one"><span>Onay / Approval</span></div><div class="sv one"><span>${esc(ap.requirer || order.requestedBy || '')}</span></div></div><div class="sc"><div class="st">Talep Edenin Amiri<br>Manager of Requirer</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.managerName || 'FUAT ÇETİN')}</span><span>${esc(ap.managerDate || order.requestDate || '')}</span></div></div><div class="sc"><div class="st">1.Onay /<br>1.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval1Name || 'İbrahim Özdemir')}</span><span>${esc(ap.approval1Date || order.requestDate || '')}</span></div></div><div class="sc"><div class="st">2.Onay /<br>2.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval2Name || 'Yüksel Kurun')}</span><span>${esc(ap.approval2Date || order.requestDate || '')}</span></div></div><div class="sc"><div class="st">3.Onay /<br>3.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval3Name || 'İbrahim Özdemir')}</span><span>${esc(ap.approval3Date || order.requestDate || '')}</span></div></div></div></div>`;
+  const isStd = rows.length <= 14;
+  const rowH = isStd ? 25 : Math.max(16, Math.floor(355 / rows.length));
+  const sheetH = isStd ? 'height:198mm;min-height:198mm' : 'min-height:198mm';
+  const docHtml = `<!doctype html><meta charset="utf-8"><title>${esc(order.formNo || 'Satın Alma Talep Formu')}</title><style>@page{size:A4 landscape;margin:4.5mm 5.5mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}html,body{margin:0;padding:0;width:100%;height:100%;background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;font-size:10.5px}.sheet{width:100%;${sheetH};display:flex;flex-direction:column;border:1.5px solid #000;page-break-inside:avoid;break-inside:avoid}.itbl-wrap{flex:1 1 auto;display:flex;flex-direction:column}table{width:100%;border-collapse:collapse;table-layout:fixed}.itbl{height:100%}th,td{border:1px solid #000;padding:3px 5px;vertical-align:middle;word-wrap:break-word}.c{text-align:center}.r{text-align:right}.b{font-weight:700}.mono{font-family:monospace}.red{color:#dc2626}.hdr{display:grid;grid-template-columns:180px 1fr 180px;border-bottom:1.5px solid #000;flex-shrink:0}.hdr>div{display:flex;align-items:center;justify-content:center;padding:7px 10px}.hdr>div+div{border-left:1px solid #000}.hdr-title{font-size:21px;font-weight:800}.hdr-doc{font-size:12.5px;font-weight:700;font-family:monospace}.meta{display:grid;grid-template-columns:138px 1fr 138px 1.25fr 144px 1fr;border-bottom:1.5px solid #000;flex-shrink:0}.meta>div{padding:5px 7px;border-right:1px solid #000;border-bottom:1px solid #000;line-height:1.25}.meta>div:nth-child(6n){border-right:0}.meta>div:nth-last-child(-n+6){border-bottom:0}.ml{font-size:9.5px;font-weight:700}.mv{font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;text-align:center}.mv.left{justify-content:flex-start;text-align:left}.itbl th{font-size:9.2px;font-weight:700;text-align:center;line-height:1.2;border-top:0;padding:5px 4px}.itbl td{height:${rowH}px;font-size:10.2px;font-weight:700;padding:2.5px 5px}.itbl td:first-child,.itbl th:first-child{border-left:0}.itbl td:last-child,.itbl th:last-child{border-right:0}.totrow td{border-top:1.5px solid #000;border-bottom:1.5px solid #000;padding:7px 8px;font-size:10.5px;font-weight:800;height:auto}.totval{font-size:14.5px;font-weight:800;text-align:center}.pay{display:grid;grid-template-columns:118px 1fr 118px 1fr 82px 1fr 112px 1fr;border-bottom:1px solid #000;flex-shrink:0}.pay>div{padding:6px 7px;border-right:1px solid #000;line-height:1.25;display:flex;flex-direction:column;justify-content:center}.pay>div:last-child{border-right:0}.pv{font-size:10.5px;font-weight:600;text-align:center;align-items:center}.det{display:grid;grid-template-columns:118px 1fr;border-bottom:1.5px solid #000;min-height:58px;flex-shrink:0}.det>div{padding:7px 9px;display:flex;flex-direction:column;justify-content:center}.det>div:first-child{border-right:1px solid #000;font-size:9.8px;font-weight:700}.det-txt{font-size:11.5px;font-weight:700;white-space:pre-wrap}.sigs{display:grid;grid-template-columns:1.05fr 1.55fr 1.55fr 1.55fr 1.55fr;flex-shrink:0}.sc{border-right:1px solid #000;display:flex;flex-direction:column}.sc:last-child{border-right:0}.st{padding:4.5px 4px;text-align:center;font-size:9.8px;font-weight:700;line-height:1.2;border-bottom:1px solid #000}.ss{display:grid;grid-template-columns:1fr 80px;border-bottom:1px dashed #333;font-size:8.8px;font-weight:700;text-align:center}.ss.one{grid-template-columns:1fr}.ss span{padding:3px 3px}.ss span+span{border-left:1px dashed #333}.sv{display:grid;grid-template-columns:1fr 80px;min-height:42px}.sv.one{grid-template-columns:1fr}.sv span{display:flex;align-items:center;justify-content:center;text-align:center;padding:4px;font-size:10.8px;font-weight:700}.sv span+span{border-left:1px dashed #333;font-size:9.8px;font-weight:600}</style><div class="sheet"><div class="hdr"><div>${akgLogoSvg(36)}</div><div class="hdr-title">Satın Alma Talep Formu / Purchase Request Form</div><div class="hdr-doc">${esc(order.docCode || 'IZM_350600_LJT_001')}</div></div><div class="meta"><div class="ml">Talep Tarihi<br>Date of Request</div><div class="mv left">${esc(order.requestDate || '')}</div><div class="ml">Talep Eden Bölüm<br>Department</div><div class="mv">${esc(order.department || '')}</div><div class="ml">Form Numarası<br>Form Number</div><div class="mv">${esc(order.formNo || '')}</div><div class="ml">Talep Eden Kişi<br>Requested by</div><div class="mv left">${esc(order.requestedBy || '')}</div><div class="ml">Maliyet Merkezi<br>Cost Center</div><div class="mv">${esc(order.costCenter || '')}</div><div class="ml">Ekli Doküman Adedi<br>Attachment Quantity</div><div class="mv">${esc(order.attachmentQty || '')}</div></div><div class="itbl-wrap"><table class="itbl"><colgroup><col style="width:28px"><col style="width:25%"><col style="width:11%"><col style="width:14%"><col style="width:6.5%"><col style="width:6%"><col style="width:10.5%"><col style="width:6%"><col style="width:9.5%"><col style="width:11.5%"></colgroup><thead><tr><th>#</th><th>Malzeme Tanımı<br>Description of Material</th><th>Malzeme Kodu<br>Material Code</th><th>Tedarikçi Firma<br>Supplier</th><th>Miktar<br>Quantity</th><th>Birim<br>Unit</th><th>Birim Fiyat (KDV Hariç)<br>Unit Price (VAT Ex.)</th><th>Para Birimi<br>Currency</th><th>Toplam Tutar<br>Total Amount</th><th>Teslim Tarihi<br>Delivery Date</th></tr></thead><tbody>${bodyRows}</tbody><tfoot><tr class="totrow"><td colspan="8" class="r">TOPLAM TUTAR (<span class="red">KDV HARİÇ</span>) / TOTAL AMOUNT (<span class="red">VAT EXCLUDED</span>)</td><td class="totval">${fmtCur2(grand)}</td><td></td></tr></tfoot></table></div><div class="pay"><div class="ml">Ödeme Şekli<br>Payment Term</div><div class="pv">${esc(order.paymentTerm || '')}</div><div class="ml">Ödeme Vadesi<br>Payment Maturity</div><div class="pv">${esc(order.paymentMaturity || '')}</div><div class="ml">Nakliye<br>Transport</div><div class="pv">${esc(order.transport || '')}</div><div class="ml">Teslimat Yeri<br>Delivery Place</div><div class="pv">${esc(order.deliveryPlace || '')}</div></div><div class="det"><div>Detaylar<br>Details</div><div class="det-txt">${esc(order.details || '')}</div></div><div class="sigs"><div class="sc"><div class="st">Talep Eden<br>Requirer</div><div class="ss one"><span>Onay / Approval</span></div><div class="sv one"><span>${esc(ap.requirer || order.requestedBy || '')}</span></div></div><div class="sc"><div class="st">Talep Edenin Amiri<br>Manager of Requirer</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.managerName || 'FUAT ÇETİN')}</span><span>${esc(ap.managerDate || order.requestDate || '')}</span></div></div><div class="sc"><div class="st">1.Onay /<br>1.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval1Name || 'İbrahim Özdemir')}</span><span>${esc(ap.approval1Date || order.requestDate || '')}</span></div></div><div class="sc"><div class="st">2.Onay /<br>2.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval2Name || 'Yüksel Kurun')}</span><span>${esc(ap.approval2Date || order.requestDate || '')}</span></div></div><div class="sc"><div class="st">3.Onay /<br>3.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval3Name || 'İbrahim Özdemir')}</span><span>${esc(ap.approval3Date || order.requestDate || '')}</span></div></div></div></div>`;
   let frame = $('#orderPrintFrame');
   if (!frame) {
     frame = document.createElement('iframe');
@@ -2970,10 +3020,18 @@ function printPurchaseOrder(order) {
   }
   const doc = frame.contentDocument || frame.contentWindow.document;
   doc.open(); doc.write(docHtml); doc.close();
-  setTimeout(() => {
+  const runPrint = () => {
     try { frame.contentWindow.focus(); frame.contentWindow.print(); }
     catch { toast('Yazdırma penceresi açılamadı.', 'err'); }
-  }, 120);
+  };
+  const logoImg = doc.querySelector('img');
+  if (logoImg && !logoImg.complete) {
+    let done = false;
+    const go = () => { if (done) return; done = true; setTimeout(runPrint, 60); };
+    logoImg.onload = go; logoImg.onerror = go; setTimeout(go, 500);
+  } else {
+    setTimeout(runPrint, 120);
+  }
 }
 
 let activeEmailOrder = null;
@@ -3168,14 +3226,15 @@ function renderNotFound() {
 function stockVisibleForRole(list, role) {
   if (!Array.isArray(list)) return [];
   if (role === 'YONETICI' || role === 'OP') return list;
-  if (role === 'MEK_ADMIN') return list.filter(x => x.depot === 'MEKANIK');
-  if (role === 'ISG_ADMIN') return list.filter(x => x.depot === 'ISG');
+  if (role === 'MEK_ADMIN') return list.filter(x => !isIsgItem(x));
+  if (role === 'ISG_ADMIN') return list.filter(isIsgItem);
   return list;
 }
 function hasQrInStock(list, qr) {
+  if (!qr) return false;
+  if (isIsgCabinetCode(qr)) return list.some(isIsgItem);
   const q = norm(qr);
   if (!q) return false;
-  if (q === 'ISG_DOLAP' || q === 'ISGDOLAP') return list.some(x => x.depot === 'ISG');
   return list.some(x => norm(x.id) === q || norm(x.code) === q);
 }
 
@@ -3240,6 +3299,8 @@ async function submitOpPin(pinRaw) {
               state.item = fresh;
               render();
             }
+          } else if (state.step === 'cabinet') {
+            render();
           } else if (state.step === 'order' && Object.keys(freshMap || {}).length !== hadMap) {
             syncOrderDraftFromDom();
             if (state.orderDraft?.department) {
@@ -3833,6 +3894,22 @@ document.addEventListener('click', async e => {
   if (act === 'exit-terminal') return exitTerminal();
   if (act === 'toggle-torch') return toggleTorch();
   if (act === 'reset-scan') return resetToScan();
+  if (act === 'cabinet-show-all') { state.cabinetShowAll = true; state.cabinetQuery = ''; render(); return; }
+  if (act === 'refresh-cabinet') {
+    if (!state.session) return resetToScan();
+    beginSave('Canlı stok yenileniyor...');
+    try {
+      const boot = await api('bootstrap', {}, state.session);
+      state.stock = boot.stock || [];
+      saveStockCache(state.stock, boot.lists?.machines || state.machines, boot.lists?.costCenters || state.costCenters, boot.lists?.machineCostCenters || state.machineCostCenters, boot.apiVersion || '', boot.lists?.companies || state.companies, boot.lists?.units || state.units);
+      endSave(true, 'Stok güncellendi ✓');
+      render();
+    } catch (err) {
+      endSave(false, err.message);
+      toast(err.message, 'err');
+    }
+    return;
+  }
   if (act === 'start-order') { vibrate(18); return startOrderFlow(null); }
   if (act === 'order-this-part') { vibrate(18); return startOrderFlow(state.item); }
   if (act === 'order-notfound') { vibrate(18); return startOrderFlow({code: state.scannedQr, name: state.scannedQr, unit: 'AD', stock: 0, min: 1}); }
@@ -3966,6 +4043,12 @@ document.addEventListener('submit', async e => {
 });
 
 document.addEventListener('input', e => {
+  if (e.target.id === 'cabSearch') {
+    state.cabinetQuery = e.target.value;
+    const listEl = $('#cabList');
+    if (listEl) listEl.innerHTML = renderCabinetRows(getCabinetItems(), state.cabinetQuery);
+    return;
+  }
   if (e.target.id === 'ordMailTo') {
     syncMailPresetChips();
     return;
