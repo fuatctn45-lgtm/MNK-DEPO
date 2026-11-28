@@ -2,15 +2,16 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
 <meta name="theme-color" content="#0F172A">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Operatör QR">
 <meta name="application-name" content="Operatör QR">
-<title>Operatör QR Okuyucu</title>
-<meta name="description" content="Operatörler için ana sisteme girmeden doğrudan açılan hızlı QR malzeme çıkış uygulaması.">
+<title>Operatör QR & Sipariş</title>
+<meta name="description" content="Operatörler için Android ve iOS uyumlu hızlı QR malzeme çıkışı ve satın alma sipariş uygulaması.">
 <link rel="manifest" href="./qr-manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="./pwa-192x192.png">
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
@@ -52,6 +53,8 @@
   --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
   --safe-top:env(safe-area-inset-top,0px);
   --safe-bot:env(safe-area-inset-bottom,0px);
+  --safe-left:env(safe-area-inset-left,0px);
+  --safe-right:env(safe-area-inset-right,0px);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{
@@ -78,7 +81,7 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
 .topbar{
   position:sticky;top:0;z-index:30;width:100%;
   background:#0F172A;color:#F8FAFC;
-  padding:calc(7px + var(--safe-top)) 12px 7px;
+  padding:calc(7px + var(--safe-top)) calc(12px + var(--safe-right)) 7px calc(12px + var(--safe-left));
   border-bottom:1px solid rgba(255,255,255,.08);
 }
 .topbar-in{
@@ -127,7 +130,7 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
 /* Main Content Area */
 .wrap{
   flex:1;width:100%;max-width:480px;margin:0 auto;min-width:0;
-  padding:10px 10px calc(76px + var(--safe-bot));
+  padding:10px calc(10px + var(--safe-right)) calc(82px + var(--safe-bot)) calc(10px + var(--safe-left));
   display:flex;flex-direction:column;gap:10px;
   transition:max-width .18s ease;
 }
@@ -139,7 +142,7 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
   position:fixed;left:0;right:0;bottom:0;z-index:35;
   background:rgba(255,255,255,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   border-top:1px solid var(--border);
-  padding:4px 8px calc(4px + var(--safe-bot));
+  padding:4px calc(8px + var(--safe-right)) calc(4px + var(--safe-bot)) calc(8px + var(--safe-left));
 }
 .bottom-nav-in{
   max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;
@@ -337,6 +340,14 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
   font-size:13px;color:#CBD5E1;
 }
 .scan-foot-msg b{color:#fff}
+.scan-quick-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.scan-quick-btn{
+  min-height:44px;padding:0 12px;border-radius:11px;
+  border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);
+  color:#F8FAFC;font-size:13px;font-weight:700;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+}
+.scan-quick-btn:active{background:rgba(255,255,255,.16);transform:scale(.98)}
 
 /* Scanned QR Banner */
 .qr-banner{
@@ -822,13 +833,112 @@ body.busy .busy-bar{display:block}
 @keyframes sbSpin{to{transform:rotate(360deg)}}
 @keyframes loading{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
 
+/* Mobile-First Stacked AKG Order Form (Android & iOS Native Touch UX) */
+.mpo-view-switch{
+  display:grid;grid-template-columns:1fr 1fr;gap:4px;
+  padding:4px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);
+  margin-bottom:12px;
+}
+.mpo-view-switch button{
+  min-height:40px;border:0;border-radius:9px;background:transparent;
+  font-size:13px;font-weight:700;color:var(--muted);
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+}
+.mpo-view-switch button.active{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(15,23,42,.1)}
+.mpo-form{display:flex;flex-direction:column;gap:12px}
+.mpo-card{
+  background:var(--surface-2);border:1px solid var(--border);border-radius:14px;
+  padding:13px;display:flex;flex-direction:column;gap:10px;
+}
+.mpo-card-head{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding-bottom:8px;border-bottom:1px solid var(--border);
+}
+.mpo-card-head b{font-size:14px;font-weight:800;color:var(--ink)}
+.mpo-card-head small{font-size:11.5px;color:var(--muted);font-weight:600}
+.mpo-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.mpo-field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.mpo-field > span{font-size:12px;font-weight:700;color:var(--ink-2)}
+.mpo-field input,.mpo-field select,.mpo-field textarea{
+  width:100%;min-height:46px;padding:10px 12px;
+  border:1.5px solid var(--border-strong);border-radius:11px;
+  background:#fff;color:var(--ink);font-size:16px;font-weight:600;
+  outline:none;-webkit-appearance:none;appearance:none;
+}
+.mpo-field select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 11px center;padding-right:34px;
+}
+.mpo-field textarea{min-height:84px;resize:vertical;line-height:1.4}
+.mpo-field input:focus,.mpo-field select:focus,.mpo-field textarea:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(234,88,12,.14)}
+.mpo-field input[readonly]{background:#EEF2F6;color:#475569;border-color:var(--border)}
+.mpo-item-card{
+  background:#fff;border:1.5px solid var(--border);border-radius:13px;
+  padding:12px;display:flex;flex-direction:column;gap:9px;
+}
+.mpo-item-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.mpo-item-badge{
+  display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;color:var(--ink);
+}
+.mpo-item-badge i{
+  font-style:normal;width:22px;height:22px;border-radius:7px;
+  background:var(--orange-soft);color:var(--orange);border:1px solid var(--orange-line);
+  display:grid;place-items:center;font-size:12px;
+}
+.mpo-item-acts{display:flex;align-items:center;gap:6px}
+.mpo-pick-chip{
+  height:34px;padding:0 10px;border-radius:9px;
+  border:1px solid var(--orange-line);background:var(--orange-soft);color:var(--orange);
+  font-size:12px;font-weight:800;display:inline-flex;align-items:center;gap:5px;
+}
+.mpo-del-btn{
+  width:34px;height:34px;border-radius:9px;border:1px solid var(--red-line);
+  background:var(--red-soft);color:var(--red);display:grid;place-items:center;
+}
+.mpo-row-total{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 11px;border-radius:9px;background:var(--surface-2);border:1px solid var(--border);
+  font-size:13px;font-weight:700;color:var(--ink-2);
+}
+.mpo-row-total strong{font-size:15px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.mpo-grand-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:14px 16px;border-radius:14px;background:#0F172A;color:#fff;
+}
+.mpo-grand-bar span{font-size:12.5px;color:#CBD5E1;font-weight:700}
+.mpo-grand-bar strong{font-size:20px;font-weight:800;color:#FB923C;font-variant-numeric:tabular-nums}
+.mpo-collapse{
+  background:var(--surface-2);border:1px solid var(--border);border-radius:14px;overflow:hidden;
+}
+.mpo-collapse summary{
+  list-style:none;padding:13px 14px;font-size:13.5px;font-weight:800;color:var(--ink);
+  display:flex;align-items:center;justify-content:space-between;cursor:pointer;
+}
+.mpo-collapse summary::-webkit-details-marker{display:none}
+.mpo-collapse-body{padding:0 13px 13px;display:flex;flex-direction:column;gap:10px}
+.mpo-sig-row{
+  background:#fff;border:1px solid var(--border);border-radius:11px;padding:10px;
+  display:flex;flex-direction:column;gap:6px;
+}
+.mpo-sig-row > b{font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.03em}
+
+@media (max-width:768px){
+  /* Prevent iOS Safari auto-zoom on input focus */
+  input,select,textarea{font-size:16px}
+  .akg-sheet input,.akg-sheet select,.akg-sheet textarea{font-size:12px}
+  .po-actions-bar{flex-direction:column;align-items:stretch}
+  .po-actions-bar .button-row{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .po-actions-bar .button-row .btn{width:100%;min-height:44px}
+  .po-bottom-actions{flex-direction:column;align-items:stretch}
+  .po-bottom-actions .btn{width:100%;min-height:48px}
+}
 @media (max-height:740px){
   .keypad button{height:45px;font-size:19px}
   .pin-box{height:46px}
   .btn{min-height:48px}
 }
 @media (max-width:360px){
-  .meta-grid{grid-template-columns:1fr 1fr}
+  .meta-grid,.mpo-grid-2,.scan-quick-row{grid-template-columns:1fr}
   .keypad button{height:46px;font-size:19px}
   .btn-row{grid-template-columns:1fr}
 }
@@ -900,6 +1010,7 @@ body.busy .busy-bar{display:block}
 </div>
 
 <canvas id="decodeCanvas" hidden></canvas>
+<input id="qrPhotoInput" type="file" accept="image/*" capture="environment" hidden>
 
 <div class="modal-back" id="installModal" hidden>
   <section class="modal" role="dialog" aria-modal="true" aria-label="Telefona Uygulama Olarak Kur">
@@ -1204,7 +1315,7 @@ let autoConfiguredNow = false;
 const isStandalone = () =>
   window.matchMedia('(display-mode: standalone)').matches ||
   window.navigator.standalone === true;
-const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent || '');
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const inIframe = () => { try { return window.self !== window.top; } catch { return true; } };
 
 const state = {
@@ -1225,6 +1336,7 @@ const state = {
   apiVersion: '',
   item: null,
   orderDraft: null,
+  orderViewMode: window.innerWidth <= 768 ? 'mobile' : 'sheet',
   pendingCheckout: null,
   approvalTab: 'pin',
   receipt: null,
@@ -1625,30 +1737,31 @@ async function startCamera(silent = false) {
   if (!stage) return;
 
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    state.camError = 'Canlı kamera bu tarayıcıda açılamadı. Uygulamayı telefonunuzda Chrome veya Safari ile açın.';
+    state.camError = 'Canlı kamera bu tarayıcıda desteklenmiyor. Aşağıdan "Fotoğraftan QR Oku" ile kamerayı açabilir veya kodu elle girebilirsiniz.';
     renderCamStage();
     return;
   }
 
   try {
-    const constraints = {
-      audio: false,
-      video: {
-        facingMode: {ideal: 'environment'},
-        width: {ideal: 1280},
-        height: {ideal: 720}
-      }
-    };
-    try {
-      cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
-    } catch {
-      cameraStream = await navigator.mediaDevices.getUserMedia({audio: false, video: true});
+    const tries = [
+      {audio: false, video: {facingMode: {ideal: 'environment'}, width: {ideal: 1280}, height: {ideal: 720}}},
+      {audio: false, video: {facingMode: 'environment'}},
+      {audio: false, video: true}
+    ];
+    let lastErr = null;
+    for (const c of tries) {
+      try { cameraStream = await navigator.mediaDevices.getUserMedia(c); break; }
+      catch (e) { lastErr = e; }
     }
+    if (!cameraStream) throw lastErr || new Error('Kamera açılamadı');
 
     const track = cameraStream.getVideoTracks()[0];
     if (track && typeof track.getCapabilities === 'function') {
       const caps = track.getCapabilities();
       state.torchSupported = !!caps.torch;
+      if (Array.isArray(caps.focusMode) && caps.focusMode.includes('continuous')) {
+        track.applyConstraints({advanced: [{focusMode: 'continuous'}]}).catch(() => {});
+      }
     }
     state.camActive = true;
     renderCamStage();
@@ -1656,20 +1769,88 @@ async function startCamera(silent = false) {
     const video = $('#camVideo');
     if (!video) return;
     video.srcObject = cameraStream;
-    video.setAttribute('playsinline', 'true');
-    video.setAttribute('webkit-playsinline', 'true');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+    video.setAttribute('autoplay', '');
+    video.setAttribute('muted', '');
+    video.playsInline = true;
     video.muted = true;
+    await new Promise(resolve => {
+      if (video.readyState >= 1) return resolve();
+      const done = () => { video.removeEventListener('loadedmetadata', done); resolve(); };
+      video.addEventListener('loadedmetadata', done, {once: true});
+      setTimeout(done, 1200);
+    });
     await video.play();
     acquireWakeLock();
     scheduleScanLoop(video);
   } catch (err) {
     stopCamera();
     state.camError = err?.name === 'NotAllowedError'
-      ? 'Kamera izni verilmedi. Tarayıcı ayarlarından kamera iznini açıp "Kamerayı Başlat" butonuna dokunun.'
-      : 'Kamera açılamadı. Başka bir uygulama kamerayı kullanmıyorsa "Kamerayı Başlat" butonuna tekrar dokunun.';
+      ? 'Kamera izni verilmedi. Tarayıcı ayarlarından kamera iznini açıp "Kamerayı Başlat" butonuna dokunun veya "Fotoğraftan QR Oku" kullanın.'
+      : 'Canlı kamera başlatılamadı. "Kamerayı Başlat"a dokunun veya "Fotoğraftan QR Oku" ile çekim yapın.';
     renderCamStage();
     if (!silent) toast('Kamera başlatılamadı; izinleri kontrol edin.', 'warn');
   }
+}
+
+async function decodeQrFromFile(file) {
+  if (!file) return;
+  beginSave('QR fotoğrafı okunuyor...');
+  try {
+    const imgUrl = URL.createObjectURL(file);
+    try {
+      const img = await new Promise((res, rej) => {
+        const el = new Image();
+        el.onload = () => res(el);
+        el.onerror = () => rej(new Error('Fotoğraf okunamadı.'));
+        el.src = imgUrl;
+      });
+      let raw = '';
+      if (nativeDetector) {
+        try {
+          const codes = await nativeDetector.detect(img);
+          if (codes && codes[0]?.rawValue) raw = codes[0].rawValue;
+        } catch {}
+      }
+      if (!raw && typeof window.jsQR === 'function') {
+        const canvas = $('#decodeCanvas');
+        const ctx = canvas.getContext('2d', {willReadFrequently: true});
+        const maxDim = 1400;
+        const scale = Math.min(1, maxDim / Math.max(img.naturalWidth || img.width || 1, img.naturalHeight || img.height || 1));
+        const w = Math.max(1, Math.round((img.naturalWidth || img.width) * scale));
+        const h = Math.max(1, Math.round((img.naturalHeight || img.height) * scale));
+        canvas.width = w; canvas.height = h;
+        ctx.drawImage(img, 0, 0, w, h);
+        const data = ctx.getImageData(0, 0, w, h);
+        const res = window.jsQR(data.data, w, h, {inversionAttempts: 'attemptBoth'});
+        if (res && res.data) raw = res.data;
+      }
+      if (!raw) throw new Error('Fotoğrafta QR kod tespit edilemedi. Daha yakından ve net çekin.');
+      endSave(true, 'QR okundu ✓');
+      vibrate(70);
+      beepScan();
+      selectQrCode(raw);
+    } finally {
+      URL.revokeObjectURL(imgUrl);
+    }
+  } catch (err) {
+    endSave(false, err.message);
+    toast(err.message, 'err');
+  }
+}
+
+function openManualQrModal() {
+  openQrModal(
+    'QR Kodunu Elle Gir',
+    `<label class="field">
+       <span>Parça Kodu, Stok ID veya İSG Dolap Kodu</span>
+       <input class="input mono" id="manualQrCodeInput" type="text" autocomplete="off" autocapitalize="characters" placeholder="Örn: RUL-6205, MEK-0001 veya ISG-DOLAP">
+     </label>`,
+    `<button type="button" class="btn ghost" data-action="close-qr-modal">Vazgeç</button>
+     <button type="button" class="btn primary" data-action="submit-manual-qr">${ic('arrow','ic-sm')} Devam Et</button>`
+  );
+  setTimeout(() => $('#manualQrCodeInput')?.focus(), 80);
 }
 
 async function toggleTorch() {
@@ -1875,7 +2056,7 @@ function render() {
   updateOnlineUI();
   updateNavUI();
   updateStepper();
-  $('.wrap')?.classList.toggle('wide', state.tab === 'scan' && state.step === 'order');
+  $('.wrap')?.classList.toggle('wide', state.tab === 'scan' && state.step === 'order' && state.orderViewMode === 'sheet');
   const root = $('#view');
   if (state.tab === 'history') {
     stopCamera();
@@ -1920,7 +2101,10 @@ function renderCamStage() {
         <div class="cam-fallback-ic">${ic('camera','ic-lg')}</div>
         <b>Depo QR Kodunu Okutun</b>
         <p>${esc(state.camError || 'Arka kamera ile raf etiketi veya İSG dolabı QR kodunu okutun.')}</p>
-        <button class="btn primary wide" type="button" data-action="start-cam">${ic('scan','ic-sm')} Kamerayı Başlat</button>
+        <div class="btn-stack" style="width:100%">
+          <button class="btn primary wide" type="button" data-action="start-cam">${ic('scan','ic-sm')} Kamerayı Başlat</button>
+          <button class="btn ghost wide" type="button" data-action="qr-photo" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);color:#fff">${ic('camera','ic-sm')} Fotoğraftan QR Oku</button>
+        </div>
       </div>`;
   }
 }
@@ -1934,7 +2118,7 @@ function renderScan() {
       <span class="install-card-ic">${ic('phone')}</span>
       <div>
         <b>Telefona Uygulama Olarak Kur</b>
-        <small>Ana ekrandan tam ekran ve tek dokunuşla açılır</small>
+        <small>Android ve iPhone ana ekranından tek dokunuşla açılır</small>
       </div>
     </div>
     <div class="install-card-actions">
@@ -1948,6 +2132,10 @@ function renderScan() {
     <div class="scan-foot">
       <div class="scan-foot-msg">
         <span><b>Adım 1:</b> Depodaki raf veya İSG dolabı QR etiketini kameraya tutun, ardından OP PIN girin.</span>
+      </div>
+      <div class="scan-quick-row">
+        <button class="scan-quick-btn" type="button" data-action="qr-photo">${ic('camera','ic-sm')} Fotoğraftan QR Oku</button>
+        <button class="scan-quick-btn" type="button" data-action="manual-qr">${ic('qr','ic-sm')} Kodu Elle Gir</button>
       </div>
       <button class="order-cta-bar" type="button" data-action="start-order">
         <span class="order-cta-ic">${ic('fileText')}</span>
@@ -2378,27 +2566,197 @@ function renderOrder() {
       <td><input data-po-field="deliveryDate" data-idx="${idx}" value="${esc(it.deliveryDate)}" placeholder="GG.AA.YYYY"></td>
     </tr>`).join('');
   const grandTotal = (d.items || []).reduce((s, x) => s + (Number(x.total) || 0), 0);
-  return `
-  <section class="card">
-    ${renderOpStrip()}
-    <div class="card-body">
-      ${missingCostMap ? `<div class="callout amber">${ic('alert','ic-sm')}<div><b>Maliyet Merkezi Eşleşmesi Hazır Değil</b>Ana paneldeki Bağlantı sekmesinden güncel <b>Kod.gs (V8.8.3-MAIL)</b> sürümünü dağıttığınızda VERİ M sütunu maliyet merkezi otomatik gelir.</div></div>` : ''}
-      <datalist id="poCostCenterList">${costCenters.map(x => `<option value="${esc(x)}"></option>`).join('')}</datalist>
-      <datalist id="poSupplierList">${suppliers.map(x => `<option value="${esc(x)}"></option>`).join('')}</datalist>
-      <datalist id="poUnitList">${units.map(x => `<option value="${esc(x)}"></option>`).join('')}</datalist>
-
-      <div class="po-actions-bar">
-        <div class="button-row">
-          <button type="button" class="btn ghost sm" data-action="ord-add-row">${ic('plus','ic-sm')} Satır Ekle</button>
-          <button type="button" class="btn ghost sm" data-action="reset-scan">Vazgeç</button>
+  const isMobileOrder = state.orderViewMode === 'mobile';
+  const filledIndices = [];
+  (d.items || []).forEach((it, idx) => {
+    if (String(it.name || '').trim() || String(it.code || '').trim() || Number(it.qty) > 0 || Number(it.unitPrice) > 0 || it._showMobile) {
+      filledIndices.push(idx);
+    }
+  });
+  if (!filledIndices.length) filledIndices.push(0);
+  const mobileCardsHtml = filledIndices.map((idx, pos) => {
+    const it = d.items[idx] || makeOrderRow();
+    return `
+    <div class="mpo-item-card" data-po-row="${idx}">
+      <div class="mpo-item-top">
+        <span class="mpo-item-badge"><i>${pos + 1}</i>Kalem #${pos + 1}</span>
+        <div class="mpo-item-acts">
+          <button type="button" class="mpo-pick-chip" data-po-pick="${idx}">${ic('plus','ic-sm')} Stoktan Seç</button>
+          ${filledIndices.length > 1 ? `<button type="button" class="mpo-del-btn" data-po-clear="${idx}" aria-label="Satırı Temizle">${ic('x','ic-sm')}</button>` : ''}
         </div>
-        <div class="button-row">
-          <button type="button" class="btn ghost sm" data-action="ord-email-draft">${ic('mail','ic-sm')} PDF Mail Gönder</button>
-          <button type="button" class="btn ghost sm" data-action="ord-print-draft">${ic('print','ic-sm')} A4 Yatay Yazdır (AKG)</button>
-          <button type="button" class="btn primary sm" data-action="ord-submit">${ic('check','ic-sm')} Formu Kaydet</button>
+      </div>
+      <label class="mpo-field">
+        <span>Malzeme Tanımı *</span>
+        <input data-po-field="name" data-idx="${idx}" value="${esc(it.name)}" placeholder="Malzeme adını yazın veya Stoktan Seç'e dokunun">
+      </label>
+      <div class="mpo-grid-2">
+        <label class="mpo-field">
+          <span>Malzeme Kodu</span>
+          <input data-po-field="code" data-idx="${idx}" value="${esc(it.code)}" class="mono" placeholder="Parça kodu">
+        </label>
+        <label class="mpo-field">
+          <span>Tedarikçi Firma</span>
+          <input data-po-field="supplier" data-idx="${idx}" value="${esc(it.supplier)}" list="poSupplierList" placeholder="Firma adı">
+        </label>
+      </div>
+      <div class="mpo-grid-2">
+        <label class="mpo-field">
+          <span>Miktar *</span>
+          <input data-po-field="qty" data-idx="${idx}" type="number" inputmode="decimal" step="any" min="0" value="${it.qty ? it.qty : ''}" placeholder="0">
+        </label>
+        <label class="mpo-field">
+          <span>Birim</span>
+          <input data-po-field="unit" data-idx="${idx}" value="${esc(it.unit || 'AD')}" list="poUnitList" placeholder="AD">
+        </label>
+      </div>
+      <div class="mpo-grid-2">
+        <label class="mpo-field">
+          <span>Birim Fiyat (KDV Hariç)</span>
+          <input data-po-field="unitPrice" data-idx="${idx}" type="number" inputmode="decimal" step="any" min="0" value="${it.unitPrice ? it.unitPrice : ''}" placeholder="0,00">
+        </label>
+        <label class="mpo-field">
+          <span>Para Birimi</span>
+          <select data-po-field="currency" data-idx="${idx}">${['TL', 'EUR', 'USD'].map(c => `<option value="${c}" ${(it.currency || 'TL') === c ? 'selected' : ''}>${c}</option>`).join('')}</select>
+        </label>
+      </div>
+      <label class="mpo-field">
+        <span>Teslim Tarihi</span>
+        <input data-po-field="deliveryDate" data-idx="${idx}" value="${esc(it.deliveryDate)}" placeholder="GG.AA.YYYY">
+      </label>
+      <div class="mpo-row-total">
+        <span>Satır Toplamı</span>
+        <strong data-po-total="${idx}">${fmtCur2(it.total || 0)}</strong>
+      </div>
+    </div>`;
+  }).join('');
+
+  const mobileFormHtml = `
+    <form id="akgOrderForm" class="mpo-form">
+      <div class="mpo-card">
+        <div class="mpo-card-head">
+          <div style="display:flex;align-items:center;gap:10px">${akgLogoSvg(28)}<div><b>AKG Satın Alma Talebi</b><small class="mono">${esc(d.formNo)}</small></div></div>
+        </div>
+        <div class="mpo-grid-2">
+          <label class="mpo-field">
+            <span>Talep Tarihi</span>
+            <input id="poRequestDate" value="${esc(d.requestDate || todayTr())}" placeholder="GG.AA.YYYY">
+          </label>
+          <label class="mpo-field">
+            <span>Form Numarası</span>
+            <input id="poFormNo" value="${esc(d.formNo)}" class="mono" readonly>
+          </label>
+        </div>
+        <label class="mpo-field">
+          <span>Talep Eden Kişi</span>
+          <input id="poRequestedBy" value="${esc(opName)}" readonly>
+        </label>
+        <label class="mpo-field">
+          <span>Talep Eden Bölüm / Makine *</span>
+          <select id="poDepartment"><option value="">Bölüm / Makine seçiniz...</option>${deptOptions.map(x => `<option value="${esc(x)}" ${flatKey(dDeptClean) === flatKey(x) ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>
+        </label>
+        <label class="mpo-field">
+          <span>Maliyet Merkezi</span>
+          <input id="poCostCenter" value="${esc(d.costCenter || '')}" list="poCostCenterList" placeholder="Bölüm seçilince otomatik gelir">
+        </label>
+        <div class="mpo-grid-2">
+          <label class="mpo-field">
+            <span>Doküman Kodu</span>
+            <input id="poDocCode" value="${esc(d.docCode || 'IZM_350600_LJT_001')}" class="mono">
+          </label>
+          <label class="mpo-field">
+            <span>Ekli Doküman</span>
+            <input id="poAttachmentQty" inputmode="numeric" value="${esc(d.attachmentQty || '')}" placeholder="0">
+          </label>
         </div>
       </div>
 
+      <div class="mpo-card">
+        <div class="mpo-card-head">
+          <div><b>Malzeme Kalemleri</b><small>${filledIndices.length} kalem aktif</small></div>
+          <button type="button" class="btn ghost sm" data-action="ord-add-row" style="min-height:36px;padding:0 10px;font-size:12.5px">${ic('plus','ic-sm')} Kalem Ekle</button>
+        </div>
+        ${mobileCardsHtml}
+        <button type="button" class="btn ghost wide" data-action="ord-add-row" style="min-height:44px;font-size:14px">${ic('plus','ic-sm')} Yeni Malzeme Satırı Ekle</button>
+      </div>
+
+      <div class="mpo-grand-bar">
+        <span>TOPLAM TUTAR (KDV HARİÇ)</span>
+        <strong id="poGrandTotal">${fmtCur2(grandTotal)}</strong>
+      </div>
+
+      <div class="mpo-card">
+        <label class="mpo-field">
+          <span>Detaylar / Açıklama</span>
+          <textarea id="poDetails" placeholder="Kullanılacak makine, arıza veya satın alma gerekçesini yazın...">${esc(d.details || '')}</textarea>
+        </label>
+      </div>
+
+      <details class="mpo-collapse">
+        <summary><span>Ödeme, Nakliye & Teslimat Bilgileri</span><span>▾</span></summary>
+        <div class="mpo-collapse-body">
+          <div class="mpo-grid-2">
+            <label class="mpo-field">
+              <span>Ödeme Şekli</span>
+              <select id="poPaymentTerm">${PAYMENT_TERMS.map(x => `<option value="${esc(x)}" ${d.paymentTerm === x ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>
+            </label>
+            <label class="mpo-field">
+              <span>Ödeme Vadesi</span>
+              <select id="poPaymentMaturity">${PAYMENT_MATURITIES.map(x => `<option value="${esc(x)}" ${d.paymentMaturity === x ? 'selected' : ''}>${esc(x || 'Seçiniz')}</option>`).join('')}</select>
+            </label>
+          </div>
+          <div class="mpo-grid-2">
+            <label class="mpo-field">
+              <span>Nakliye</span>
+              <select id="poTransport">${TRANSPORT_TYPES.map(x => `<option value="${esc(x)}" ${d.transport === x ? 'selected' : ''}>${esc(x || 'Seçiniz')}</option>`).join('')}</select>
+            </label>
+            <label class="mpo-field">
+              <span>Teslimat Yeri</span>
+              <input id="poDeliveryPlace" value="${esc(d.deliveryPlace || '')}" placeholder="Örn: İzmir Fabrika">
+            </label>
+          </div>
+        </div>
+      </details>
+
+      <details class="mpo-collapse">
+        <summary><span>Onay Yetkilileri & Tarihler</span><span>▾</span></summary>
+        <div class="mpo-collapse-body">
+          <div class="mpo-sig-row">
+            <b>Talep Eden</b>
+            <label class="mpo-field"><input id="poSigRequirer" value="${esc(opName)}" readonly></label>
+          </div>
+          <div class="mpo-sig-row">
+            <b>Talep Edenin Amiri</b>
+            <div class="mpo-grid-2">
+              <label class="mpo-field"><input id="poSigManager" value="${esc(d.approvals?.managerName || 'FUAT ÇETİN')}"></label>
+              <label class="mpo-field"><input id="poSigManagerDate" value="${esc(d.approvals?.managerDate || d.requestDate || todayTr())}" placeholder="GG.AA.YYYY"></label>
+            </div>
+          </div>
+          <div class="mpo-sig-row">
+            <b>1. Onay</b>
+            <div class="mpo-grid-2">
+              <label class="mpo-field"><input id="poSig1Name" value="${esc(d.approvals?.approval1Name || 'İbrahim Özdemir')}"></label>
+              <label class="mpo-field"><input id="poSig1Date" value="${esc(d.approvals?.approval1Date || d.requestDate || todayTr())}" placeholder="GG.AA.YYYY"></label>
+            </div>
+          </div>
+          <div class="mpo-sig-row">
+            <b>2. Onay</b>
+            <div class="mpo-grid-2">
+              <label class="mpo-field"><input id="poSig2Name" value="${esc(d.approvals?.approval2Name || 'Yüksel Kurun')}"></label>
+              <label class="mpo-field"><input id="poSig2Date" value="${esc(d.approvals?.approval2Date || d.requestDate || todayTr())}" placeholder="GG.AA.YYYY"></label>
+            </div>
+          </div>
+          <div class="mpo-sig-row">
+            <b>3. Onay</b>
+            <div class="mpo-grid-2">
+              <label class="mpo-field"><input id="poSig3Name" value="${esc(d.approvals?.approval3Name || 'İbrahim Özdemir')}"></label>
+              <label class="mpo-field"><input id="poSig3Date" value="${esc(d.approvals?.approval3Date || d.requestDate || todayTr())}" placeholder="GG.AA.YYYY"></label>
+            </div>
+          </div>
+        </div>
+      </details>
+    </form>`;
+
+  const sheetFormHtml = `
       <div class="po-scroll-hint">
         <span>AKG resmi formu yatay kaydırılabilir</span>
         <span>← Kaydır →</span>
@@ -2496,12 +2854,42 @@ function renderOrder() {
             </div>
           </div>
         </form>
+      </div>`;
+
+  return `
+  <section class="card">
+    ${renderOpStrip()}
+    <div class="card-body">
+      ${missingCostMap ? `<div class="callout amber">${ic('alert','ic-sm')}<div><b>Maliyet Merkezi Eşleşmesi Hazır Değil</b>Ana paneldeki Bağlantı sekmesinden güncel <b>Kod.gs (V8.8.4-OP-LOCK)</b> sürümünü dağıttığınızda VERİ M sütunu maliyet merkezi otomatik gelir.</div></div>` : ''}
+      <datalist id="poCostCenterList">${costCenters.map(x => `<option value="${esc(x)}"></option>`).join('')}</datalist>
+      <datalist id="poSupplierList">${suppliers.map(x => `<option value="${esc(x)}"></option>`).join('')}</datalist>
+      <datalist id="poUnitList">${units.map(x => `<option value="${esc(x)}"></option>`).join('')}</datalist>
+
+      <div class="mpo-view-switch" role="tablist" aria-label="Form Görünümü">
+        <button type="button" class="${isMobileOrder ? 'active' : ''}" data-order-view="mobile">${ic('phone','ic-sm')} Mobil Form</button>
+        <button type="button" class="${!isMobileOrder ? 'active' : ''}" data-order-view="sheet">${ic('fileText','ic-sm')} AKG Resmi Tablo</button>
       </div>
 
+      ${!isMobileOrder ? `
+      <div class="po-actions-bar">
+        <div class="button-row">
+          <button type="button" class="btn ghost sm" data-action="ord-add-row">${ic('plus','ic-sm')} Satır Ekle</button>
+          <button type="button" class="btn ghost sm" data-action="reset-scan">Vazgeç</button>
+        </div>
+        <div class="button-row">
+          <button type="button" class="btn ghost sm" data-action="ord-email-draft">${ic('mail','ic-sm')} PDF Mail Gönder</button>
+          <button type="button" class="btn ghost sm" data-action="ord-print-draft">${ic('print','ic-sm')} A4 Yatay Yazdır (AKG)</button>
+          <button type="button" class="btn primary sm" data-action="ord-submit">${ic('check','ic-sm')} Formu Kaydet</button>
+        </div>
+      </div>` : ''}
+
+      ${isMobileOrder ? mobileFormHtml : sheetFormHtml}
+
       <div class="po-bottom-actions">
-        <button type="button" class="btn ghost" data-action="reset-scan">Vazgeç ve QR Ekranına Dön</button>
-        <button type="button" class="btn ghost" data-action="ord-email-draft">${ic('mail','ic-sm')} PDF Mail Gönder</button>
         <button type="button" class="btn primary" data-action="ord-submit">${ic('check','ic-sm')} Sipariş Talebini Kaydet</button>
+        <button type="button" class="btn ghost" data-action="ord-email-draft">${ic('mail','ic-sm')} PDF Mail Gönder</button>
+        <button type="button" class="btn ghost" data-action="ord-print-draft">${ic('print','ic-sm')} A4 Yazdır (AKG)</button>
+        <button type="button" class="btn ghost" data-action="reset-scan">Vazgeç</button>
       </div>
     </div>
   </section>`;
@@ -2566,7 +2954,7 @@ function printPurchaseOrder(order) {
     frame = document.createElement('iframe');
     frame.id = 'orderPrintFrame';
     frame.setAttribute('aria-hidden', 'true');
-    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+    frame.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;border:0;pointer-events:none';
     document.body.appendChild(frame);
   }
   const doc = frame.contentDocument || frame.contentWindow.document;
@@ -3390,6 +3778,25 @@ document.addEventListener('click', async e => {
     return;
   }
 
+  const ordViewBtn = e.target.closest('[data-order-view]');
+  if (ordViewBtn) {
+    syncOrderDraftFromDom();
+    state.orderViewMode = ordViewBtn.dataset.orderView === 'sheet' ? 'sheet' : 'mobile';
+    render();
+    return;
+  }
+
+  const poClearBtn = e.target.closest('[data-po-clear]');
+  if (poClearBtn && state.orderDraft) {
+    syncOrderDraftFromDom();
+    const idx = Number(poClearBtn.dataset.poClear);
+    if (state.orderDraft.items[idx]) {
+      state.orderDraft.items[idx] = makeOrderRow();
+      render();
+    }
+    return;
+  }
+
   const act = e.target.closest('[data-action]')?.dataset.action;
   if (!act) return;
 
@@ -3411,6 +3818,14 @@ document.addEventListener('click', async e => {
   }
   if (act === 'open-settings') { state.tab = 'settings'; render(); return; }
   if (act === 'start-cam') return startCamera(false);
+  if (act === 'qr-photo') { const inp = $('#qrPhotoInput'); if (inp) { inp.value = ''; inp.click(); } return; }
+  if (act === 'manual-qr') return openManualQrModal();
+  if (act === 'submit-manual-qr') {
+    const val = ($('#manualQrCodeInput')?.value || '').trim();
+    if (!val) return toast('Lütfen bir kod yazın.', 'err');
+    closeQrModal();
+    return selectQrCode(val);
+  }
   if (act === 'toggle-torch') return toggleTorch();
   if (act === 'reset-scan') return resetToScan();
   if (act === 'start-order') { vibrate(18); return startOrderFlow(null); }
@@ -3418,7 +3833,16 @@ document.addEventListener('click', async e => {
   if (act === 'order-notfound') { vibrate(18); return startOrderFlow({code: state.scannedQr, name: state.scannedQr, unit: 'AD', stock: 0, min: 1}); }
   if (act === 'ord-add-row') {
     syncOrderDraftFromDom();
-    if (state.orderDraft) { state.orderDraft.items.push(makeOrderRow()); render(); }
+    if (state.orderDraft) {
+      if (state.orderViewMode === 'mobile') {
+        const emptyIdx = state.orderDraft.items.findIndex((it, i) => i > 0 && !String(it.name || '').trim() && !String(it.code || '').trim() && !(Number(it.qty) > 0) && !it._showMobile);
+        if (emptyIdx >= 0) state.orderDraft.items[emptyIdx]._showMobile = true;
+        else state.orderDraft.items.push(Object.assign(makeOrderRow(), {_showMobile: true}));
+      } else {
+        state.orderDraft.items.push(makeOrderRow());
+      }
+      render();
+    }
     return;
   }
   if (act === 'ord-submit') return submitOrderForm();
@@ -3587,9 +4011,18 @@ $('#saveBar').addEventListener('click', () => {
   if ($('#saveBar').classList.contains('err')) $('#saveBar').hidden = true;
 });
 
+$('#qrPhotoInput').addEventListener('change', e => {
+  const f = e.target.files?.[0];
+  if (f) decodeQrFromFile(f);
+});
+
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) stopCamera();
   else if (state.tab === 'scan' && state.step === 'scan' && !state.camActive) startCamera(true);
+});
+window.addEventListener('pagehide', () => stopCamera());
+window.addEventListener('pageshow', () => {
+  if (state.tab === 'scan' && state.step === 'scan' && !state.camActive && !state.camError) startCamera(true);
 });
 
 warmupGas();

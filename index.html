@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
 <meta name="theme-color" content="#0f172a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,6 +21,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script defer src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js" onerror="var s=document.createElement('script');s.src='https://unpkg.com/jsqr@1.4.0/dist/jsQR.min.js';document.head.appendChild(s);"></script>
 <style>
 :root{
   --orange:#ea580c;--orange-hover:#c2410c;--orange2:#f97316;--orange-soft:#fff7ed;--orange-border:#fed7aa;
@@ -35,12 +37,16 @@
   --ease:cubic-bezier(.16,1,.3,1);
   --font-sans:"Plus Jakarta Sans","Segoe UI",system-ui,-apple-system,sans-serif;
   --font-mono:"JetBrains Mono","Cascadia Code",Consolas,monospace;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-left:env(safe-area-inset-left,0px);
+  --safe-right:env(safe-area-inset-right,0px);
   font-family:var(--font-sans);color:var(--ink);background:var(--bg);
 }
-*{box-sizing:border-box}
-html,body{margin:0;min-height:100%;max-width:100%;overflow-x:clip;background:var(--bg);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;max-width:100%;overflow-x:clip;background:var(--bg);-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;text-rendering:optimizeLegibility}
 body{font-size:15px;line-height:1.5;color:var(--ink)}
-button,input,select,textarea{font:inherit;color:inherit}
+button,input,select,textarea,a{font:inherit;color:inherit;touch-action:manipulation}
 button{cursor:pointer}
 button:disabled{opacity:.45;cursor:not-allowed}
 :focus-visible{outline:2px solid var(--orange);outline-offset:2px}
@@ -61,7 +67,7 @@ code,pre,.mono{font-family:var(--font-mono)}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
 /* Login */
-.login{min-height:100vh;display:grid;grid-template-columns:minmax(480px,1.15fr) minmax(400px,.85fr);background:var(--surface)}
+.login{min-height:100vh;min-height:100dvh;display:grid;grid-template-columns:minmax(480px,1.15fr) minmax(400px,.85fr);background:var(--surface)}
 .login-art{position:relative;overflow:hidden;padding:48px 56px;color:#f8fafc;background:radial-gradient(circle at 82% 18%,rgba(234,88,12,.22),transparent 46%),linear-gradient(160deg,#0b1220 0%,#0f172a 58%,#162133 100%);display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid rgba(255,255,255,.06)}
 .art-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(148,163,184,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,.07) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(ellipse 85% 75% at 50% 40%,black 30%,transparent 100%);pointer-events:none}
 .login-brand,.brand{display:flex;align-items:center;gap:12px;position:relative;z-index:1}
@@ -77,12 +83,12 @@ code,pre,.mono{font-family:var(--font-mono)}
 .login-stats div{display:flex;flex-direction:column;gap:4px}
 .login-stats b{font-size:30px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
 .login-stats span{font-size:13px;color:#94a3b8}
-.login-form{display:grid;place-items:center;padding:48px 40px 64px;position:relative;background:var(--surface)}
+.login-form{display:grid;place-items:center;padding:calc(40px + var(--safe-top)) calc(32px + var(--safe-right)) calc(64px + var(--safe-bottom)) calc(32px + var(--safe-left));position:relative;background:var(--surface)}
 .login-form form{width:min(410px,100%)}
 .login-form .kicker{font-size:13px;font-weight:600;color:var(--orange)}
 .login-form h2{font-size:30px;font-weight:800;margin:8px 0 10px;color:var(--ink)}
 .login-form form>p{color:var(--muted);font-size:14.5px;line-height:1.55;margin-bottom:24px}
-.login-form>footer{position:absolute;bottom:20px;color:var(--muted2);font-size:12.5px}
+.login-form>footer{position:absolute;bottom:calc(16px + var(--safe-bottom));color:var(--muted2);font-size:12.5px}
 .pin-wrap{position:relative}
 .pin-wrap input{font-family:var(--font-mono);font-size:22px;letter-spacing:.26em;padding-right:48px;height:50px}
 .pin-wrap button{position:absolute;right:6px;top:5px;border:0;background:transparent;width:40px;height:40px;border-radius:8px;color:var(--muted);display:grid;place-items:center}
@@ -112,9 +118,9 @@ details p{margin-top:8px;font-size:13.5px}
 .wide{width:100%}
 
 /* App Shell & Top Navigation */
-#app{min-height:100vh;display:flex;flex-direction:column;min-width:0}
-.sidebar{position:sticky;z-index:60;top:0;left:0;right:0;width:100%;background:var(--navy);color:#f8fafc;display:flex;flex-direction:column;border-bottom:1px solid rgba(255,255,255,.1)}
-.nav-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 14px;padding:7px 20px;min-height:50px}
+#app{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;min-width:0}
+.sidebar{position:sticky;z-index:60;top:0;left:0;right:0;width:100%;padding-top:var(--safe-top);background:var(--navy);color:#f8fafc;display:flex;flex-direction:column;border-bottom:1px solid rgba(255,255,255,.1)}
+.nav-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 14px;padding:7px calc(20px + var(--safe-right)) 7px calc(20px + var(--safe-left));min-height:50px}
 .nav-left{display:flex;align-items:center;gap:12px;min-width:0}
 .nav-right{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;margin-left:auto}
 .brand{padding:0;border:0;flex-shrink:0}
@@ -611,7 +617,8 @@ mark.search-hl{background:#FFE600;color:#0F172A;font-weight:700;padding:0 3px;bo
 .camera{height:300px;background:#0b1220;border-radius:12px;overflow:hidden;position:relative}
 .camera video{width:100%;height:100%;object-fit:cover}
 .camera-frame{position:absolute;width:184px;height:184px;border:2.5px solid var(--orange);border-radius:10px;inset:50% auto auto 50%;transform:translate(-50%,-50%);box-shadow:0 0 0 999px rgba(15,23,42,.45)}
-.camera-help{font-size:13px;color:var(--muted);margin:10px 0 14px}
+.camera-help{font-size:13px;color:var(--muted);margin:10px 0 12px}
+.camera-tools{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
 #modalRoot{position:fixed;z-index:1000}
 .modal-back{position:fixed;inset:0;background:rgba(15,23,42,.56);display:grid;place-items:center;padding:12px;backdrop-filter:blur(5px);overflow-x:hidden}
 .modal{width:min(640px,calc(100vw - 24px));max-width:100%;min-width:0;max-height:92dvh;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden;animation:pop .16s var(--ease)}
@@ -747,7 +754,7 @@ mark.search-hl{background:#FFE600;color:#0F172A;font-weight:700;padding:0 3px;bo
 @media(max-width:980px){
   .login{grid-template-columns:1fr}
   .login-art{display:none}
-  .login-form{min-height:100vh;padding:32px 20px 56px}
+  .login-form{min-height:100vh;min-height:100dvh;padding:calc(28px + var(--safe-top)) calc(18px + var(--safe-right)) calc(56px + var(--safe-bottom)) calc(18px + var(--safe-left))}
   .label-hero{flex-direction:column;align-items:flex-start;padding:20px}
   .maintenance-top{align-items:stretch;gap:12px;flex-direction:column}
   .maintenance-top>div:first-child{flex-direction:column}
@@ -762,17 +769,34 @@ mark.search-hl{background:#FFE600;color:#0F172A;font-weight:700;padding:0 3px;bo
   .crit-meter{display:none}
 }
 @media(max-width:760px){
-  .nav-top{padding:7px 12px;min-height:48px}
-  .sidebar nav.nav-dropdown{left:12px;right:12px;width:auto}
+  .nav-top{padding:7px calc(12px + var(--safe-right)) 7px calc(12px + var(--safe-left));min-height:48px}
+  .sidebar nav.nav-dropdown{left:12px;right:12px;width:auto;max-height:calc(100dvh - 86px - var(--safe-top));overflow:auto;-webkit-overflow-scrolling:touch}
   .brand small,.side-foot small{display:none}
   .side-foot{border-left:0;padding-left:0}
-  .topbar{padding:10px 12px}
+  .topbar{padding:10px calc(12px + var(--safe-right)) 10px calc(12px + var(--safe-left));flex-wrap:wrap;gap:8px}
   .topbar h1{font-size:19px}
   .topbar p,.crumb{display:none}
-  #content{padding:14px 12px 32px}
+  .top-actions{width:100%;display:flex;flex-wrap:wrap;gap:6px}
+  .top-actions .btn{flex:1 1 auto;justify-content:center;min-height:40px}
+  #content{padding:14px calc(12px + var(--safe-right)) calc(34px + var(--safe-bottom)) calc(12px + var(--safe-left))}
   .approval-kpis,.ppe-summary{grid-template-columns:1fr 1fr}
   .detail-grid{grid-template-columns:1fr 1fr}
   .form-grid{grid-template-columns:1fr}
+  .table-scroll,.po-sheet-wrap{-webkit-overflow-scrolling:touch}
+  /* Prevent iOS Safari forced auto-zoom on form fields */
+  .field input,.field select,.field textarea,.machine-search,.search input,.toolbar input,.toolbar select,.pwa-url-row input,.label-custom-note{font-size:16px}
+  .modal-back{padding:calc(10px + var(--safe-top)) 10px calc(10px + var(--safe-bottom))}
+  .modal{width:100%;max-height:calc(92dvh - var(--safe-top) - var(--safe-bottom));border-radius:14px}
+  .modal-body{padding:14px;-webkit-overflow-scrolling:touch}
+  .modal>footer{padding:10px 14px calc(10px + var(--safe-bottom))}
+  .toasts,#toasts{left:12px;right:12px;bottom:calc(12px + var(--safe-bottom))}
+  .toast{min-width:0;max-width:none;width:100%}
+  .pwa-url-row{flex-wrap:wrap}
+  .pwa-url-row input{flex:1 1 100%}
+  .po-actions-bar{flex-wrap:wrap;gap:6px}
+  .po-actions-bar .btn{flex:1 1 auto;justify-content:center;min-height:40px}
+  .camera-tools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 12px}
+  .camera-tools .btn,.camera-tools label.btn{flex:1 1 140px;justify-content:center;min-height:42px}
 }
 @media(max-width:540px){
   .nav-dropdown-grid{grid-template-columns:1fr}
@@ -788,6 +812,9 @@ mark.search-hl{background:#FFE600;color:#0F172A;font-weight:700;padding:0 3px;bo
   .donut{margin:0 auto}
   .machine-options{grid-template-columns:1fr}
   .created-qr{grid-template-columns:1fr}
+  .modal-actions-grid{grid-template-columns:1fr}
+  .button-row{justify-content:stretch}
+  .button-row .btn{flex:1 1 auto;justify-content:center;min-height:42px}
 }
 @media print{
   @page{size:A4 portrait;margin:10mm}
@@ -803,7 +830,7 @@ mark.search-hl{background:#FFE600;color:#0F172A;font-weight:700;padding:0 3px;bo
   body.print-ppe-form .ppe-doc{border:0;padding:0;box-shadow:none;border-radius:0}
   body.print-ppe-form .ppe-doc-table tr,body.print-ppe-form .ppe-doc-sigs,body.print-ppe-form .ppe-doc-legal,body.print-ppe-form .ppe-doc-summary{break-inside:avoid;page-break-inside:avoid}
 }
-.offline-banner{background:#991b1b;color:#fff;font-size:13px;font-weight:600;text-align:center;padding:8px 14px;display:flex;align-items:center;justify-content:center;gap:8px;position:sticky;top:0;z-index:120}
+.offline-banner{background:#991b1b;color:#fff;font-size:13px;font-weight:600;text-align:center;padding:calc(8px + var(--safe-top)) 14px 8px;display:flex;align-items:center;justify-content:center;gap:8px;position:sticky;top:0;z-index:120}
 .offline-banner[hidden]{display:none!important}
 .pwa-install-btn[hidden],[data-pwa-hide-standalone][hidden]{display:none!important}
 .pwa-hero-box{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:#fff;border-radius:14px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px}
@@ -817,7 +844,7 @@ mark.search-hl{background:#FFE600;color:#0F172A;font-weight:700;padding:0 3px;bo
 .pwa-step-card h4{margin:0 0 8px;font-size:13px;font-weight:700;color:var(--ink)}
 .pwa-step-card ol{margin:0;padding-left:18px;display:grid;gap:5px;font-size:12.5px;color:var(--ink2);line-height:1.45}
 @media (max-width:640px){.pwa-steps-grid{grid-template-columns:1fr}}
-.save-bar{position:fixed;top:0;left:0;right:0;z-index:10050;background:#0f172a;color:#fff;box-shadow:0 8px 24px rgba(15,23,42,.26);overflow:hidden;transition:background .2s ease}
+.save-bar{position:fixed;top:0;left:0;right:0;z-index:10050;padding-top:var(--safe-top);background:#0f172a;color:#fff;box-shadow:0 8px 24px rgba(15,23,42,.26);overflow:hidden;transition:background .2s ease}
 .save-bar[hidden]{display:none!important}
 .save-bar-in{max-width:1240px;margin:0 auto;padding:8px 16px;display:flex;align-items:center;justify-content:center;gap:9px;font-size:13px;font-weight:700;letter-spacing:-.01em}
 .save-bar .sb-spin{width:14px;height:14px;border-radius:50%;flex-shrink:0;border:2px solid rgba(255,255,255,.28);border-top-color:#fb923c;animation:spin .65s linear infinite}
@@ -4666,7 +4693,7 @@ function printPurchaseOrder(order){
  }).join('');
  const docHtml=`<!doctype html><meta charset="utf-8"><title>${esc(order.formNo||'Satın Alma Talep Formu')}</title><style>@page{size:A4 landscape;margin:7mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}html,body{margin:0;padding:0;background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;font-size:10px}.sheet{width:100%;border:1.5px solid #000}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #000;padding:3.5px 5px;vertical-align:middle;word-wrap:break-word}.c{text-align:center}.r{text-align:right}.b{font-weight:700}.mono{font-family:monospace}.red{color:#dc2626}.hdr{display:grid;grid-template-columns:170px 1fr 170px;border-bottom:1.5px solid #000}.hdr>div{display:flex;align-items:center;justify-content:center;padding:6px 8px}.hdr>div+div{border-left:1px solid #000}.hdr-title{font-size:19px;font-weight:800}.hdr-doc{font-size:11.5px;font-weight:700;font-family:monospace}.meta{display:grid;grid-template-columns:135px 1fr 135px 1.25fr 140px 1fr;border-bottom:1.5px solid #000}.meta>div{padding:4px 6px;border-right:1px solid #000;border-bottom:1px solid #000;line-height:1.25}.meta>div:nth-child(6n){border-right:0}.meta>div:nth-last-child(-n+6){border-bottom:0}.ml{font-size:9px;font-weight:700}.mv{font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;text-align:center}.mv.left{justify-content:flex-start;text-align:left}.itbl th{font-size:9px;font-weight:700;text-align:center;line-height:1.2;border-top:0}.itbl td{height:20px;font-size:9.8px;font-weight:700}.itbl td:first-child,.itbl th:first-child{border-left:0}.itbl td:last-child,.itbl th:last-child{border-right:0}.totrow td{border-top:1.5px solid #000;border-bottom:1.5px solid #000;padding:6px 7px;font-size:10px;font-weight:800}.totval{font-size:14px;font-weight:800;text-align:center}.pay{display:grid;grid-template-columns:115px 1fr 115px 1fr 80px 1fr 110px 1fr;border-bottom:1px solid #000}.pay>div{padding:4px 6px;border-right:1px solid #000;line-height:1.25;display:flex;flex-direction:column;justify-content:center}.pay>div:last-child{border-right:0}.pv{font-size:10px;font-weight:600;text-align:center;align-items:center}.det{display:grid;grid-template-columns:115px 1fr;border-bottom:1.5px solid #000;min-height:56px}.det>div{padding:6px 8px;display:flex;flex-direction:column;justify-content:center}.det>div:first-child{border-right:1px solid #000;font-size:9.5px;font-weight:700}.det-txt{font-size:11px;font-weight:700;white-space:pre-wrap}.sigs{display:grid;grid-template-columns:1.05fr 1.55fr 1.55fr 1.55fr 1.55fr}.sc{border-right:1px solid #000;display:flex;flex-direction:column}.sc:last-child{border-right:0}.st{padding:4px;text-align:center;font-size:9.5px;font-weight:700;line-height:1.2;border-bottom:1px solid #000}.ss{display:grid;grid-template-columns:1fr 76px;border-bottom:1px dashed #333;font-size:8.5px;font-weight:700;text-align:center}.ss.one{grid-template-columns:1fr}.ss span{padding:2.5px 3px}.ss span+span{border-left:1px dashed #333}.sv{display:grid;grid-template-columns:1fr 76px;min-height:40px}.sv.one{grid-template-columns:1fr}.sv span{display:flex;align-items:center;justify-content:center;text-align:center;padding:4px;font-size:10.5px;font-weight:700}.sv span+span{border-left:1px dashed #333;font-size:9.5px;font-weight:600}</style><div class="sheet"><div class="hdr"><div>${akgLogoSvg(32)}</div><div class="hdr-title">Satın Alma Talep Formu / Purchase Request Form</div><div class="hdr-doc">${esc(order.docCode||'IZM_350600_LJT_001')}</div></div><div class="meta"><div class="ml">Talep Tarihi<br>Date of Request</div><div class="mv left">${esc(order.requestDate||'')}</div><div class="ml">Talep Eden Bölüm<br>Department</div><div class="mv">${esc(order.department||'')}</div><div class="ml">Form Numarası<br>Form Number</div><div class="mv">${esc(order.formNo||'')}</div><div class="ml">Talep Eden Kişi<br>Requested by</div><div class="mv left">${esc(order.requestedBy||'')}</div><div class="ml">Maliyet Merkezi<br>Cost Center</div><div class="mv">${esc(order.costCenter||'')}</div><div class="ml">Ekli Doküman Adedi<br>Attachment Quantity</div><div class="mv">${esc(order.attachmentQty||'')}</div></div><table class="itbl"><colgroup><col style="width:26px"><col style="width:25%"><col style="width:11%"><col style="width:14%"><col style="width:6.5%"><col style="width:6%"><col style="width:10.5%"><col style="width:6%"><col style="width:9.5%"><col style="width:11.5%"></colgroup><thead><tr><th>#</th><th>Malzeme Tanımı<br>Description of Material</th><th>Malzeme Kodu<br>Material Code</th><th>Tedarikçi Firma<br>Supplier</th><th>Miktar<br>Quantity</th><th>Birim<br>Unit</th><th>Birim Fiyat (KDV Hariç)<br>Unit Price (VAT Ex.)</th><th>Para Birimi<br>Currency</th><th>Toplam Tutar<br>Total Amount</th><th>Teslim Tarihi<br>Delivery Date</th></tr></thead><tbody>${bodyRows}</tbody><tfoot><tr class="totrow"><td colspan="8" class="r">TOPLAM TUTAR (<span class="red">KDV HARİÇ</span>) / TOTAL AMOUNT (<span class="red">VAT EXCLUDED</span>)</td><td class="totval">${fmtCur2(grand)}</td><td></td></tr></tfoot></table><div class="pay"><div class="ml">Ödeme Şekli<br>Payment Term</div><div class="pv">${esc(order.paymentTerm||'')}</div><div class="ml">Ödeme Vadesi<br>Payment Maturity</div><div class="pv">${esc(order.paymentMaturity||'')}</div><div class="ml">Nakliye<br>Transport</div><div class="pv">${esc(order.transport||'')}</div><div class="ml">Teslimat Yeri<br>Delivery Place</div><div class="pv">${esc(order.deliveryPlace||'')}</div></div><div class="det"><div>Detaylar<br>Details</div><div class="det-txt">${esc(order.details||'')}</div></div><div class="sigs"><div class="sc"><div class="st">Talep Eden<br>Requirer</div><div class="ss one"><span>Onay / Approval</span></div><div class="sv one"><span>${esc(ap.requirer||order.requestedBy||'')}</span></div></div><div class="sc"><div class="st">Talep Edenin Amiri<br>Manager of Requirer</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.managerName||'FUAT ÇETİN')}</span><span>${esc(ap.managerDate||order.requestDate||'')}</span></div></div><div class="sc"><div class="st">1.Onay /<br>1.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval1Name||'İbrahim Özdemir')}</span><span>${esc(ap.approval1Date||order.requestDate||'')}</span></div></div><div class="sc"><div class="st">2.Onay /<br>2.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval2Name||'Yüksel Kurun')}</span><span>${esc(ap.approval2Date||order.requestDate||'')}</span></div></div><div class="sc"><div class="st">3.Onay /<br>3.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval3Name||'İbrahim Özdemir')}</span><span>${esc(ap.approval3Date||order.requestDate||'')}</span></div></div></div></div>`;
  let frame=$('#orderPrintFrame');
- if(!frame){frame=document.createElement('iframe');frame.id='orderPrintFrame';frame.setAttribute('aria-hidden','true');frame.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';document.body.appendChild(frame);}
+ if(!frame){frame=document.createElement('iframe');frame.id='orderPrintFrame';frame.setAttribute('aria-hidden','true');frame.style.cssText='position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none';document.body.appendChild(frame);}
  const doc=frame.contentDocument||frame.contentWindow.document;
  doc.open();doc.write(docHtml);doc.close();
  const runPrint=()=>{try{frame.contentWindow.focus();frame.contentWindow.print();}catch{toast('Yazdırma penceresi açılamadı.','error');}};
@@ -4866,9 +4893,67 @@ function receiveOrderToStock(){
 
 function renderConnection(){const code=$('#gasCode').textContent.trim();const gasOk=state.mode==='demo'||state.data?.apiVersion==='V8.8.4-OP-LOCK';$('#content').innerHTML=`<section class="connection-grid"><article class="panel"><div class="panel-head"><div><h2>Bağlantı Modu</h2><p>GitHub Pages yayınında Doğrudan GAS (/exec), yerel sunucuda /api/gas önerilir</p></div><span class="connection ${state.mode}"><i></i>${state.mode.toUpperCase()}</span></div><div class="mode-cards">${[['proxy','Güvenli /api/gas','GAS adresi ve proxy anahtarı sunucuda gizli kalır; V8 kayıt akışı etkindir.'],['direct','Tek HTML / Doğrudan','GitHub Pages veya tek HTML için Apps Script ALLOW_DIRECT=true ile kullanın.'],['demo','Demo / Yerel','Gerçek tabloya yazmaz; tüm ekranlar test edilir.']].map(([m,t,d])=>`<label class="${state.mode===m?'selected':''}"><input type="radio" name="mode" value="${m}" ${state.mode===m?'checked':''}><span><b>${t}</b><small>${d}</small></span></label>`).join('')}</div>${field('Apps Script /exec adresi',`<input id="directUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan mod dışında tarayıcıya açılmaz.')}<div class="button-row"><button class="btn ghost" data-action="test-connection">Bağlantıyı Test Et</button><button class="btn primary" data-action="save-connection">Ayarları Kaydet</button></div></article><article class="panel"><div class="panel-head"><div><h2>Bağımsız Tek HTML Dosyaları</h2><p>Tam yönetim paneli ve sahaya özel bağımsız QR çıkış terminali</p></div><span class="ic" style="color:var(--orange)">${ic('download','ic-lg')}</span></div><div class="download-card"><b>1. Ana Yönetim Paneli (Tek HTML)</b><p>CSS, JavaScript ve QR üreticisi tek dosyada. Demo veya canlı Google Sheets bağlantısı ile çalışır.</p><button class="btn primary large" data-action="download-html">${ic('download','ic-sm')} Ana Panel HTML İndir</button></div><div class="download-card" style="margin-top:12px"><b>2. Bağımsız Depo QR & Sipariş Terminali (Tek HTML)</b><p>Operatörler (OP) depo sistemine girmeden yalnızca bu terminalden QR okutup stok düşer ve sipariş talebi oluşturur.</p><div class="button-row"><button class="btn primary" data-action="download-qr-terminal">${ic('download','ic-sm')} QR Terminali İndir</button><button class="btn ghost" data-action="open-qr-terminal">${ic('qr','ic-sm')} Terminali Dene</button></div></div><div class="security-list"><p><span>${ic('check','ic-sm')}</span> OP rolü hem arayüzde hem Kod.gs’de depo panelinden engellenir (yalnız QR ve Sipariş)</p><p><span>${ic('check','ic-sm')}</span> PIN yerine imzalı, süreli oturum belirteci kullanılır</p><p><span>${ic('check','ic-sm')}</span> Bağımsız QR terminali <span class="mono">./qr-terminal.html</span> ve <span class="mono">?qr=KOD</span> destekler</p></div></article></section><section class="panel code-panel"><div class="panel-head"><div><h2>Google Apps Script · Kod.gs ${gasOk?'<span class="badge success">Güncel (V8.8.4-OP-LOCK)</span>':'<span class="badge danger">Eski Sürüm Bağlı — Güncelleme Gerekli</span>'}</h2><p>Kodu kopyalayıp Apps Script’te kaydettikten sonra <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> yapın (PDF mail izni için bir kez <code>TEST_MAIL_IZNI</code> çalıştırın).</p></div><button class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kodu Kopyala</button></div><pre><code>${esc(code)}</code></pre></section>`;}
 
-let cameraStream=null,cameraTimer=null;
-async function openScanner(){modal('QR Kodunu Okut',`<div class="camera"><video id="cameraVideo" playsinline muted></video><div class="camera-frame"></div></div><p class="camera-help">Kamera izni verin ve kodu çerçeveye hizalayın. Desteklenmiyorsa kodu elle girin.</p>${field('Manuel kod','<input id="scanManual" placeholder="RUL-6205 veya ISG-DOLAP">')}`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="scan-manual-go">Devam Et</button>`);try{cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});const v=$('#cameraVideo');v.srcObject=cameraStream;await v.play();if('BarcodeDetector'in window){const det=new BarcodeDetector({formats:['qr_code']});cameraTimer=setInterval(async()=>{try{const codes=await det.detect(v);if(codes[0]?.rawValue){handleQr(codes[0].rawValue);}}catch{}},500);}}catch(e){toast('Kamera açılamadı; kodu elle girebilirsiniz.','error');}}
+let cameraStream=null,cameraTimer=null,cameraCanvas=null,cameraCtx=null;
+async function decodeScannerPhoto(file){
+ if(!file)return;
+ try{
+  const img=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=r.result;};r.onerror=rej;r.readAsDataURL(file);});
+  const maxDim=1400,scale=Math.min(1,maxDim/Math.max(img.naturalWidth||1,img.naturalHeight||1));
+  const w=Math.max(1,Math.round((img.naturalWidth||1)*scale)),h=Math.max(1,Math.round((img.naturalHeight||1)*scale));
+  const c=document.createElement('canvas');c.width=w;c.height=h;
+  const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,w,h);
+  let val='';
+  if('BarcodeDetector' in window){try{const det=new BarcodeDetector({formats:['qr_code']});const codes=await det.detect(c);if(codes[0]?.rawValue)val=codes[0].rawValue;}catch{}}
+  if(!val&&typeof window.jsQR==='function'){const idata=ctx.getImageData(0,0,w,h);const qr=window.jsQR(idata.data,w,h,{inversionAttempts:'attemptBoth'});if(qr?.data)val=qr.data;}
+  if(val)return handleQr(val);
+  toast('Fotoğrafta okunabilir QR kod bulunamadı.','error');
+ }catch{toast('Fotoğraf okunamadı.','error');}
+}
+async function openScanner(){
+ modal('QR Kodunu Okut',`<div class="camera"><video id="cameraVideo" playsinline webkit-playsinline autoplay muted></video><div class="camera-frame"></div></div><p class="camera-help">Kamera izni verin ve kodu çerçeveye hizalayın. iOS/Android’de kamera açılmazsa fotoğraf çekin veya kodu elle girin.</p><div class="camera-tools"><label class="btn ghost" for="idxQrPhotoInput">${ic('scan','ic-sm')} Fotoğraftan QR Oku</label><input id="idxQrPhotoInput" type="file" accept="image/*" capture="environment" hidden></div>${field('Manuel kod','<input id="scanManual" placeholder="RUL-6205 veya ISG-DOLAP">')}`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="scan-manual-go">Devam Et</button>`);
+ const pInp=$('#idxQrPhotoInput');
+ if(pInp)pInp.addEventListener('change',e=>{const f=e.target.files?.[0];e.target.value='';if(f)decodeScannerPhoto(f);});
+ if(!navigator.mediaDevices?.getUserMedia){toast('Tarayıcı canlı kamerayı desteklemiyor; Fotoğraftan QR Oku veya manuel kod kullanın.','error');return;}
+ try{
+  const trials=[{video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false},{video:{facingMode:'environment'},audio:false},{video:true,audio:false}];
+  let stream=null;
+  for(const t of trials){try{stream=await navigator.mediaDevices.getUserMedia(t);break;}catch{}}
+  if(!stream)throw new Error('Kamera başlatılamadı');
+  cameraStream=stream;
+  const track=stream.getVideoTracks()[0];
+  try{const caps=track?.getCapabilities?.();if(caps?.focusMode?.includes?.('continuous'))await track.applyConstraints({advanced:[{focusMode:'continuous'}]});}catch{}
+  const v=$('#cameraVideo');if(!v){stopCamera();return;}
+  v.setAttribute('playsinline','');v.setAttribute('webkit-playsinline','');v.muted=true;v.autoplay=true;
+  v.srcObject=cameraStream;
+  if(v.readyState<1)await new Promise(res=>{v.onloadedmetadata=res;setTimeout(res,1200);});
+  await v.play();
+  const hasNative='BarcodeDetector' in window;
+  const det=hasNative?new BarcodeDetector({formats:['qr_code']}):null;
+  let busy=false;
+  cameraTimer=setInterval(async()=>{
+   if(busy||!v||v.readyState<2)return;
+   busy=true;
+   try{
+    if(det){
+     const codes=await det.detect(v);
+     if(codes[0]?.rawValue){busy=false;return handleQr(codes[0].rawValue);}
+    }else if(typeof window.jsQR==='function'&&v.videoWidth>0&&v.videoHeight>0){
+     if(!cameraCanvas){cameraCanvas=document.createElement('canvas');cameraCtx=cameraCanvas.getContext('2d',{willReadFrequently:true});}
+     const scale=Math.min(1,640/Math.max(v.videoWidth,v.videoHeight));
+     const cw=Math.round(v.videoWidth*scale),ch=Math.round(v.videoHeight*scale);
+     if(cameraCanvas.width!==cw||cameraCanvas.height!==ch){cameraCanvas.width=cw;cameraCanvas.height=ch;}
+     cameraCtx.drawImage(v,0,0,cw,ch);
+     const img=cameraCtx.getImageData(0,0,cw,ch);
+     const qr=window.jsQR(img.data,cw,ch,{inversionAttempts:'dontInvert'});
+     if(qr?.data){busy=false;return handleQr(qr.data);}
+    }
+   }catch{}
+   busy=false;
+  },320);
+ }catch(e){toast('Kamera açılamadı; Fotoğraftan QR Oku veya kodu elle girin.','error');}
+}
 function stopCamera(){if(cameraTimer)clearInterval(cameraTimer);cameraTimer=null;if(cameraStream)cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
+window.addEventListener('pagehide',()=>stopCamera());
 function handleQr(code){stopCamera();closeModal();code=String(code).trim();if(norm(code)==='ISG-DOLAP')return cabinetModal();const item=state.data.stock.find(x=>norm(x.code)===norm(code)||norm(x.id)===norm(code));if(!item)return toast('QR kodu stok kartıyla eşleşmedi: '+code,'error');checkoutModal(item);}
 
 function qrMatrix(text){const CH='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';text=String(text).toUpperCase().replace(/[^0-9A-Z $%*+\-./:]/g,'-').slice(0,25);let bits='0010'+text.length.toString(2).padStart(9,'0');for(let i=0;i<text.length;i+=2){if(i+1<text.length)bits+=(CH.indexOf(text[i])*45+CH.indexOf(text[i+1])).toString(2).padStart(11,'0');else bits+=CH.indexOf(text[i]).toString(2).padStart(6,'0');}bits+='0'.repeat(Math.min(4,152-bits.length));bits+='0'.repeat((8-bits.length%8)%8);let data=[];for(let i=0;i<bits.length;i+=8)data.push(parseInt(bits.slice(i,i+8),2));for(let p=0;data.length<19;p++)data.push(p%2?17:236);const exp=new Array(512),log=new Array(256);let gx=1;for(let i=0;i<255;i++){exp[i]=gx;log[gx]=i;gx<<=1;if(gx&256)gx^=0x11d;}for(let i=255;i<512;i++)exp[i]=exp[i-255];const mul=(a,b)=>a&&b?exp[log[a]+log[b]]:0;let gen=[1];for(let i=0;i<7;i++){let nx=new Array(gen.length+1).fill(0);for(let j=0;j<gen.length;j++){nx[j]^=gen[j];nx[j+1]^=mul(gen[j],exp[i]);}gen=nx;}let rem=new Array(7).fill(0);for(const b of data){const f=b^rem[0];rem.shift();rem.push(0);for(let j=0;j<7;j++)rem[j]^=mul(gen[j+1],f);}let stream='';data.concat(rem).forEach(b=>stream+=b.toString(2).padStart(8,'0'));const n=21,m=Array.from({length:n},()=>Array(n).fill(false)),fun=Array.from({length:n},()=>Array(n).fill(false));const set=(r,c,v)=>{if(r>=0&&r<n&&c>=0&&c<n){m[r][c]=!!v;fun[r][c]=true;}};function finder(r,c){for(let dr=-1;dr<=7;dr++)for(let dc=-1;dc<=7;dc++){const rr=r+dr,cc=c+dc;if(rr<0||rr>=n||cc<0||cc>=n)continue;set(rr,cc,dr>=0&&dr<=6&&dc>=0&&dc<=6&&(dr===0||dr===6||dc===0||dc===6||(dr>=2&&dr<=4&&dc>=2&&dc<=4)));}}finder(0,0);finder(0,n-7);finder(n-7,0);for(let i=8;i<n-8;i++){set(6,i,i%2===0);set(i,6,i%2===0);}for(let i=0;i<=8;i++)if(i!==6){set(8,i,false);set(i,8,false);}for(let i=0;i<8;i++)set(8,n-1-i,false);for(let i=0;i<7;i++)set(n-1-i,8,false);set(n-8,8,true);let k=0,up=true;for(let right=n-1;right>=1;right-=2){if(right===6)right--;for(let v=0;v<n;v++){const r=up?n-1-v:v;for(let j=0;j<2;j++){const c=right-j;if(fun[r][c])continue;let b=k<stream.length&&stream[k++]==='1';if((r+c)%2===0)b=!b;m[r][c]=b;}}up=!up;}let dat=8,rf=dat;for(let i=0;i<10;i++)rf=(rf<<1)^(((rf>>9)&1)*0x537);const f=((dat<<10)|rf)^0x5412,fb=i=>((f>>i)&1)!==0;for(let i=0;i<=5;i++)m[i][8]=fb(i);m[7][8]=fb(6);m[8][8]=fb(7);m[8][7]=fb(8);for(let i=9;i<15;i++)m[14-i][8]=fb(i);for(let i=0;i<8;i++)m[8][n-1-i]=fb(i);for(let i=8;i<15;i++)m[n-15+i][8]=fb(i);m[n-8][8]=true;return m;}
