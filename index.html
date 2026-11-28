@@ -877,6 +877,81 @@ mark.search-hl{background:#FFE600;color:#0F172A;font-weight:700;padding:0 3px;bo
 .sq-tag.error{background:#fee2e2;color:#991b1b}
 .sync-row-tag{display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:1px 6px;border-radius:999px;font-size:10.5px;font-weight:700;background:var(--orange-soft);color:var(--orange);border:1px solid var(--orange-border);vertical-align:middle}
 @media (max-width:540px){.sync-pill.idle .sq-lbl{display:none}.sync-pill{padding:5px 8px}}
+.po-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.po-kpis .kpi{padding:14px 16px}
+.po-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);background:var(--surface-alt)}
+.po-status{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.po-status.TALEP_OLUSTURULDU{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
+.po-status.ONAYLANDI{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+.po-status.SIPARIS_VERILDI{background:#fefce8;color:#a16207;border:1px solid #fde047}
+.po-status.TESLIM_ALINDI{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0}
+.po-status.IPTAL{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
+.po-actions-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.po-actions-bar .button-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.akg-wrap{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto}
+.akg-sheet{min-width:1020px;border:1.5px solid #0f172a;background:#fff;color:#0f172a;font-family:Arial,Helvetica,sans-serif;font-size:12px}
+.akg-head{display:grid;grid-template-columns:180px 1fr 190px;border-bottom:1.5px solid #0f172a;align-items:stretch}
+.akg-logo-cell{display:flex;align-items:center;justify-content:center;padding:8px 10px;border-right:1px solid #0f172a}
+.akg-title-cell{display:flex;align-items:center;justify-content:center;text-align:center;padding:10px 14px;font-size:20px;font-weight:800;letter-spacing:-.01em;border-right:1px solid #0f172a}
+.akg-doc-cell{display:flex;align-items:center;justify-content:center;padding:8px 10px}
+.akg-doc-cell input{width:100%;text-align:center;font-weight:700;font-size:12.5px;border:1px dashed transparent;background:transparent;padding:4px;font-family:var(--font-mono)}
+.akg-doc-cell input:focus{border-color:var(--orange);background:#fff7ed;outline:none}
+.akg-meta{display:grid;grid-template-columns:155px 1fr 155px 1.2fr 155px 1fr;border-bottom:1.5px solid #0f172a}
+.akg-meta-lbl{padding:5px 8px;font-size:10.5px;font-weight:700;line-height:1.25;border-right:1px solid #0f172a;border-bottom:1px solid #0f172a;background:#f8fafc;display:flex;flex-direction:column;justify-content:center}
+.akg-meta-val{padding:3px 6px;border-right:1px solid #0f172a;border-bottom:1px solid #0f172a;display:flex;align-items:center}
+.akg-meta-val:nth-child(6n){border-right:0}
+.akg-meta>div:nth-last-child(-n+6){border-bottom:0}
+.akg-meta-val input,.akg-meta-val select{width:100%;border:1px solid transparent;border-radius:4px;padding:4px 6px;font-size:12px;font-weight:700;color:#0f172a;background:transparent}
+.akg-meta-val input:focus,.akg-meta-val select:focus{border-color:var(--orange);background:#fff7ed;outline:none}
+.akg-meta-val input[readonly]{background:#f8fafc;color:#334155}
+.akg-tbl{width:100%;border-collapse:collapse;table-layout:fixed}
+.akg-tbl th{border:1px solid #0f172a;border-top:0;padding:5px 4px;font-size:10.5px;font-weight:700;text-align:center;line-height:1.25;background:#f8fafc}
+.akg-tbl th:first-child,.akg-tbl td:first-child{border-left:0}
+.akg-tbl th:last-child,.akg-tbl td:last-child{border-right:0}
+.akg-tbl td{border:1px solid #0f172a;padding:2px 3px;vertical-align:middle}
+.akg-tbl td.c{text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.akg-tbl td.r{text-align:right;font-variant-numeric:tabular-nums}
+.akg-tbl input,.akg-tbl select{width:100%;border:1px solid transparent;border-radius:3px;padding:4px 5px;font-size:11.5px;color:#0f172a;background:transparent;min-width:0}
+.akg-tbl input:focus,.akg-tbl select:focus{border-color:var(--orange);background:#fff7ed;outline:none}
+.akg-tbl input.num-in{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.akg-tbl .akg-tot-cell{padding:4px 6px;font-weight:700;font-variant-numeric:tabular-nums;text-align:right;font-size:11.5px}
+.akg-tbl .akg-pick-btn{width:22px;height:22px;border:1px solid #cbd5e1;border-radius:4px;background:#f8fafc;color:#475569;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:11px;padding:0;flex:none}
+.akg-tbl .akg-pick-btn:hover{border-color:var(--orange);color:var(--orange);background:#fff7ed}
+.akg-name-cell{display:flex;align-items:center;gap:3px}
+.akg-total-row td{border-top:1.5px solid #0f172a;border-bottom:1.5px solid #0f172a;padding:7px 8px;font-weight:800;background:#fff}
+.akg-red{color:#dc2626}
+.akg-grand{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
+.akg-pay{display:grid;grid-template-columns:130px 1fr 130px 1fr 90px 1fr 125px 1fr;border-bottom:1px solid #0f172a}
+.akg-pay-lbl{padding:5px 7px;font-size:10.5px;font-weight:700;line-height:1.25;border-right:1px solid #0f172a;background:#f8fafc;display:flex;flex-direction:column;justify-content:center}
+.akg-pay-val{padding:3px 5px;border-right:1px solid #0f172a;display:flex;align-items:center}
+.akg-pay-val:last-child{border-right:0}
+.akg-pay-val input,.akg-pay-val select{width:100%;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:11.5px;color:#0f172a;background:transparent}
+.akg-pay-val input:focus,.akg-pay-val select:focus{border-color:var(--orange);background:#fff7ed;outline:none}
+.akg-details{display:grid;grid-template-columns:130px 1fr;border-bottom:1.5px solid #0f172a;min-height:68px}
+.akg-details-lbl{padding:8px 8px;font-size:11px;font-weight:700;line-height:1.3;border-right:1px solid #0f172a;background:#f8fafc;display:flex;flex-direction:column;justify-content:center}
+.akg-details-val{padding:5px 8px;display:flex}
+.akg-details-val textarea{width:100%;min-height:56px;border:1px solid transparent;border-radius:4px;padding:4px 6px;font-size:12.5px;font-weight:700;font-family:inherit;color:#0f172a;resize:vertical;background:transparent}
+.akg-details-val textarea:focus{border-color:var(--orange);background:#fff7ed;outline:none}
+.akg-sigs{display:grid;grid-template-columns:1.1fr 1.5fr 1.5fr 1.5fr 1.5fr}
+.akg-sig-col{border-right:1px solid #0f172a;display:flex;flex-direction:column}
+.akg-sig-col:last-child{border-right:0}
+.akg-sig-top{padding:5px 6px;text-align:center;font-size:10.5px;font-weight:700;line-height:1.25;border-bottom:1px solid #0f172a;background:#f8fafc}
+.akg-sig-sub{display:grid;grid-template-columns:1fr 90px;border-bottom:1px dashed #64748b;font-size:10px;font-weight:700;text-align:center}
+.akg-sig-sub.single{grid-template-columns:1fr}
+.akg-sig-sub span{padding:3px 4px}
+.akg-sig-sub span+span{border-left:1px dashed #64748b}
+.akg-sig-inputs{display:grid;grid-template-columns:1fr 90px;min-height:44px}
+.akg-sig-inputs.single{grid-template-columns:1fr}
+.akg-sig-inputs input{width:100%;border:0;text-align:center;font-size:11.5px;font-weight:700;padding:5px 4px;color:#0f172a;background:transparent}
+.akg-sig-inputs input:focus{background:#fff7ed;outline:none}
+.akg-sig-inputs input+input{border-left:1px dashed #64748b;font-size:10.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.po-picker-list{display:grid;gap:6px;max-height:50vh;overflow:auto;margin-top:10px}
+.po-picker-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--surface);cursor:pointer;text-align:left}
+.po-picker-row:hover{border-color:var(--orange);background:var(--orange-soft)}
+.po-picker-row b{display:block;font-size:13px;color:var(--ink)}
+.po-picker-row small{display:block;font-size:11.5px;color:var(--muted)}
+@media (max-width:1100px){.po-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:640px){.po-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 <script type="text/plain" id="gasCode">/*
  * MEKANİK + İSG DEPO V8.7 — Google Apps Script backend
@@ -895,10 +970,10 @@ const CFG = Object.freeze({
   sheets: {
     data: 'VERİ', stock: 'STOK_KARTLARI', incoming: 'GIRIS_HAREKETLERI',
     outgoing: 'CIKIS_HAREKETLERI', approvals: 'ONAY_HAVUZU',
-    recipes: 'PLANLI_BAKIM_RECETE', ppeForms: 'KKD_ZIMMET', log: 'LOG', faults: 'Açık Arizalar'
+    recipes: 'PLANLI_BAKIM_RECETE', ppeForms: 'KKD_ZIMMET', orders: 'SIPARIS_TALEPLERI', log: 'LOG', faults: 'Açık Arizalar'
   },
   spreadsheetId: '1AtCrVmav8bIQno5aeP-sFtS3L90KwdipMpZtFeP1KT4',
-  apiVersion: 'V8.7-KKD',
+  apiVersion: 'V8.8-SIPARIS',
   sessionHours: 8,
   roles: ['OP', 'MEK_ADMIN', 'ISG_ADMIN', 'YONETICI'],
   periods: ['AYLIK', '3 AYLIK', '6 AYLIK', 'YILLIK']
@@ -914,6 +989,7 @@ const HEADERS = Object.freeze({
   approvals: ['TALEP NO','TARİH','OPERATÖR','ID','MALZEME','MAKİNE','ADET','DURUM','ONAYLAYAN','ONAY TARİHİ'],
   recipes: ['MAKİNE','PERİYOT','MALZEME ID','PARÇA KODU','MALZEME','STANDART ADET'],
   ppeForms: ['FORM NO','TARİH','OPERATÖR','TESLİM EDEN','STOK ID','PARÇA KODU','MALZEME','ADET','BİRİM','DURUM','ONAY METNİ','İMZA','İMZA TARİHİ','ÇIKIŞ ID','NOT'],
+  orders: ['FORM NO','DOKÜMAN KODU','TALEP TARİHİ','TALEP EDEN','ROL','BÖLÜM','MALİYET MERKEZİ','EKLİ DOKÜMAN','KALEMLER_JSON','TOPLAM TUTAR','PARA BİRİMİ','ÖDEME ŞEKLİ','ÖDEME VADESİ','NAKLİYE','TESLİMAT YERİ','DETAYLAR','ONAYLAR_JSON','DURUM','KAYNAK','STOK İŞLENDİ','OLUŞTURMA TARİHİ'],
   log: ['TARİH','KULLANICI','ROL','İŞLEM','KAYNAK ID','DETAY']
 });
 
@@ -947,7 +1023,7 @@ function route_(action, p, token) {
   const read = {
     bootstrap: () => bootstrap_(user), stockList: () => filteredStock_(user),
     approvalList: () => approvalList_(user), recipeList: () => recipeList_(user, p),
-    ppeFormList: () => ppeFormList_(user),
+    ppeFormList: () => ppeFormList_(user), purchaseOrderList: () => purchaseOrderList_(user),
     ppeAnalysis: () => ppeAnalysis_(user, p), movementAnalysis: () => movementAnalysis_(user, p),
     costAnalysis: () => costAnalysis_(user, p)
   };
@@ -957,7 +1033,10 @@ function route_(action, p, token) {
     itemCreate: () => itemCreate_(user, p), itemUpdate: () => itemUpdate_(user, p),
     approvalCreate: () => approvalCreate_(user, p), approvalDecide: () => approvalDecide_(user, p),
     recipeSave: () => recipeSave_(user, p), recipeBulkCheckout: () => recipeBulkCheckout_(user, p),
-    ppeFormCreate: () => ppeFormCreate_(user, p), ppeFormSign: () => ppeFormSign_(user, p)
+    ppeFormCreate: () => ppeFormCreate_(user, p), ppeFormSign: () => ppeFormSign_(user, p),
+    purchaseOrderCreate: () => purchaseOrderCreate_(user, p),
+    purchaseOrderUpdate: () => purchaseOrderUpdate_(user, p),
+    purchaseOrderStatus: () => purchaseOrderStatus_(user, p)
   };
   if (!write[action]) throw new Error('Bilinmeyen işlem: ' + action);
   const lock = LockService.getScriptLock(); lock.waitLock(20000);
@@ -1253,7 +1332,7 @@ function outs_() {
 function bootstrap_(u) {
   return {
     user:u, stock:filteredStock_(u), approvals:u.role === 'OP' ? [] : approvalList_(u), recipes:recipeList_(u, {}),
-    ppeForms:ppeFormList_(u),
+    ppeForms:ppeFormList_(u), orders:purchaseOrderList_(u),
     movements:recentMovements_(u), lists:dataLists_(), serverTime:now_(), apiVersion:CFG.apiVersion, capabilities:capabilities_(u)
   };
 }
@@ -1271,13 +1350,30 @@ function capabilities_(u) {
 function dataLists_() {
   const v = values_(CFG.sheets.data); if (!v.length) return {};
   const h = v[0].map(norm_);
+  const colIdx = (...names) => {
+    for (const n of names) { const i = h.indexOf(norm_(n)); if (i >= 0) return i; }
+    return -1;
+  };
   const get = (...names) => {
-    let i = -1; for (const n of names) { if (i < 0) i = h.indexOf(norm_(n)); }
+    const i = colIdx(...names);
     return i < 0 ? [] : [...new Set(v.slice(1).map(r => String(r[i] || '').trim()).filter(Boolean))];
   };
+  const macCol = colIdx('MAKİNE ADI','MAKİNE');
+  let mcCol = colIdx('MALİYET MERKEZLERİ','MALIYET MERKEZLERI','MALİYET MERKEZİ','MALIYET MERKEZI','COST CENTER');
+  if (mcCol < 0) mcCol = h.findIndex(x => x.indexOf('MALIYET') >= 0 && x.indexOf('MERKEZ') >= 0);
+  if (mcCol < 0 && v[0].length > 12) mcCol = 12;
+  const costCenters = mcCol < 0 ? [] : [...new Set(v.slice(1).map(r => String(r[mcCol] || '').trim()).filter(Boolean))];
+  const machineCostCenters = {};
+  if (macCol >= 0 && mcCol >= 0) {
+    v.slice(1).forEach(r => {
+      const m = String(r[macCol] || '').trim(), c = String(r[mcCol] || '').trim();
+      if (m && c && !machineCostCenters[m]) machineCostCenters[m] = c;
+    });
+  }
   return {
     types:get('MALZEME TÜR','MALZEME TÜRÜ','KATEGORİ'), companies:get('FİRMA BİLGİLERİ','FİRMA'), units:get('BİRİM'),
     usage:get('MALZEME DEPO ŞEKLİ'), shelves:get('RAFNO','RAF NO'), machines:get('MAKİNE ADI','MAKİNE'),
+    costCenters:costCenters, machineCostCenters:machineCostCenters,
     operators:users_().filter(x => x.role === 'OP').map(x => x.name)
   };
 }
@@ -1948,6 +2044,135 @@ function costAnalysis_(u, p) {
     machines:machines, departments:departments, monthly:monthly
   };
 }
+function purchaseOrderList_(u) {
+  const sh = ss_().getSheetByName(CFG.sheets.orders);
+  if (!sh || sh.getLastRow() < 2) return [];
+  const rows = rows_(CFG.sheets.orders).map((o, idx) => {
+    let items = [], approvals = {};
+    try { items = JSON.parse(s_(o.KALEMLER_JSON) || '[]'); } catch (e) { items = []; }
+    try { approvals = JSON.parse(s_(o.ONAYLAR_JSON) || '{}'); } catch (e) { approvals = {}; }
+    return {
+      row: idx + 2,
+      formNo: s_(o.FORM_NO), docCode: s_(o.DOKUMAN_KODU) || 'IZM_350600_LJT_001',
+      requestDate: s_(o.TALEP_TARIHI), requestedBy: s_(o.TALEP_EDEN), requestedByRole: s_(o.ROL),
+      department: s_(o.BOLUM), costCenter: s_(o.MALIYET_MERKEZI), attachmentQty: s_(o.EKLI_DOKUMAN),
+      items: Array.isArray(items) ? items : [], totalAmount: n_(o.TOPLAM_TUTAR),
+      currency: s_(o.PARA_BIRIMI) || 'TL', paymentTerm: s_(o.ODEME_SEKLI),
+      paymentMaturity: s_(o.ODEME_VADESI), transport: s_(o.NAKLIYE),
+      deliveryPlace: s_(o.TESLIMAT_YERI), details: s_(o.DETAYLAR),
+      approvals: approvals || {}, status: s_(o.DURUM) || 'TALEP_OLUSTURULDU',
+      source: s_(o.KAYNAK) || 'PANEL', stockSynced: s_(o.STOK_ISLENDI) === 'EVET',
+      createdAt: s_(o.OLUSTURMA_TARIHI)
+    };
+  }).filter(x => x.formNo);
+  const filtered = u.role === 'OP' ? rows.filter(x => norm_(x.requestedBy) === norm_(u.name)) : rows;
+  return filtered.sort((a, b) => parseDate_(b.createdAt || b.requestDate) - parseDate_(a.createdAt || a.requestDate));
+}
+function sanitizeOrderItems_(raw) {
+  const arr = Array.isArray(raw) ? raw : [];
+  return arr.map(it => {
+    const qty = Math.max(0, n_(it.qty));
+    const unitPrice = Math.max(0, n_(it.unitPrice));
+    return {
+      itemId: s_(it.itemId), name: s_(it.name), code: s_(it.code), supplier: s_(it.supplier),
+      qty: qty, unit: s_(it.unit) || 'AD', unitPrice: unitPrice,
+      currency: s_(it.currency) || 'TL', total: Math.round(qty * unitPrice * 100) / 100,
+      deliveryDate: s_(it.deliveryDate)
+    };
+  }).filter(it => it.name || it.code);
+}
+function nextOrderFormNo_() {
+  const yr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy');
+  const existing = rows_(CFG.sheets.orders).map(o => s_(o.FORM_NO));
+  let maxN = 0;
+  existing.forEach(fn => {
+    const m = String(fn).match(new RegExp('^SAT-' + yr + '-(\\d+)$'));
+    if (m) maxN = Math.max(maxN, Number(m[1]));
+  });
+  return 'SAT-' + yr + '-' + String(maxN + 1).padStart(3, '0');
+}
+function purchaseOrderCreate_(u, p) {
+  ensureHeaders_(CFG.sheets.orders, HEADERS.orders);
+  const items = sanitizeOrderItems_(p.items);
+  if (!items.length) throw new Error('Sipariş formuna en az bir malzeme satırı ekleyin.');
+  const formNo = s_(p.formNo) || nextOrderFormNo_();
+  const reqBy = u.role === 'OP' ? u.name : (s_(p.requestedBy) || u.name);
+  const totalAmount = Math.round(items.reduce((s, x) => s + n_(x.total), 0) * 100) / 100;
+  const currency = s_(p.currency) || (items[0] && items[0].currency) || 'TL';
+  const reqDate = s_(p.requestDate) || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd.MM.yyyy');
+  const approvals = Object.assign({
+    requirer: reqBy, managerName: 'FUAT ÇETİN', managerDate: '',
+    approval1Name: 'İbrahim Özdemir', approval1Date: '',
+    approval2Name: 'Yüksel Kurun', approval2Date: '',
+    approval3Name: 'İbrahim Özdemir', approval3Date: ''
+  }, p.approvals || {}, u.role === 'OP' ? { requirer: u.name } : {});
+  const createdAt = now_();
+  const order = {
+    formNo: formNo, docCode: s_(p.docCode) || 'IZM_350600_LJT_001',
+    requestDate: reqDate, requestedBy: reqBy, requestedByRole: u.role,
+    department: s_(p.department), costCenter: s_(p.costCenter) || s_(p.department),
+    attachmentQty: s_(p.attachmentQty), items: items, totalAmount: totalAmount,
+    currency: currency, paymentTerm: s_(p.paymentTerm) || 'Peşin / Cash',
+    paymentMaturity: s_(p.paymentMaturity), transport: s_(p.transport),
+    deliveryPlace: s_(p.deliveryPlace), details: s_(p.details),
+    approvals: approvals, status: 'TALEP_OLUSTURULDU',
+    source: s_(p.source) || 'PANEL', stockSynced: false, createdAt: createdAt
+  };
+  append_(CFG.sheets.orders, HEADERS.orders, {
+    FORM_NO: order.formNo, DOKUMAN_KODU: order.docCode, TALEP_TARIHI: order.requestDate,
+    TALEP_EDEN: order.requestedBy, ROL: order.requestedByRole, BOLUM: order.department,
+    MALIYET_MERKEZI: order.costCenter, EKLI_DOKUMAN: order.attachmentQty,
+    KALEMLER_JSON: JSON.stringify(order.items), TOPLAM_TUTAR: order.totalAmount,
+    PARA_BIRIMI: order.currency, ODEME_SEKLI: order.paymentTerm, ODEME_VADESI: order.paymentMaturity,
+    NAKLIYE: order.transport, TESLIMAT_YERI: order.deliveryPlace, DETAYLAR: order.details,
+    ONAYLAR_JSON: JSON.stringify(order.approvals), DURUM: order.status,
+    KAYNAK: order.source, STOK_ISLENDI: 'HAYIR', OLUSTURMA_TARIHI: order.createdAt
+  });
+  log_(u, 'SIPARIS_OLUSTUR', order.formNo, { itemCount: items.length, totalAmount: totalAmount, source: order.source });
+  return { formNo: order.formNo, order: order };
+}
+function purchaseOrderUpdate_(u, p) {
+  if (['MEK_ADMIN','ISG_ADMIN','YONETICI'].indexOf(u.role) < 0) throw new Error('Sipariş düzenleme yetkiniz yok.');
+  ensureHeaders_(CFG.sheets.orders, HEADERS.orders);
+  const sh = sh_(CFG.sheets.orders);
+  const list = purchaseOrderList_(u);
+  const cur = list.find(x => norm_(x.formNo) === norm_(p.formNo));
+  if (!cur) throw new Error('Sipariş formu bulunamadı.');
+  const items = p.items ? sanitizeOrderItems_(p.items) : cur.items;
+  if (!items.length) throw new Error('En az bir malzeme satırı bulunmalıdır.');
+  const totalAmount = Math.round(items.reduce((s, x) => s + n_(x.total), 0) * 100) / 100;
+  const currency = s_(p.currency) || (items[0] && items[0].currency) || cur.currency || 'TL';
+  const next = Object.assign({}, cur, {
+    docCode: s_(p.docCode) || cur.docCode,
+    requestDate: s_(p.requestDate) || cur.requestDate,
+    requestedBy: s_(p.requestedBy) || cur.requestedBy,
+    department: p.department !== undefined ? s_(p.department) : cur.department,
+    costCenter: p.costCenter !== undefined ? s_(p.costCenter) : cur.costCenter,
+    attachmentQty: p.attachmentQty !== undefined ? s_(p.attachmentQty) : cur.attachmentQty,
+    items: items, totalAmount: totalAmount, currency: currency,
+    paymentTerm: p.paymentTerm !== undefined ? s_(p.paymentTerm) : cur.paymentTerm,
+    paymentMaturity: p.paymentMaturity !== undefined ? s_(p.paymentMaturity) : cur.paymentMaturity,
+    transport: p.transport !== undefined ? s_(p.transport) : cur.transport,
+    deliveryPlace: p.deliveryPlace !== undefined ? s_(p.deliveryPlace) : cur.deliveryPlace,
+    details: p.details !== undefined ? s_(p.details) : cur.details,
+    approvals: p.approvals ? Object.assign({}, cur.approvals, p.approvals) : cur.approvals,
+    status: s_(p.status) || cur.status,
+    stockSynced: p.stockSynced !== undefined ? !!p.stockSynced : cur.stockSynced
+  });
+  const vals = [
+    next.formNo, next.docCode, next.requestDate, next.requestedBy, next.requestedByRole,
+    next.department, next.costCenter, next.attachmentQty, JSON.stringify(next.items),
+    next.totalAmount, next.currency, next.paymentTerm, next.paymentMaturity,
+    next.transport, next.deliveryPlace, next.details, JSON.stringify(next.approvals),
+    next.status, next.source, next.stockSynced ? 'EVET' : 'HAYIR', next.createdAt
+  ];
+  sh.getRange(cur.row, 1, 1, vals.length).setValues([vals]);
+  log_(u, 'SIPARIS_GUNCELLE', next.formNo, { status: next.status, totalAmount: next.totalAmount });
+  return { formNo: next.formNo, order: next };
+}
+function purchaseOrderStatus_(u, p) {
+  return purchaseOrderUpdate_(u, { formNo: p.formNo, status: s_(p.status), stockSynced: p.stockSynced });
+}
 function log_(u, action, source, detail) {
   try { append_(CFG.sheets.log, HEADERS.log, {TARIH:now_(), KULLANICI:u.name, ROL:u.role, ISLEM:action, KAYNAK_ID:source, DETAY:JSON.stringify(detail || {})}); } catch (e) {}
 }
@@ -2058,6 +2283,7 @@ const ICONS={
  pen:'<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z"/>',
  fileCheck:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/>',
  phone:'<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M12 18h.01"/>',
+ fileText:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h6M8 9h2"/>',
  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>'
 };
 function ic(name,cls=''){return`<span class="ic ${cls}" aria-hidden="true"><svg viewBox="0 0 24 24">${ICONS[name]||''}</svg></span>`;}
@@ -2066,6 +2292,7 @@ const NAV=[
  ['dashboard','grid','Genel Bakış',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
  ['qr','scan','Operatör QR',['OP','MEK_ADMIN','ISG_ADMIN','YONETICI']],
  ['stock','boxes','Stok Yönetimi',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
+ ['orders','fileText','Sipariş Sayfası',['OP','MEK_ADMIN','ISG_ADMIN','YONETICI']],
  ['movements','arrows','Hareketler',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
  ['approvals','checkCircle','Onay Bekleyenler',['MEK_ADMIN','ISG_ADMIN','YONETICI']],
  ['maintenance','wrench','Planlı Bakım',['OP','MEK_ADMIN','YONETICI']],
@@ -2113,7 +2340,18 @@ const DEMO={
    {itemId:'ISG-0004',code:'KUL-SNR32',name:'Kulak Koruyucu SNR 32',qty:1,unit:'AD',exitId:'CIK-D009'}
   ]}
  ],
- lists:{types:['RULMAN','KAYIŞ','SENSÖR','YAĞ','KİMYASAL','İSG MALZEME'],companies:['SKF','Optibelt','Omron','3M','Beybi','Uvex'],units:['AD','ÇİFT','LİTRE','KG','MT'],usage:['BAKIM SARF','PLANLI BAKIM','KRİTİK MALZEME','İSG / KKD'],shelves:['A-01','A-04','E-03','Y-02','K-02','İSG-01','İSG-02','İSG-03','İSG-04'],machines:['Kondanser Boru Makinesi','Paketleme Makinesi','Dolum Makinesi','Kompresör','Kazan Dairesi'],operators:['Bakım Operatörü','Engin Vardar','Murat Kaya','Ayşe Demir']}
+ lists:{types:['RULMAN','KAYIŞ','SENSÖR','YAĞ','KİMYASAL','İSG MALZEME'],companies:['SKF','Optibelt','Omron','3M','Beybi','Uvex','ÜNLÜ TEKNİK'],units:['AD','ÇİFT','LİTRE','KG','MT'],usage:['BAKIM SARF','PLANLI BAKIM','KRİTİK MALZEME','İSG / KKD'],shelves:['A-01','A-04','E-03','Y-02','K-02','İSG-01','İSG-02','İSG-03','İSG-04'],machines:['PLANLI BAKIMLAR','KOMPRESÖR KAİSER','Kondanser Boru Makinesi','Paketleme Makinesi','Dolum Makinesi','Kompresör','Kazan Dairesi','ARÇELİK KLİMA 18000BTU KLİMA DEPO OFİS','DEPO ISITMA SİSTEMİ','16-351110-Blok Dizme (Alu)'],costCenters:['01-350522-Bakim ve Onarim & Üretim','03-350600-Satinalma ve Lojistik','16-351110-Blok Dizme (Alu)'],machineCostCenters:{'PLANLI BAKIMLAR':'01-350522-Bakim ve Onarim & Üretim','KOMPRESÖR KAİSER':'01-350522-Bakim ve Onarim & Üretim','Kondanser Boru Makinesi':'01-350522-Bakim ve Onarim & Üretim','Paketleme Makinesi':'01-350522-Bakim ve Onarim & Üretim','Dolum Makinesi':'01-350522-Bakim ve Onarim & Üretim','Kompresör':'01-350522-Bakim ve Onarim & Üretim','Kazan Dairesi':'01-350522-Bakim ve Onarim & Üretim','ARÇELİK KLİMA 18000BTU KLİMA DEPO OFİS':'03-350600-Satinalma ve Lojistik','DEPO ISITMA SİSTEMİ':'03-350600-Satinalma ve Lojistik','16-351110-Blok Dizme (Alu)':'16-351110-Blok Dizme (Alu)'},operators:['Bakım Operatörü','Engin Vardar','Murat Kaya','Ayşe Demir','HÜSEYİN YAVUZ']},
+ orders:[
+  {
+   formNo:'SAT-2026-001',docCode:'IZM_350600_LJT_001',requestDate:'28.11.2026',requestedBy:'HÜSEYİN YAVUZ',requestedByRole:'OP',
+   department:'16-351110-Blok Dizme (Alu)',costCenter:'16-351110-Blok Dizme (Alu)',attachmentQty:'',
+   items:[{itemId:'',name:'HİGH 25 HWİN ARABA',code:'',supplier:'ÜNLÜ TEKNİK',qty:4,unit:'AD',unitPrice:3950,currency:'TL',total:15800,deliveryDate:'28.11.2026 08:49:54'}],
+   totalAmount:15800,currency:'TL',paymentTerm:'Peşin / Cash',paymentMaturity:'',transport:'',deliveryPlace:'',
+   details:'Dizgi makinaları sağ ve sol dayama kolları hareket arabalarında kullanılacak',
+   approvals:{requirer:'HÜSEYİN YAVUZ',managerName:'FUAT ÇETİN',managerDate:'',approval1Name:'İbrahim Özdemir',approval1Date:'',approval2Name:'Yüksel Kurun',approval2Date:'',approval3Name:'İbrahim Özdemir',approval3Date:''},
+   status:'TALEP_OLUSTURULDU',source:'QR_TERMINAL',stockSynced:false,createdAt:new Date(Date.now()-1800000).toISOString()
+  }
+ ]
 };
 DEMO.stock.forEach((x,i)=>{x.unitPrice=[18.5,42,3.25,27,6.5,1.1,8.75,2.4,14][i]||0;x.totalPrice=x.stock*x.unitPrice;});
 for(let i=0;i<56;i++){
@@ -2130,7 +2368,19 @@ function sanitizeLabelCfg(c={}){
 }
 function loadLabelCfg(){try{return sanitizeLabelCfg(JSON.parse(localStorage.getItem('depo.labelCfg')||'{}'));}catch{return sanitizeLabelCfg();}}
 function saveLabelCfg(cfg){state.labelCfg=sanitizeLabelCfg(cfg);try{localStorage.setItem('depo.labelCfg',JSON.stringify(state.labelCfg));}catch{}}
-const state={user:null,session:'',page:'dashboard',data:null,mode:localStorage.getItem('depo.mode')||'demo',directUrl:localStorage.getItem('depo.directUrl')||'',busy:false,stockFilter:{depot:'TUMU',query:'',status:'TUMU',category:'',usage:''},movQuery:'',analysis:null,ppe:null,ppeTab:'analysis',ppeRange:'30d',ppeUsageQuery:'',ppeFilter:{status:'TUMU',query:''},cost:null,costFilter:{range:'year',depot:'TUMU',group:'machine',query:'',sort:'cost'},labelCfg:loadLabelCfg(),pendingQr:new URLSearchParams(location.search).get('qr')||''};
+function loadOrderDefaults(){try{return Object.assign({docCode:'IZM_350600_LJT_001',department:'',costCenter:'',deliveryPlace:'',paymentTerm:'Peşin / Cash',paymentMaturity:'',transport:'',managerName:'FUAT ÇETİN',approval1Name:'İbrahim Özdemir',approval2Name:'Yüksel Kurun',approval3Name:'İbrahim Özdemir'},JSON.parse(localStorage.getItem('depo.orderDefaults')||'{}'));}catch{return{docCode:'IZM_350600_LJT_001',department:'',costCenter:'',deliveryPlace:'',paymentTerm:'Peşin / Cash',paymentMaturity:'',transport:'',managerName:'FUAT ÇETİN',approval1Name:'İbrahim Özdemir',approval2Name:'Yüksel Kurun',approval3Name:'İbrahim Özdemir'};}}
+function saveOrderDefaults(d){try{localStorage.setItem('depo.orderDefaults',JSON.stringify(d));}catch{}}
+function loadLocalOrders(){try{const arr=JSON.parse(localStorage.getItem('depo.localOrders')||'[]');return Array.isArray(arr)?arr:[];}catch{return[];}}
+function saveLocalOrders(list){try{localStorage.setItem('depo.localOrders',JSON.stringify(list||[]));}catch{}}
+function mergeOrdersWithLocal(serverOrders){
+ const map=new Map();
+ (serverOrders||[]).forEach(o=>{if(o&&o.formNo)map.set(norm(o.formNo),o);});
+ loadLocalOrders().forEach(o=>{if(o&&o.formNo&&!map.has(norm(o.formNo)))map.set(norm(o.formNo),o);});
+ const list=[...map.values()];
+ const filtered=state.user?.role==='OP'?list.filter(x=>norm(x.requestedBy)===norm(state.user.name)):list;
+ return filtered.sort((a,b)=>+new Date(b.createdAt||0)-+new Date(a.createdAt||0));
+}
+const state={user:null,session:'',page:'dashboard',data:null,mode:localStorage.getItem('depo.mode')||'demo',directUrl:localStorage.getItem('depo.directUrl')||'',busy:false,stockFilter:{depot:'TUMU',query:'',status:'TUMU',category:'',usage:''},orderFilter:{status:'TUMU',query:''},orderView:'list',orderDraft:null,movQuery:'',analysis:null,ppe:null,ppeTab:'analysis',ppeRange:'30d',ppeUsageQuery:'',ppeFilter:{status:'TUMU',query:''},cost:null,costFilter:{range:'year',depot:'TUMU',group:'machine',query:'',sort:'cost'},labelCfg:loadLabelCfg(),pendingQr:new URLSearchParams(location.search).get('qr')||''};
 
 async function api(action,payload={},sessionOverride=null){
  if(state.mode==='demo') return demoApi(action,payload);
@@ -2141,9 +2391,39 @@ async function api(action,payload={},sessionOverride=null){
  if(!r.ok||!out.ok){
   const msg=out.error||`HTTP ${r.status}`;
   if(/Bilinmeyen işlem:\s*ppeForm/i.test(msg))throw Error('Canlı Kod.gs henüz KKD Zimmet sürümüne (V8.7-KKD) güncellenmemiş. Yönetici olarak Bağlantı sekmesinden yeni Kod.gs’yi dağıtın.');
+  if(/Bilinmeyen işlem:\s*purchaseOrder/i.test(msg)){
+   return localOrderFallback(action,payload);
+  }
   throw Error(msg);
  }
+ if(action==='bootstrap'&&out.data){out.data.orders=mergeOrdersWithLocal(out.data.orders||[]);}
  return out.data;
+}
+function localOrderFallback(action,p={}){
+ const list=loadLocalOrders();
+ const sanitizeItems=arr=>(Array.isArray(arr)?arr:[]).map(it=>{const q=Math.max(0,Number(it.qty)||0),up=Math.max(0,Number(it.unitPrice)||0);return{itemId:String(it.itemId||''),name:String(it.name||'').trim(),code:String(it.code||'').trim(),supplier:String(it.supplier||'').trim(),qty:q,unit:String(it.unit||'AD').trim()||'AD',unitPrice:up,currency:String(it.currency||'TL').trim()||'TL',total:Math.round(q*up*100)/100,deliveryDate:String(it.deliveryDate||'').trim()};}).filter(it=>it.name||it.code);
+ if(action==='purchaseOrderList')return mergeOrdersWithLocal([]);
+ if(action==='purchaseOrderCreate'){
+  const items=sanitizeItems(p.items);if(!items.length)throw Error('En az bir malzeme satırı ekleyin.');
+  const yr=new Date().getFullYear();
+  let maxN=0;[...list,...(state.data?.orders||[])].forEach(x=>{const m=String(x.formNo||'').match(new RegExp('^SAT-'+yr+'-(\\d+)$'));if(m)maxN=Math.max(maxN,Number(m[1]));});
+  const formNo=String(p.formNo||'').trim()||`SAT-${yr}-${String(maxN+1).padStart(3,'0')}`;
+  const reqBy=state.user?.role==='OP'?state.user.name:(String(p.requestedBy||'').trim()||state.user?.name||'');
+  const order={formNo,docCode:String(p.docCode||'IZM_350600_LJT_001'),requestDate:String(p.requestDate||formatTrDate(new Date())),requestedBy:reqBy,requestedByRole:state.user?.role||'',department:String(p.department||''),costCenter:String(p.costCenter||p.department||''),attachmentQty:String(p.attachmentQty||''),items,totalAmount:Math.round(items.reduce((s,x)=>s+x.total,0)*100)/100,currency:String(p.currency||items[0]?.currency||'TL'),paymentTerm:String(p.paymentTerm||'Peşin / Cash'),paymentMaturity:String(p.paymentMaturity||''),transport:String(p.transport||''),deliveryPlace:String(p.deliveryPlace||''),details:String(p.details||''),approvals:Object.assign({requirer:reqBy,managerName:'FUAT ÇETİN',managerDate:'',approval1Name:'İbrahim Özdemir',approval1Date:'',approval2Name:'Yüksel Kurun',approval2Date:'',approval3Name:'İbrahim Özdemir',approval3Date:''},p.approvals||{}),status:'TALEP_OLUSTURULDU',source:String(p.source||'PANEL'),stockSynced:false,createdAt:new Date().toISOString(),_localOnly:true};
+  list.unshift(order);saveLocalOrders(list);
+  return{formNo,order,_localOnly:true};
+ }
+ if(action==='purchaseOrderUpdate'||action==='purchaseOrderStatus'){
+  const idx=list.findIndex(x=>norm(x.formNo)===norm(p.formNo));
+  const base=idx>=0?list[idx]:(state.data?.orders||[]).find(x=>norm(x.formNo)===norm(p.formNo));
+  if(!base)throw Error('Sipariş formu bulunamadı.');
+  const items=p.items?sanitizeItems(p.items):base.items;
+  const next={...base,...p,items,totalAmount:Math.round(items.reduce((s,x)=>s+x.total,0)*100)/100,approvals:p.approvals?{...(base.approvals||{}),...p.approvals}:base.approvals,_localOnly:true};
+  if(idx>=0)list[idx]=next;else list.unshift(next);
+  saveLocalOrders(list);
+  return{formNo:next.formNo,order:next,_localOnly:true};
+ }
+ throw Error('Bilinmeyen sipariş işlemi: '+action);
 }
 function warmupGas(){
  if(state.mode==='demo')return;
@@ -2181,10 +2461,15 @@ async function demoApi(action,p={}){
   return DEMO.ppeForms.filter(f=>state.user.role!=='OP'||norm(f.operator)===norm(state.user.name))
    .sort((a,b)=>(a.status==='İMZA BEKLİYOR'?0:1)-(b.status==='İMZA BEKLİYOR'?0:1)||+new Date(b.date)-+new Date(a.date));
  };
+ const visibleOrders=()=>{
+  const list=mergeOrdersWithLocal(DEMO.orders||[]);
+  return state.user.role==='OP'?list.filter(x=>norm(x.requestedBy)===norm(state.user.name)):list;
+ };
  const isValidSig=s=>typeof s==='string'&&s.length>=12&&/^SIG1:[ML0-9.,\s-]+$/.test(s.trim());
- if(action==='bootstrap')return{user:state.user,stock:visibleStock(),approvals:state.user.role==='OP'?[]:visibleApprovals(),recipes:recipes(),ppeForms:visiblePpeForms(),movements:DEMO.movements,lists:DEMO.lists,serverTime:today(),apiVersion:'V8.7-KKD'};
+ if(action==='bootstrap')return{user:state.user,stock:visibleStock(),approvals:state.user.role==='OP'?[]:visibleApprovals(),recipes:recipes(),ppeForms:visiblePpeForms(),orders:visibleOrders(),movements:DEMO.movements,lists:DEMO.lists,serverTime:today(),apiVersion:'V8.8-SIPARIS'};
  if(action==='stockList')return visibleStock(); if(action==='approvalList')return visibleApprovals(); if(action==='recipeList')return recipes().filter(x=>(!p.machine||x.machine===p.machine)&&(!p.period||x.period===p.period));
  if(action==='ppeFormList')return visiblePpeForms();
+ if(action==='purchaseOrderList')return visibleOrders();
  if(action==='ppeFormCreate'){
   if(!['ISG_ADMIN','YONETICI'].includes(state.user.role))throw Error('Bu işlem için yetkiniz yok.');
   const op=String(p.operator||'').trim();if(!op)throw Error('Operatör seçilmelidir.');
@@ -2269,6 +2554,24 @@ async function demoApi(action,p={}){
  if(action==='itemUpdate'){const x=DEMO.stock.find(i=>i.id===p.id);if(!x)throw Error('Kart bulunamadı.');if(p.name!==undefined&&!String(p.name).trim())throw Error('Malzeme adı zorunludur.');if(p.min!==undefined&&!(Number(p.min)>0))throw Error('Kritik stok 0’dan büyük olmalıdır.');if(p.unitPrice!==undefined&&!(Number(p.unitPrice)>0))throw Error('Maliyet hesabı için birim fiyat 0’dan büyük olmalıdır.');Object.assign(x,p);if(p.min!==undefined)x.min=Number(p.min);if(p.unitPrice!==undefined){x.unitPrice=Number(p.unitPrice);x.totalPrice=(Number(x.stock)||0)*x.unitPrice;}return{id:x.id};}
  if(action==='recipeSave'){DEMO.recipes=DEMO.recipes.filter(x=>!(x.machine===p.machine&&x.period===p.period));p.items.forEach(i=>DEMO.recipes.push({id:uid('BOM'),machine:p.machine,period:p.period,itemId:i.itemId,qty:Number(i.qty)}));return{saved:p.items.length};}
  if(action==='recipeBulkCheckout'){const rs=recipes().filter(x=>x.machine===p.machine&&x.period===p.period);if(rs.some(x=>!x.ready))throw Error('Reçetede eksik stok var.');for(const r of rs){const x=DEMO.stock.find(i=>i.id===r.itemId);x.stock-=r.qty;x.outgoing+=r.qty;DEMO.movements.unshift({id:uid('CIK'),date:today(),person:state.user.name,itemId:x.id,code:x.code,name:x.name,depot:x.depot,qty:r.qty,unit:x.unit,machine:p.machine,source:'PLANLI_BAKIM_SET'});}return{completed:true,autoLogout:state.user.role==='OP'};}
+ if(action==='purchaseOrderCreate'){
+  const items=(Array.isArray(p.items)?p.items:[]).map(it=>{const q=Math.max(0,Number(it.qty)||0),up=Math.max(0,Number(it.unitPrice)||0);return{itemId:String(it.itemId||''),name:String(it.name||'').trim(),code:String(it.code||'').trim(),supplier:String(it.supplier||'').trim(),qty:q,unit:String(it.unit||'AD').trim()||'AD',unitPrice:up,currency:String(it.currency||'TL').trim()||'TL',total:Math.round(q*up*100)/100,deliveryDate:String(it.deliveryDate||'').trim()};}).filter(it=>it.name||it.code);
+  if(!items.length)throw Error('Sipariş formuna en az bir malzeme satırı ekleyin.');
+  const yr=new Date().getFullYear();
+  let maxN=0;DEMO.orders.forEach(x=>{const m=String(x.formNo||'').match(new RegExp('^SAT-'+yr+'-(\\d+)$'));if(m)maxN=Math.max(maxN,Number(m[1]));});
+  const formNo=String(p.formNo||'').trim()||`SAT-${yr}-${String(maxN+1).padStart(3,'0')}`;
+  const reqBy=state.user.role==='OP'?state.user.name:(String(p.requestedBy||'').trim()||state.user.name);
+  const order={formNo,docCode:String(p.docCode||'IZM_350600_LJT_001'),requestDate:String(p.requestDate||formatTrDate(new Date())),requestedBy:reqBy,requestedByRole:state.user.role,department:String(p.department||''),costCenter:String(p.costCenter||p.department||''),attachmentQty:String(p.attachmentQty||''),items,totalAmount:Math.round(items.reduce((s,x)=>s+x.total,0)*100)/100,currency:String(p.currency||items[0]?.currency||'TL'),paymentTerm:String(p.paymentTerm||'Peşin / Cash'),paymentMaturity:String(p.paymentMaturity||''),transport:String(p.transport||''),deliveryPlace:String(p.deliveryPlace||''),details:String(p.details||''),approvals:Object.assign({requirer:reqBy,managerName:'FUAT ÇETİN',managerDate:'',approval1Name:'İbrahim Özdemir',approval1Date:'',approval2Name:'Yüksel Kurun',approval2Date:'',approval3Name:'İbrahim Özdemir',approval3Date:''},p.approvals||{}),status:'TALEP_OLUSTURULDU',source:String(p.source||'PANEL'),stockSynced:false,createdAt:today()};
+  DEMO.orders.unshift(order);
+  return{formNo,order};
+ }
+ if(action==='purchaseOrderUpdate'||action==='purchaseOrderStatus'){
+  if(state.user.role==='OP')throw Error('Sipariş düzenleme yetkiniz yok.');
+  const cur=DEMO.orders.find(x=>norm(x.formNo)===norm(p.formNo));if(!cur)throw Error('Sipariş formu bulunamadı.');
+  const items=p.items?(Array.isArray(p.items)?p.items:[]).map(it=>{const q=Math.max(0,Number(it.qty)||0),up=Math.max(0,Number(it.unitPrice)||0);return{itemId:String(it.itemId||''),name:String(it.name||'').trim(),code:String(it.code||'').trim(),supplier:String(it.supplier||'').trim(),qty:q,unit:String(it.unit||'AD').trim()||'AD',unitPrice:up,currency:String(it.currency||'TL').trim()||'TL',total:Math.round(q*up*100)/100,deliveryDate:String(it.deliveryDate||'').trim()};}).filter(it=>it.name||it.code):cur.items;
+  Object.assign(cur,p,{items,totalAmount:Math.round(items.reduce((s,x)=>s+x.total,0)*100)/100,approvals:p.approvals?{...(cur.approvals||{}),...p.approvals}:cur.approvals});
+  return{formNo:cur.formNo,order:cur};
+ }
  if(action==='ppeAnalysis')return buildPpe(p.range); if(action==='movementAnalysis')return buildAnalysis(p); if(action==='costAnalysis')return buildCostLocal(DEMO.movements,visibleStock(),p,state.user.role);
  throw Error('Demo işlemi bulunamadı: '+action);
 }
@@ -2680,11 +2983,12 @@ function renderShell(){
  renderNav();renderSyncIndicator();showPage(state.page,false);
 }
 function pendingPpeCount(){return(state.data?.ppeForms||[]).filter(x=>x.status==='İMZA BEKLİYOR').length;}
+function pendingOrdersCount(){return(state.data?.orders||[]).filter(x=>x.status==='TALEP_OLUSTURULDU').length;}
 function renderNav(){
  const nav=$('#nav');if(!nav)return;
  const items=NAV.filter(x=>x[3].includes(state.user.role));
  let totalBadge=0;
- const gridHtml=items.map(([id,icon,label])=>{const badge=id==='approvals'?pendingCount():id==='ppe'?pendingPpeCount():0;totalBadge+=badge;return`<button class="nav-item ${state.page===id?'active':''}" data-page="${id}">${ic(icon,'ic-sm')}<span>${esc(label)}</span>${badge?`<em>${badge}</em>`:''}</button>`;}).join('');
+ const gridHtml=items.map(([id,icon,label])=>{const badge=id==='approvals'?pendingCount():id==='ppe'?pendingPpeCount():id==='orders'?pendingOrdersCount():0;totalBadge+=badge;return`<button class="nav-item ${state.page===id?'active':''}" data-page="${id}">${ic(icon,'ic-sm')}<span>${esc(label)}</span>${badge?`<em>${badge}</em>`:''}</button>`;}).join('');
  nav.innerHTML=`<div class="nav-dropdown-grid">${gridHtml}</div><div class="nav-dropdown-foot"><button class="btn ghost" type="button" data-action="refresh">${ic('refresh','ic-sm')} Verileri Yenile</button><button class="btn ghost pwa-install-btn" type="button" data-action="pwa-install-modal">${ic('phone','ic-sm')} Operatör QR Kur</button></div>`;
  const cur=items.find(x=>x[0]===state.page)?.[2]||'';
  const curEl=$('#navMenuCur');if(curEl)curEl.textContent=cur?'· '+cur:'';
@@ -2694,8 +2998,12 @@ function approvalStatus(x){const s=norm(x?.status);return(s==='ONAYLANDI'||s==='
 function pendingCount(){return state.data?.approvals?.filter(x=>approvalStatus(x)==='BEKLIYOR').length||0;}
 async function bootstrap(){state.data=await api('bootstrap');state.analysis=null;state.ppe=null;state.cost=null;saveBootCache(state.user?.role,state.data);}
 function pageActionHtml(p){
- if(p==='dashboard'&&allowed('qr'))return`<button class="btn primary" data-page="qr">${ic('scan','ic-sm')} Hızlı QR Çıkış</button>`;
- if(p==='stock')return`<button class="btn ghost" data-action="stock-print-modal">${ic('print','ic-sm')} Yazdır</button><button class="btn primary" data-action="new-item">${ic('plus','ic-sm')} Yeni Stok Kartı</button>`;
+ if(p==='dashboard'&&allowed('qr'))return`<button class="btn ghost" data-action="order-new">${ic('fileText','ic-sm')} Sipariş Formu</button><button class="btn primary" data-page="qr">${ic('scan','ic-sm')} Hızlı QR Çıkış</button>`;
+ if(p==='stock')return`<button class="btn ghost" data-action="order-from-missing">${ic('fileText','ic-sm')} Eksiklerden Sipariş</button><button class="btn ghost" data-action="stock-print-modal">${ic('print','ic-sm')} Yazdır</button><button class="btn primary" data-action="new-item">${ic('plus','ic-sm')} Yeni Stok Kartı</button>`;
+ if(p==='orders'){
+  if(state.orderView==='editor')return`<button class="btn ghost" data-action="order-back-list">← Sipariş Listesi</button><button class="btn primary" data-action="order-save">${ic('check','ic-sm')} Formu Kaydet</button>`;
+  return`${state.user?.role!=='OP'?`<button class="btn ghost" data-action="order-from-missing">${ic('alert','ic-sm')} Eksiklerden Form Oluştur</button>`:''}<button class="btn primary" data-action="order-new">${ic('plus','ic-sm')} Yeni Sipariş Formu</button>`;
+ }
  if(p==='movements')return`<button class="btn ghost" data-action="print-movements">${ic('print','ic-sm')} Yazdır</button>`;
  if(p==='ppe'){
   if(state.user?.role==='OP')return`<button class="btn primary" data-action="ppe-self-usage-doc">${ic('print','ic-sm')} KKD Kullanım Raporum (PDF)</button>`;
@@ -2704,22 +3012,22 @@ function pageActionHtml(p){
  if(p==='costs')return`<button class="btn ghost" data-action="export-costs-csv">${ic('download','ic-sm')} CSV İndir</button><button class="btn ghost" data-action="print-costs">${ic('print','ic-sm')} Raporu Yazdır</button>`;
  return'';
 }
-async function showPage(page,update=true){if(!allowed(page))page=defaultPage();state.page=page;if(update){renderNav();$$('.sidebar').forEach(x=>x.classList.remove('open'));}const meta=NAV.find(x=>x[0]===page);const title=meta?.[2]||'';$('#pageCrumb').textContent='Mekanik + İSG Depo / '+title;$('#pageTitle').textContent=title;$('#pageSub').textContent=pageSub(page);$('#pageActions').innerHTML=pageActionHtml(page);const fn={dashboard:renderDashboard,qr:renderQr,stock:renderStock,movements:renderMovements,approvals:renderApprovals,maintenance:renderMaintenance,ppe:renderPpe,analysis:renderAnalysis,costs:renderCosts,labels:renderLabels,connection:renderConnection}[page];await fn();}
-function pageSub(p){return {dashboard:'İki deponun canlı durumu, kritik stoklar ve hızlı erişim',qr:'QR okutun, PIN ile doğrulayın ve malzemeyi güvenle stoktan düşün',stock:'Yetkinize göre canlı mekanik ve İSG stok kartları',movements:'Giriş, çıkış ve sayım hareketlerinin tam dökümü',approvals:'Depocu veya yönetici kararı bekleyen malzeme çıkış talepleri',maintenance:'Periyot bazlı bakım reçeteleri ve tek tuşla toplu set çıkışı',ppe:state.user?.role==='OP'?'6331 sayılı İSG Kanunu kapsamında adınıza düzenlenen KKD teslim ve imza formları':'6331 sayılı İSG Kanunu kapsamında imzalı KKD teslim tutanakları ve personel kullanımı',analysis:'Sıklık, miktar, makine dağılımı ve ABC tüketim sınıflandırması',costs:'Makine ve bölüm bazında tüketim maliyetleri, aylık harcama trendi ve stok değeri',labels:'Mekanik parçalar ve İSG dolabı için yazdırılabilir QR etiketleri',connection:'Güvenli API bağlantısı, Apps Script (Kod.gs) ve tek HTML dışa aktarım'}[p]||'';}
+async function showPage(page,update=true){if(!allowed(page))page=defaultPage();state.page=page;if(update){renderNav();$$('.sidebar').forEach(x=>x.classList.remove('open'));}const meta=NAV.find(x=>x[0]===page);const title=meta?.[2]||'';$('#pageCrumb').textContent='Mekanik + İSG Depo / '+title;$('#pageTitle').textContent=title;$('#pageSub').textContent=pageSub(page);$('#pageActions').innerHTML=pageActionHtml(page);const fn={dashboard:renderDashboard,qr:renderQr,stock:renderStock,orders:renderOrders,movements:renderMovements,approvals:renderApprovals,maintenance:renderMaintenance,ppe:renderPpe,analysis:renderAnalysis,costs:renderCosts,labels:renderLabels,connection:renderConnection}[page];await fn();}
+function pageSub(p){return {dashboard:'İki deponun canlı durumu, kritik stoklar ve hızlı erişim',qr:'QR okutun, PIN ile doğrulayın, malzeme çıkışı yapın veya sipariş formu oluşturun',stock:'Yetkinize göre canlı mekanik ve İSG stok kartları',orders:state.user?.role==='OP'?'Kendi adınıza oluşturduğunuz AKG Satın Alma Talep Formları ve durumları':'AKG Satın Alma Talep Formu (IZM_350600_LJT_001) oluşturma, takip ve A4 resmi baskı',movements:'Giriş, çıkış ve sayım hareketlerinin tam dökümü',approvals:'Depocu veya yönetici kararı bekleyen malzeme çıkış talepleri',maintenance:'Periyot bazlı bakım reçeteleri ve tek tuşla toplu set çıkışı',ppe:state.user?.role==='OP'?'6331 sayılı İSG Kanunu kapsamında adınıza düzenlenen KKD teslim ve imza formları':'6331 sayılı İSG Kanunu kapsamında imzalı KKD teslim tutanakları ve personel kullanımı',analysis:'Sıklık, miktar, makine dağılımı ve ABC tüketim sınıflandırması',costs:'Makine ve bölüm bazında tüketim maliyetleri, aylık harcama trendi ve stok değeri',labels:'Mekanik parçalar ve İSG dolabı için yazdırılabilir QR etiketleri',connection:'Güvenli API bağlantısı, Apps Script (Kod.gs) ve tek HTML dışa aktarım'}[p]||'';}
 function kpi(label,value,note,icon,tone='orange'){return`<article class="kpi ${tone}"><div class="kpi-head"><small>${label}</small><span class="kpi-icon">${ic(icon)}</span></div><strong>${value}</strong><p>${note}</p></article>`;}
 function renderDashboard(){
  const s=state.data.stock, mech=s.filter(x=>x.depot==='MEKANIK'),isg=s.filter(x=>x.depot==='ISG'),low=s.filter(x=>x.stock<=x.min),pending=pendingCount();
- $('#content').innerHTML=`<section class="kpi-grid">${kpi('Mekanik Stok Kartı',mech.length,`${mech.filter(x=>x.stock>x.min).length} kalem yeterli seviyede`,'wrench','orange')}${kpi('İSG Stok Kartı',isg.length,`${num(isg.reduce((a,x)=>a+x.stock,0))} toplam ekipman adedi`,'shield','blue')}${kpi('Kritik / Eksik',low.length,'Sipariş noktasında veya altında','alert','red')}${kpi('Onay Bekleyen',pending,'Karar bekleyen çıkış talebi','checkCircle','green')}</section><section class="split"><article class="panel"><div class="panel-head"><div><h2>Kritik stoklar</h2><p>Öncelikli tedarik veya ikmal gerektiren kartlar</p></div><button class="link" data-page="stock">Tüm stokları gör →</button></div>${low.length?`<div class="critical-list">${low.map(x=>{const pct=x.min>0?Math.min(100,Math.round((x.stock/x.min)*100)):0;return`<button data-item="${x.id}"><div class="crit-info"><b>${esc(x.name)}</b><small><span class="mono">${esc(x.code)}</span> · Raf ${esc(x.shelf)}</small></div><div class="crit-meter"><div class="crit-bar"><i style="width:${pct}%"></i></div><small>Min ${num(x.min)} ${esc(x.unit)}</small></div><strong>${num(x.stock)} <small>${esc(x.unit)}</small></strong></button>`;}).join('')}</div>`:'<div class="empty good">Tüm stok kalemleri minimum seviyenin üzerinde.</div>'}</article><article class="panel"><div class="panel-head"><div><h2>Depo dağılımı</h2><p>Yetkiniz dahilindeki stok kartı özeti</p></div></div><div class="donut-wrap"><div class="donut" style="--p:${s.length?mech.length/s.length*100:0}"><span>${s.length}<small>Toplam Kart</small></span></div><div class="legend"><p><i class="orange"></i>Mekanik Depo <b>${mech.length}</b></p><p><i class="blue"></i>İSG Depo <b>${isg.length}</b></p><p><i class="red"></i>Eksik / Kritik <b>${low.length}</b></p></div></div></article></section><section class="panel"><div class="panel-head"><div><h2>Hızlı işlemler</h2><p>Rolünüze göre sık kullanılan kısayollar</p></div></div><div class="quick">${allowed('qr')?`<button data-page="qr"><b>${ic('scan')}</b><span>QR Çıkış<small>Operatör malzeme düşümü</small></span></button>`:''}${allowed('stock')?`<button data-action="new-item"><b>${ic('plus')}</b><span>Yeni Stok Kartı<small>Malzeme ve ilk giriş kaydı</small></span></button>`:''}${allowed('ppe')?`<button data-page="ppe"><b>${ic('shield')}</b><span>KKD & Zimmet<small>İmzalı teslim tutanağı oluştur</small></span></button>`:''}${allowed('labels')?`<button data-page="labels"><b>${ic('qr')}</b><span>QR Etiketleri<small>Yazdırılabilir raf ve dolap QR</small></span></button>`:''}</div></section>`;
+ $('#content').innerHTML=`<section class="kpi-grid">${kpi('Mekanik Stok Kartı',mech.length,`${mech.filter(x=>x.stock>x.min).length} kalem yeterli seviyede`,'wrench','orange')}${kpi('İSG Stok Kartı',isg.length,`${num(isg.reduce((a,x)=>a+x.stock,0))} toplam ekipman adedi`,'shield','blue')}${kpi('Kritik / Eksik',low.length,'Sipariş noktasında veya altında','alert','red')}${kpi('Onay Bekleyen',pending,'Karar bekleyen çıkış talebi','checkCircle','green')}</section><section class="split"><article class="panel"><div class="panel-head"><div><h2>Kritik stoklar</h2><p>Öncelikli tedarik veya ikmal gerektiren kartlar</p></div><button class="link" data-page="stock">Tüm stokları gör →</button></div>${low.length?`<div class="critical-list">${low.map(x=>{const pct=x.min>0?Math.min(100,Math.round((x.stock/x.min)*100)):0;return`<button data-item="${x.id}"><div class="crit-info"><b>${esc(x.name)}</b><small><span class="mono">${esc(x.code)}</span> · Raf ${esc(x.shelf)}</small></div><div class="crit-meter"><div class="crit-bar"><i style="width:${pct}%"></i></div><small>Min ${num(x.min)} ${esc(x.unit)}</small></div><strong>${num(x.stock)} <small>${esc(x.unit)}</small></strong></button>`;}).join('')}</div>`:'<div class="empty good">Tüm stok kalemleri minimum seviyenin üzerinde.</div>'}</article><article class="panel"><div class="panel-head"><div><h2>Depo dağılımı</h2><p>Yetkiniz dahilindeki stok kartı özeti</p></div></div><div class="donut-wrap"><div class="donut" style="--p:${s.length?mech.length/s.length*100:0}"><span>${s.length}<small>Toplam Kart</small></span></div><div class="legend"><p><i class="orange"></i>Mekanik Depo <b>${mech.length}</b></p><p><i class="blue"></i>İSG Depo <b>${isg.length}</b></p><p><i class="red"></i>Eksik / Kritik <b>${low.length}</b></p></div></div></article></section><section class="panel"><div class="panel-head"><div><h2>Hızlı işlemler</h2><p>Rolünüze göre sık kullanılan kısayollar</p></div></div><div class="quick">${allowed('qr')?`<button data-page="qr"><b>${ic('scan')}</b><span>QR Çıkış<small>Operatör malzeme düşümü</small></span></button>`:''}${allowed('orders')?`<button data-action="order-new"><b>${ic('fileText')}</b><span>Sipariş Formu<small>AKG Satın Alma Talebi</small></span></button>`:''}${allowed('stock')?`<button data-action="new-item"><b>${ic('plus')}</b><span>Yeni Stok Kartı<small>Malzeme ve ilk giriş kaydı</small></span></button>`:''}${allowed('labels')?`<button data-page="labels"><b>${ic('qr')}</b><span>QR Etiketleri<small>Yazdırılabilir raf ve dolap QR</small></span></button>`:''}</div></section>`;
 }
 
 function renderQr(){
  const canAll=state.user.role==='YONETICI'||state.user.role==='OP', stock=state.data.stock, ppeWait=pendingPpeCount();
- $('#content').innerHTML=`${ppeWait&&state.user.role==='OP'?`<div class="notice" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><span><b>İmzanızı bekleyen ${ppeWait} adet KKD Zimmet Formu var.</b> 6331 sayılı İSG Kanunu kapsamında teslim onayını tamamlamak için inceleyin.</span><button class="btn primary sm" data-page="ppe">${ic('pen','ic-sm')} Formları İmzala</button></div>`:''}<section class="qr-hero"><div><span class="qr-kicker">Hızlı Çıkış Terminali</span><h2>QR kodunu okutun</h2><p>Ürün raf etiketi veya <b>ISG-DOLAP</b> sabit koduyla yetkili malzeme çıkışını başlatın.</p><div class="qr-actions"><button class="btn primary large" data-action="scan">${ic('scan')} QR Okut</button><button class="btn white large" data-action="manual-qr">Kodu Elle Gir</button><button class="btn white large" data-action="open-qr-terminal">${ic('qr','ic-sm')} Operatör QR Terminali</button><button class="btn white large" data-action="pwa-install-modal">${ic('phone','ic-sm')} Operatör Telefonuna Kur</button></div></div><div class="scan-visual"><div class="scan-frame"><i></i><i></i><i></i><i></i><span></span>${ic('qr','ic-lg')}</div></div></section><section class="choice-grid"><button data-action="cabinet" ${!canAll&&state.user.role!=='ISG_ADMIN'?'disabled':''}><span class="choice-icon blue">${ic('shield','ic-lg')}</span><div><b>İSG Dolabı</b><p>Tüm KKD ekipmanlarını seçip dijital imzalı zimmet ile üzerinize düşün.</p></div><em>ISG-DOLAP →</em></button><button data-action="maintenance-pick"><span class="choice-icon">${ic('wrench','ic-lg')}</span><div><b>Planlı Bakım Parça Listesi</b><p>Makine ve periyot seçerek bakım setini topluca hazırlayın.</p></div><em>Listeyi aç →</em></button></section><section class="panel"><div class="panel-head"><div><h2>Hızlı ürün seçimi</h2><p>Kamerasız veya manuel işlem için yetkili stok kartları</p></div><span class="meta-inline">${stock.length} kart</span></div><div class="product-strip">${stock.slice(0,12).map(x=>`<button class="${x.depot==='ISG'?'isg-item':''}" data-checkout="${x.id}"><span>${ic(x.depot==='ISG'?'shield':'wrench','ic-sm')}</span><div><b>${esc(x.name)}</b><small><span class="mono">${esc(x.code)}</span> · ${num(x.stock)} ${esc(x.unit)}</small></div></button>`).join('')}</div></section>`;
+ $('#content').innerHTML=`${ppeWait&&state.user.role==='OP'?`<div class="notice" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><span><b>İmzanızı bekleyen ${ppeWait} adet KKD Zimmet Formu var.</b> 6331 sayılı İSG Kanunu kapsamında teslim onayını tamamlamak için inceleyin.</span><button class="btn primary sm" data-page="ppe">${ic('pen','ic-sm')} Formları İmzala</button></div>`:''}<section class="qr-hero"><div><span class="qr-kicker">Hızlı Çıkış & Sipariş Terminali</span><h2>QR kodunu okutun</h2><p>Ürün raf etiketi veya <b>ISG-DOLAP</b> koduyla çıkış yapın ya da kendi adınıza <b>Sipariş Formu</b> oluşturun.</p><div class="qr-actions"><button class="btn primary large" data-action="scan">${ic('scan')} QR Okut</button><button class="btn white large" data-action="order-new">${ic('fileText','ic-sm')} Sipariş Formu Oluştur</button><button class="btn white large" data-action="manual-qr">Kodu Elle Gir</button><button class="btn white large" data-action="open-qr-terminal">${ic('qr','ic-sm')} Operatör QR Terminali</button><button class="btn white large" data-action="pwa-install-modal">${ic('phone','ic-sm')} Telefona Kur</button></div></div><div class="scan-visual"><div class="scan-frame"><i></i><i></i><i></i><i></i><span></span>${ic('qr','ic-lg')}</div></div></section><section class="choice-grid"><button data-action="order-new"><span class="choice-icon">${ic('fileText','ic-lg')}</span><div><b>Sipariş Formu Oluştur</b><p><b>${esc(state.user.name)}</b> adına AKG Satın Alma Talep Formu açın ve siparişi iletin.</p></div><em>Formu aç →</em></button><button data-action="cabinet" ${!canAll&&state.user.role!=='ISG_ADMIN'?'disabled':''}><span class="choice-icon blue">${ic('shield','ic-lg')}</span><div><b>İSG Dolabı</b><p>Tüm KKD ekipmanlarını seçip dijital imzalı zimmet ile üzerinize düşün.</p></div><em>ISG-DOLAP →</em></button><button data-action="maintenance-pick"><span class="choice-icon">${ic('wrench','ic-lg')}</span><div><b>Planlı Bakım Parça Listesi</b><p>Makine ve periyot seçerek bakım setini topluca hazırlayın.</p></div><em>Listeyi aç →</em></button></section><section class="panel"><div class="panel-head"><div><h2>Hızlı ürün seçimi</h2><p>Kamerasız veya manuel işlem için yetkili stok kartları</p></div><span class="meta-inline">${stock.length} kart</span></div><div class="product-strip">${stock.slice(0,12).map(x=>`<button class="${x.depot==='ISG'?'isg-item':''}" data-checkout="${x.id}"><span>${ic(x.depot==='ISG'?'shield':'wrench','ic-sm')}</span><div><b>${esc(x.name)}</b><small><span class="mono">${esc(x.code)}</span> · ${num(x.stock)} ${esc(x.unit)}</small></div></button>`).join('')}</div></section>`;
 }
 function checkoutModal(item){
  const isIsg=item.depot==='ISG', consumable=!item.machine||/SARF|ORTAK/.test(norm(item.type+' '+item.usage));
  const ppeSignBlock=isIsg?`<label class="legal-check"><input type="checkbox" id="coPpeAccept"><span><strong>6331 Sayılı İSG Kanunu · KKD Teslim ve Kullanım Beyanı</strong>${esc(KKD_LEGAL_TEXT)}</span></label>${sigPadHtml('coSigCanvas',true,'Teslim Alan İmza (Zorunlu)')}`:'';
- modal(isIsg?'KKD Teslim Al ve İmzala':'Stoktan Düş',`<div class="item-summary"><span class="choice-icon ${isIsg?'blue':''}">${ic(isIsg?'shield':'wrench')}</span><div><b>${esc(item.name)}</b><small><span class="mono">${esc(item.code)}</span> · Raf ${esc(item.shelf)}</small></div><strong>${num(item.stock)} ${esc(item.unit)}</strong></div><form id="checkoutForm"><input type="hidden" name="itemId" value="${esc(item.id)}">${field('Kullanılacak makine / bölüm',consumable&&!isIsg?`<select name="machine" required><option value="">Seçin</option>${opts(state.data.lists.machines)}</select>`:`<input name="machine" value="${esc(isIsg?'PERSONEL KKD':item.machine)}" readonly>`)}${field('Miktar',`<div class="qty"><button type="button" data-qty="-1">−</button><input name="qty" type="number" min="0.01" step="0.01" max="${item.stock}" value="1" required><button type="button" data-qty="1">＋</button></div>`)}${ppeSignBlock}<div class="rule-note ${isIsg||consumable?'ok':'warn'}"><b>${isIsg?'Yasal KKD':consumable?'Kural B':'Kural A'}</b><span>${isIsg?'İmzanızla birlikte KKD Zimmet Tutanağı otomatik oluşturulup arşivlenir.':consumable?'Ortak kullanım; arıza kaydı aranmaz.':'Makineye özel parça; açık arıza / planlı bakım kontrol edilir.'}</span></div></form>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="submit-checkout">${isIsg?'İmzala ve Teslim Al':'Stoktan Düş'}</button>`);
+ modal(isIsg?'KKD Teslim Al ve İmzala':'Stoktan Düş',`<div class="item-summary"><span class="choice-icon ${isIsg?'blue':''}">${ic(isIsg?'shield':'wrench')}</span><div><b>${esc(item.name)}</b><small><span class="mono">${esc(item.code)}</span> · Raf ${esc(item.shelf)}</small></div><strong>${num(item.stock)} ${esc(item.unit)}</strong></div><form id="checkoutForm"><input type="hidden" name="itemId" value="${esc(item.id)}">${field('Kullanılacak makine / bölüm',consumable&&!isIsg?`<select name="machine" required><option value="">Seçin</option>${opts(state.data.lists.machines)}</select>`:`<input name="machine" value="${esc(isIsg?'PERSONEL KKD':item.machine)}" readonly>`)}${field('Miktar',`<div class="qty"><button type="button" data-qty="-1">−</button><input name="qty" type="number" min="0.01" step="0.01" max="${item.stock}" value="1" required><button type="button" data-qty="1">＋</button></div>`)}${ppeSignBlock}<div class="rule-note ${isIsg||consumable?'ok':'warn'}"><b>${isIsg?'Yasal KKD':consumable?'Kural B':'Kural A'}</b><span>${isIsg?'İmzanızla birlikte KKD Zimmet Tutanağı otomatik oluşturulup arşivlenir.':consumable?'Ortak kullanım; arıza kaydı aranmaz.':'Makineye özel parça; açık arıza / planlı bakım kontrol edilir.'}</span></div></form>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn ghost" data-order-from-item="${esc(item.id)}">${ic('fileText','ic-sm')} Sipariş Formu Oluştur</button><button class="btn primary" data-action="submit-checkout">${isIsg?'İmzala ve Teslim Al':'Stoktan Düş'}</button>`);
  if(isIsg)setTimeout(()=>{activeSigPad=initSigPad($('#coSigCanvas'));},40);
 }
 async function submitCheckout(extra={}){
@@ -2979,7 +3287,7 @@ function newItemModal(){
 function editItemModal(item){const selected=new Set(String(item.usage||'').split('|').map(norm)),depotApproval=needsDepotApprovalUi(item),usageHtml=REGISTRATION_USAGE_UI.map(x=>`<label><input type="checkbox" name="editUsageOption" value="${esc(x)}" ${selected.has(norm(x))?'checked':''}><span>${esc(x)}</span></label>`).join('');modal('Stok Kartını Düzenle',`<form id="editItemForm" class="form-grid"><input type="hidden" name="id" value="${esc(item.id)}">${field('Parça kodu *',`<input name="code" value="${esc(item.code)}" required>`)}${field('Malzeme adı *',`<input name="name" value="${esc(item.name)}" placeholder="Malzeme adını yazın" required>`)}${field('Kategori *',`<input name="category" list="editTypes" value="${esc(item.category)}" required><datalist id="editTypes">${opts(state.data.lists.types)}</datalist>`)}${field('Firma',`<input name="company" list="editCompanies" value="${esc(item.company)}"><datalist id="editCompanies">${opts(state.data.lists.companies)}</datalist>`)}${field('Birim *',`<select name="unit" required><option value="">Seçin</option>${opts(state.data.lists.units,item.unit)}</select>`)}<div class="field form-span-2"><span>Kullanım Şekli · Çoklu seçim</span><div class="usage-grid">${usageHtml}</div><small>Mevcut değerler “ | ” ayıracına göre işaretlenmiştir.</small></div><div class="field form-span-2"><span>Depo Onayı</span><select name="depotApproval"><option value="Gereksiz" ${depotApproval?'':'selected'}>Gereksiz</option><option value="Gerekli" ${depotApproval?'selected':''}>Gerekli</option></select><small>Mevcut kullanım değerine göre otomatik seçilir.</small></div>${field('Raf *',`<input name="shelf" list="editShelves" value="${esc(item.shelf)}" required><datalist id="editShelves">${opts(state.data.lists.shelves)}</datalist>`)}${field('Makine',`<select name="machine" ${item.depot==='ISG'||/SARF/.test(norm(item.type))?'disabled':''}><option value="">Ortak kullanım</option>${opts(state.data.lists.machines,item.machine)}</select>`)}${field('Kritik / Minimum stok *',`<input name="min" type="number" min="0.01" step="0.01" value="${Number(item.min)>0?item.min:''}" placeholder="Örn: 5" required>`,'0’dan büyük olmalıdır.')}${field('Birim fiyat (₺) *',`<input name="unitPrice" type="number" min="0.01" step="0.01" value="${Number(item.unitPrice)>0?item.unitPrice:''}" placeholder="Örn: 125,00" required>`,'Maliyet hesabı için zorunludur (0’dan büyük).')}${field('Durum',`<select name="active"><option value="AKTİF" ${norm(item.active)==='PASIF'?'':'selected'}>AKTİF</option><option value="PASİF" ${norm(item.active)==='PASIF'?'selected':''}>PASİF</option></select>`)}</form>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="item-update-save">Değişiklikleri Kaydet</button>`);}
 
 function renderMovements(){const q=norm(state.movQuery||'');const rows=(state.data.movements||[]).filter(x=>(state.user.role==='YONETICI'||(state.user.role==='MEK_ADMIN'&&x.depot==='MEKANIK')||(state.user.role==='ISG_ADMIN'&&x.depot==='ISG'))&&(!q||norm([x.person,x.name,x.code,x.machine,x.source,x.depot].join(' ')).includes(q))).slice(0,200);$('#content').innerHTML=`<section class="panel table-panel print-area"><div class="toolbar"><div class="search">${ic('search','ic-sm')}<input id="movSearch" placeholder="Personel, malzeme, parça kodu, makine veya kaynak ara..." value="${esc(state.movQuery||'')}"></div><span class="meta-inline">${rows.length} kayıt</span></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Tarih</th><th>Çıkış Yapan</th><th>Malzeme</th><th>Depo</th><th>Makine / Bölüm</th><th class="num-col">Miktar</th><th>Kaynak</th></tr></thead><tbody>${rows.length?rows.map(x=>`<tr><td class="num">${fmt(x.date)}</td><td><b>${esc(x.person)}</b></td><td><b>${esc(x.name)}</b><small class="mono">${esc(x.code)}</small></td><td><span class="depot ${x.depot.toLowerCase()}">${x.depot==='ISG'?'İSG':'Mekanik'}</span></td><td>${esc(x.machine)}</td><td class="big num-col">${num(x.qty)} <small>${esc(x.unit)}</small></td><td><span class="badge neutral">${esc(x.source)}</span></td></tr>`).join(''):'<tr><td colspan="7"><div class="empty">Kriterlere uyan hareket kaydı bulunamadı.</div></td></tr>'}</tbody></table></div></section>`;}
-function renderApprovals(){const rows=[...(state.data.approvals||[])].map(x=>({...x,_st:approvalStatus(x),_dep:(norm(x.depot)==='ISG'||/ISG|KKD/.test(norm((x.machine||'')+' '+(x.itemId||''))))?'ISG':'MEKANIK'})).sort((a,b)=>(a._st==='BEKLIYOR'?0:1)-(b._st==='BEKLIYOR'?0:1));const oldGas=state.mode!=='demo'&&!['V8.7-ONAY2','V8.7-KKD'].includes(state.data?.apiVersion);$('#content').innerHTML=`${oldGas?`<div class="approval-warning" style="margin-bottom:16px"><b>${ic('alert','ic-sm')}</b><p><b>Google Apps Script (Kod.gs) eski sürümde çalışıyor!</b> Yeni kayıtların <b>ONAY_HAVUZU</b> tablosuna eksiksiz yazılması için <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs</b>’yi kopyalayın, Apps Script’e yapıştırıp kaydedin ve <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> adımlarını uygulayın (URL değişmez).</p></div>`:''}<section class="approval-kpis">${kpi('Bekleyen',rows.filter(x=>x._st==='BEKLIYOR').length,'Depocu veya yönetici kararı bekleyen','clock','orange')}${kpi('Onaylanan',rows.filter(x=>x._st==='ONAYLANDI').length,'Stoktan düşülen talepler','checkCircle','green')}${kpi('Reddedilen',rows.filter(x=>x._st==='REDDEDILDI').length,'Stok değişmeyen talepler','close','red')}</section><section class="panel"><div class="panel-head"><div><h2>Depocu / Yönetici Onay Havuzu</h2><p>Depo onayı gereken veya açık bakım kaydı bulunmayan çıkış talepleri</p></div><span class="meta-inline">${rows.length} talep</span></div><div class="approval-list">${rows.length?rows.map(x=>`<article><div class="approval-id"><span>${esc(x.id||'—')}</span><small>${x.date?fmt(x.date):'Tarih yok'}</small><span class="depot ${x._dep.toLowerCase()}">${x._dep==='ISG'?'İSG':'Mekanik'}</span>${x.depotApproval?'<span class="badge warning">Depo Onayı</span>':''}</div><div><b>${esc(x.name||'Eksik Talep Kaydı')}</b><p>${x.code?`<span class="mono">${esc(x.code)}</span> · `:''}${esc(x.machine||'—')}${x.qty?` · <strong>${num(x.qty)} ${esc(x.unit||'AD')}</strong>`:''}</p><small>${esc(x.requester||'Operatör yok')} — ${esc(x.reason||'')}</small></div><span class="badge ${x._st==='BEKLIYOR'?'warning':x._st==='ONAYLANDI'?'success':'danger'}">${esc(x._st)}</span>${x._st==='BEKLIYOR'?`<div class="approval-buttons"><button class="btn reject" data-approval="REDDET" data-id="${esc(x.id)}">${x.incomplete?'Reddet / Kapat':'Reddet'}</button>${x.incomplete?'':`<button class="btn approve" data-approval="ONAYLA" data-id="${esc(x.id)}">Onayla</button>`}</div>`:''}</article>`).join(''):'<div class="empty">Onay havuzunda bekleyen veya sonuçlanmış talep yok.</div>'}</div></section>`;}
+function renderApprovals(){const rows=[...(state.data.approvals||[])].map(x=>({...x,_st:approvalStatus(x),_dep:(norm(x.depot)==='ISG'||/ISG|KKD/.test(norm((x.machine||'')+' '+(x.itemId||''))))?'ISG':'MEKANIK'})).sort((a,b)=>(a._st==='BEKLIYOR'?0:1)-(b._st==='BEKLIYOR'?0:1));const oldGas=state.mode!=='demo'&&!['V8.7-ONAY2','V8.7-KKD','V8.8-SIPARIS'].includes(state.data?.apiVersion);$('#content').innerHTML=`${oldGas?`<div class="approval-warning" style="margin-bottom:16px"><b>${ic('alert','ic-sm')}</b><p><b>Google Apps Script (Kod.gs) eski sürümde çalışıyor!</b> Yeni kayıtların <b>ONAY_HAVUZU</b> tablosuna eksiksiz yazılması için <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs</b>’yi kopyalayın, Apps Script’e yapıştırıp kaydedin ve <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> adımlarını uygulayın (URL değişmez).</p></div>`:''}<section class="approval-kpis">${kpi('Bekleyen',rows.filter(x=>x._st==='BEKLIYOR').length,'Depocu veya yönetici kararı bekleyen','clock','orange')}${kpi('Onaylanan',rows.filter(x=>x._st==='ONAYLANDI').length,'Stoktan düşülen talepler','checkCircle','green')}${kpi('Reddedilen',rows.filter(x=>x._st==='REDDEDILDI').length,'Stok değişmeyen talepler','close','red')}</section><section class="panel"><div class="panel-head"><div><h2>Depocu / Yönetici Onay Havuzu</h2><p>Depo onayı gereken veya açık bakım kaydı bulunmayan çıkış talepleri</p></div><span class="meta-inline">${rows.length} talep</span></div><div class="approval-list">${rows.length?rows.map(x=>`<article><div class="approval-id"><span>${esc(x.id||'—')}</span><small>${x.date?fmt(x.date):'Tarih yok'}</small><span class="depot ${x._dep.toLowerCase()}">${x._dep==='ISG'?'İSG':'Mekanik'}</span>${x.depotApproval?'<span class="badge warning">Depo Onayı</span>':''}</div><div><b>${esc(x.name||'Eksik Talep Kaydı')}</b><p>${x.code?`<span class="mono">${esc(x.code)}</span> · `:''}${esc(x.machine||'—')}${x.qty?` · <strong>${num(x.qty)} ${esc(x.unit||'AD')}</strong>`:''}</p><small>${esc(x.requester||'Operatör yok')} — ${esc(x.reason||'')}</small></div><span class="badge ${x._st==='BEKLIYOR'?'warning':x._st==='ONAYLANDI'?'success':'danger'}">${esc(x._st)}</span>${x._st==='BEKLIYOR'?`<div class="approval-buttons"><button class="btn reject" data-approval="REDDET" data-id="${esc(x.id)}">${x.incomplete?'Reddet / Kapat':'Reddet'}</button>${x.incomplete?'':`<button class="btn approve" data-approval="ONAYLA" data-id="${esc(x.id)}">Onayla</button>`}</div>`:''}</article>`).join(''):'<div class="empty">Onay havuzunda bekleyen veya sonuçlanmış talep yok.</div>'}</div></section>`;}
 
 const RECIPE_PERIODS=['AYLIK','3 AYLIK','6 AYLIK','YILLIK'];
 function isAllRecipePeriods(period){return norm(period)==='TUMU';}
@@ -3190,7 +3498,7 @@ async function renderPpe(){
  const pendingForms=forms.filter(x=>x.status==='İMZA BEKLİYOR');
  const signedForms=forms.filter(x=>x.status==='İMZALANDI');
  const totalSignedQty=signedForms.reduce((s,x)=>s+(Number(x.totalQty)||0),0);
- const oldGas=state.mode!=='demo'&&state.data?.apiVersion!=='V8.7-KKD';
+ const oldGas=state.mode!=='demo'&&!['V8.7-KKD','V8.8-SIPARIS'].includes(state.data?.apiVersion);
  if(isOp){
   const selfCard=buildPpeFromMovements(state.data?.movements||[],[state.user.name],'all').cards[0]||{name:state.user.name,count:0,total:0,summary:[],records:[]};
   $('#content').innerHTML=`
@@ -3593,7 +3901,474 @@ function printLabels(items,title='MEKANİK DEPO QR ETİKETLERİ'){
  setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print();}catch{toast('Yazdırma penceresi açılamadı.','error');}},160);
 }
 
-function renderConnection(){const code=$('#gasCode').textContent.trim();const gasOk=state.mode==='demo'||state.data?.apiVersion==='V8.7-KKD';$('#content').innerHTML=`<section class="connection-grid"><article class="panel"><div class="panel-head"><div><h2>Bağlantı Modu</h2><p>GitHub Pages yayınında Doğrudan GAS (/exec), yerel sunucuda /api/gas önerilir</p></div><span class="connection ${state.mode}"><i></i>${state.mode.toUpperCase()}</span></div><div class="mode-cards">${[['proxy','Güvenli /api/gas','GAS adresi ve proxy anahtarı sunucuda gizli kalır; V8 kayıt akışı etkindir.'],['direct','Tek HTML / Doğrudan','GitHub Pages veya tek HTML için Apps Script ALLOW_DIRECT=true ile kullanın.'],['demo','Demo / Yerel','Gerçek tabloya yazmaz; tüm ekranlar test edilir.']].map(([m,t,d])=>`<label class="${state.mode===m?'selected':''}"><input type="radio" name="mode" value="${m}" ${state.mode===m?'checked':''}><span><b>${t}</b><small>${d}</small></span></label>`).join('')}</div>${field('Apps Script /exec adresi',`<input id="directUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan mod dışında tarayıcıya açılmaz.')}<div class="button-row"><button class="btn ghost" data-action="test-connection">Bağlantıyı Test Et</button><button class="btn primary" data-action="save-connection">Ayarları Kaydet</button></div></article><article class="panel"><div class="panel-head"><div><h2>Bağımsız Tek HTML Dosyaları</h2><p>Tam yönetim paneli ve sahaya özel bağımsız QR çıkış terminali</p></div><span class="ic" style="color:var(--orange)">${ic('download','ic-lg')}</span></div><div class="download-card"><b>1. Ana Yönetim Paneli (Tek HTML)</b><p>CSS, JavaScript ve QR üreticisi tek dosyada. Demo veya canlı Google Sheets bağlantısı ile çalışır.</p><button class="btn primary large" data-action="download-html">${ic('download','ic-sm')} Ana Panel HTML İndir</button></div><div class="download-card" style="margin-top:12px"><b>2. Bağımsız Depo QR Terminali (Tek HTML)</b><p>Depodaki QR kodu okutulduğunda önce OP şifresini sorar, eşleşen parçayı açar; Depo Onayı Gerekli ise Depocu onayı ister, değilse doğrudan stoktan düşer.</p><div class="button-row"><button class="btn primary" data-action="download-qr-terminal">${ic('download','ic-sm')} QR Terminali İndir</button><button class="btn ghost" data-action="open-qr-terminal">${ic('qr','ic-sm')} Terminali Dene</button></div></div><div class="security-list"><p><span>${ic('check','ic-sm')}</span> Rol ve depo kapsamı hem arayüzde hem Kod.gs’de doğrulanır</p><p><span>${ic('check','ic-sm')}</span> PIN yerine imzalı, süreli oturum belirteci kullanılır</p><p><span>${ic('check','ic-sm')}</span> Bağımsız QR terminali <span class="mono">./qr-terminal.html</span> ve <span class="mono">?qr=KOD</span> destekler</p></div></article></section><section class="panel code-panel"><div class="panel-head"><div><h2>Google Apps Script · Kod.gs ${gasOk?'<span class="badge success">Güncel (V8.7-KKD)</span>':'<span class="badge danger">Eski Sürüm Bağlı — Güncelleme Gerekli</span>'}</h2><p>Kodu kopyalayıp Apps Script’te kaydettikten sonra <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> yapın (mevcut /exec adresiniz değişmez).</p></div><button class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kodu Kopyala</button></div><pre><code>${esc(code)}</code></pre></section>`;}
+const ORDER_STATUS_META={
+ TALEP_OLUSTURULDU:['Talep Oluşturuldu','orange'],
+ ONAYLANDI:['Onaylandı','blue'],
+ SIPARIS_VERILDI:['Sipariş Verildi','amber'],
+ TESLIM_ALINDI:['Teslim Alındı','green'],
+ IPTAL:['İptal','red']
+};
+const PAYMENT_TERMS=['Peşin / Cash','Vadeli / Deferred','Havale / EFT','Kredi Kartı','Çek','Açık Hesap'];
+const PAYMENT_MATURITIES=['','Peşin','15 Gün','30 Gün','45 Gün','60 Gün','90 Gün','120 Gün'];
+const TRANSPORT_TYPES=['','Tedarikçi / Supplier','Alıcı / Buyer','Kargo','Ambar','Elden Teslim'];
+function formatTrDate(d=new Date()){
+ const dt=d instanceof Date?d:new Date(d);
+ return String(dt.getDate()).padStart(2,'0')+'.'+String(dt.getMonth()+1).padStart(2,'0')+'.'+dt.getFullYear();
+}
+function fmtQty1(v){return new Intl.NumberFormat('tr-TR',{minimumFractionDigits:1,maximumFractionDigits:2}).format(Number(v)||0);}
+function fmtCur2(v){return new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(v)||0);}
+function akgLogoSvg(h=38){
+ const src=new URL('./assets/aistudio/Resim1_dc78301f.png',location.href).href;
+ return`<img src="${esc(src)}" alt="AKG" style="height:${h}px;max-width:100%;width:auto;object-fit:contain;display:block">`;
+}
+function resolveCostCenterForDepartment(dept){
+ const key=String(dept||'').trim();
+ if(!key)return '';
+ const map=state.data?.lists?.machineCostCenters||{};
+ if(map[key])return map[key];
+ const nk=norm(key);
+ for(const [m,cc] of Object.entries(map)){if(norm(m)===nk)return cc;}
+ const ccs=state.data?.lists?.costCenters||[];
+ const exactCc=ccs.find(c=>norm(c)===nk);
+ return exactCc||'';
+}
+function emptyOrderRow(seed={}){
+ return{itemId:seed.itemId||'',name:seed.name||'',code:seed.code||'',supplier:seed.supplier||'',qty:Number(seed.qty)||0,unit:seed.unit||'',unitPrice:Number(seed.unitPrice)||0,currency:seed.currency||'TL',total:Math.round((Number(seed.qty)||0)*(Number(seed.unitPrice)||0)*100)/100,deliveryDate:seed.deliveryDate||''};
+}
+function padOrderRows(items=[],minRows=14){
+ const out=(items||[]).map(x=>emptyOrderRow(x));
+ while(out.length<minRows)out.push(emptyOrderRow());
+ return out;
+}
+function createBlankOrderDraft(seedItems=[],seedDept=''){
+ const defs=loadOrderDefaults();
+ const reqBy=state.user?.name||'';
+ const yr=new Date().getFullYear();
+ let maxN=0;(state.data?.orders||[]).forEach(x=>{const m=String(x.formNo||'').match(new RegExp('^SAT-'+yr+'-(\\d+)$'));if(m)maxN=Math.max(maxN,Number(m[1]));});
+ const nextNo=`SAT-${yr}-${String(maxN+1).padStart(3,'0')}`;
+ const items=padOrderRows(seedItems,Math.max(14,seedItems.length));
+ const dept=seedDept||defs.department||'';
+ const autoCc=resolveCostCenterForDepartment(dept);
+ return{
+  isNew:true,formNo:nextNo,docCode:defs.docCode||'IZM_350600_LJT_001',
+  requestDate:formatTrDate(new Date()),requestedBy:reqBy,requestedByRole:state.user?.role||'',
+  department:dept,costCenter:autoCc||(seedDept?'':(defs.costCenter||dept)),attachmentQty:'',
+  items,totalAmount:items.reduce((s,x)=>s+x.total,0),currency:'TL',
+  paymentTerm:defs.paymentTerm||'Peşin / Cash',paymentMaturity:defs.paymentMaturity||'',
+  transport:defs.transport||'',deliveryPlace:defs.deliveryPlace||'',details:'',
+  approvals:{requirer:reqBy,managerName:defs.managerName||'FUAT ÇETİN',managerDate:'',approval1Name:defs.approval1Name||'İbrahim Özdemir',approval1Date:'',approval2Name:defs.approval2Name||'Yüksel Kurun',approval2Date:'',approval3Name:defs.approval3Name||'İbrahim Özdemir',approval3Date:''},
+  status:'TALEP_OLUSTURULDU',source:'PANEL',stockSynced:false
+ };
+}
+function openOrderEditor(orderOrNull=null,seedItems=[],seedDept=''){
+ if(orderOrNull){
+  const copy=JSON.parse(JSON.stringify(orderOrNull));
+  copy.isNew=false;
+  copy.items=padOrderRows(copy.items||[],Math.max(14,(copy.items||[]).length));
+  copy.approvals=Object.assign({requirer:copy.requestedBy||'',managerName:'FUAT ÇETİN',managerDate:'',approval1Name:'İbrahim Özdemir',approval1Date:'',approval2Name:'Yüksel Kurun',approval2Date:'',approval3Name:'İbrahim Özdemir',approval3Date:''},copy.approvals||{});
+  state.orderDraft=copy;
+ }else{
+  state.orderDraft=createBlankOrderDraft(seedItems,seedDept);
+ }
+ state.orderView='editor';
+ if(state.page!=='orders')showPage('orders');
+ else{$('#pageActions').innerHTML=pageActionHtml('orders');renderOrders();}
+}
+function openOrderFromItem(itemId){
+ const it=(state.data?.stock||[]).find(x=>x.id===itemId);
+ if(!it)return;
+ closeModal();
+ const need=Math.max(1,(Number(it.min)||1)-Math.max(0,Number(it.stock)||0));
+ const firstMac=String(it.machine||'').split('|')[0].trim();
+ openOrderEditor(null,[{itemId:it.id,name:it.name,code:it.code,supplier:it.company||'',qty:need,unit:it.unit||'AD',unitPrice:Number(it.unitPrice)||0,currency:'TL',deliveryDate:formatTrDate(new Date())}],firstMac);
+}
+function openOrderFromMissing(){
+ const missing=(state.data?.stock||[]).filter(x=>Number(x.stock)<=Number(x.min));
+ if(!missing.length)return toast('Eksik stok kalemi bulunamadı.');
+ const seeds=missing.slice(0,25).map(it=>({itemId:it.id,name:it.name,code:it.code,supplier:it.company||'',qty:Math.max(1,(Number(it.min)||1)-Math.max(0,Number(it.stock)||0)),unit:it.unit||'AD',unitPrice:Number(it.unitPrice)||0,currency:'TL',deliveryDate:formatTrDate(new Date())}));
+ openOrderEditor(null,seeds);
+ toast(`${seeds.length} eksik malzeme AKG sipariş formuna aktarıldı.`);
+}
+function renderOrders(){
+ if(state.orderView==='editor'&&state.orderDraft)return renderOrderEditor();
+ state.orderView='list';
+ const all=state.data?.orders||[];
+ const isOp=state.user?.role==='OP';
+ const oldGas=state.mode!=='demo'&&state.data?.apiVersion!=='V8.8-SIPARIS';
+ const q=state.orderFilter.query||'', st=state.orderFilter.status||'TUMU';
+ const rows=all.filter(o=>{
+  if(st!=='TUMU'&&o.status!==st)return false;
+  if(!q)return true;
+  const hay=[o.formNo,o.requestedBy,o.department,o.costCenter,o.details,...(o.items||[]).map(i=>`${i.name} ${i.code} ${i.supplier}`)].join(' ');
+  return norm(hay).includes(norm(q));
+ });
+ const cnt=s=>all.filter(x=>x.status===s).length;
+ $('#content').innerHTML=`
+  ${oldGas&&!isOp?`<div class="notice" style="margin-bottom:14px"><b>Bilgi:</b> Canlı Google Apps Script henüz <b>V8.8-SIPARIS</b> sürümüne güncellenmemiş. Siparişler şu an bu tarayıcıda güvenle saklanır; Google Sheets <b>SIPARIS_TALEPLERI</b> sayfasına yazmak için <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs</b>’yi dağıtın.</div>`:''}
+  <section class="po-kpis">
+   ${kpi('Toplam Talep',all.length,'Oluşturulan sipariş formu','fileText','orange')}
+   ${kpi('Yeni Talep',cnt('TALEP_OLUSTURULDU'),'İnceleme / onay bekleyen','clock','orange')}
+   ${kpi('Onaylandı',cnt('ONAYLANDI'),'Siparişe hazır talepler','checkCircle','blue')}
+   ${kpi('Sipariş Verildi',cnt('SIPARIS_VERILDI'),'Tedarikçiden bekleniyor','trend','orange')}
+   ${kpi('Teslim Alındı',cnt('TESLIM_ALINDI'),'Depoya ulaşan talepler','check','green')}
+  </section>
+  <section class="panel table-panel">
+   <div class="po-toolbar">
+    <div class="seg">
+     ${[['TUMU','Tümü'],['TALEP_OLUSTURULDU','Yeni Talep'],['ONAYLANDI','Onaylandı'],['SIPARIS_VERILDI','Sipariş Verildi'],['TESLIM_ALINDI','Teslim Alındı'],['IPTAL','İptal']].map(([k,lbl])=>`<button type="button" class="${st===k?'active':''}" data-order-status="${k}">${lbl}</button>`).join('')}
+    </div>
+    <div class="search">${ic('search','ic-sm')}<input id="orderSearch" placeholder="Form no, talep eden, malzeme, tedarikçi veya bölüm ara..." value="${esc(q)}"></div>
+   </div>
+   <div class="table-scroll">
+    <table class="data-table">
+     <thead><tr><th>Form No</th><th>Tarih</th><th>Talep Eden</th><th>Bölüm / Maliyet Merkezi</th><th>Malzemeler</th><th class="num-col">Toplam (KDV Hariç)</th><th>Durum</th><th>İşlemler</th></tr></thead>
+     <tbody>
+      ${rows.length?rows.map(o=>{
+       const sm=ORDER_STATUS_META[o.status]||['Talep Oluşturuldu','orange'];
+       const firstItem=o.items?.[0];
+       const more=(o.items?.length||0)>1?` +${o.items.length-1} kalem`:'';
+       const srcTag=o.source==='QR_TERMINAL'?' · <strong style="color:var(--orange)">QR</strong>':'';
+       return`<tr>
+        <td><b class="mono">${esc(o.formNo)}</b><small class="mono">${esc(o.docCode||'IZM_350600_LJT_001')}</small></td>
+        <td>${esc(o.requestDate||'—')}</td>
+        <td><b>${esc(o.requestedBy||'—')}</b><small>${esc(ROLE_LABEL[o.requestedByRole]||o.requestedByRole||'')}${srcTag}</small></td>
+        <td><b>${esc(o.department||'—')}</b><small>${esc(o.costCenter||'')}</small></td>
+        <td><b>${esc(firstItem?.name||'—')}${more}</b><small>${esc(firstItem?.supplier||'')} ${firstItem?.qty?`· ${fmtQty1(firstItem.qty)} ${esc(firstItem.unit||'AD')}`:''}</small></td>
+        <td class="big num-col">${fmtCur2(o.totalAmount||0)} <small>${esc(o.currency||'TL')}</small></td>
+        <td><span class="po-status ${esc(o.status)}">${esc(sm[0])}</span>${o.stockSynced?'<small style="color:var(--green);font-weight:700">Stok işlendi</small>':''}</td>
+        <td><div class="button-row" style="gap:6px">
+         <button type="button" class="btn ghost sm" data-order-open="${esc(o.formNo)}">${isOp?'Görüntüle':'Aç / Düzenle'}</button>
+         <button type="button" class="btn ghost sm" data-order-print="${esc(o.formNo)}" title="AKG A4 Yazdır">${ic('print','ic-sm')}</button>
+        </div></td>
+       </tr>`;
+      }).join(''):`<tr><td colspan="8"><div class="empty">Henüz bu filtrede sipariş formu yok. Yeni bir AKG Satın Alma Talep Formu oluşturabilirsiniz.</div></td></tr>`}
+     </tbody>
+    </table>
+   </div>
+   <div class="table-foot"><span>${rows.length} sipariş formu listeleniyor</span><span>AKG Satın Alma Talep Formu · IZM_350600_LJT_001</span></div>
+  </section>`;
+}
+function renderOrderEditor(){
+ const d=state.orderDraft;if(!d)return;
+ const isOp=state.user?.role==='OP';
+ const readOnly=isOp&&!d.isNew;
+ const roAttr=readOnly?'readonly':'';
+ const disAttr=readOnly?'disabled':'';
+ const depts=[...new Set([...(state.data?.lists?.machines||[]),...(state.data?.lists?.costCenters||[]),d.department].filter(Boolean))];
+ const costCenters=[...new Set([...(state.data?.lists?.costCenters||[]),...Object.values(state.data?.lists?.machineCostCenters||{}),d.costCenter].filter(Boolean))];
+ const suppliers=[...new Set(['ÜNLÜ TEKNİK',...(state.data?.lists?.companies||[]),...(state.data?.stock||[]).map(x=>x.company).filter(Boolean)])];
+ const units=[...new Set(['AD','MT','KG','LİTRE','ÇİFT','PK','SET',...(state.data?.lists?.units||[])])];
+ const rowsHtml=d.items.map((it,idx)=>`
+  <tr data-po-row="${idx}">
+   <td class="c">${idx+1}</td>
+   <td><div class="akg-name-cell">${readOnly?'':`<button type="button" class="akg-pick-btn" data-po-pick="${idx}" title="Stoktan Seç">+</button>`}<input data-po-field="name" data-idx="${idx}" value="${esc(it.name)}" placeholder="${idx===0?'Malzeme adı yazın veya + ile seçin...':''}" ${roAttr}></div></td>
+   <td><input data-po-field="code" data-idx="${idx}" value="${esc(it.code)}" class="mono" ${roAttr}></td>
+   <td><input data-po-field="supplier" data-idx="${idx}" value="${esc(it.supplier)}" list="poSupplierList" ${roAttr}></td>
+   <td><input data-po-field="qty" data-idx="${idx}" type="number" step="any" min="0" value="${it.qty?it.qty:''}" placeholder="0,0" class="num-in" ${roAttr}></td>
+   <td><input data-po-field="unit" data-idx="${idx}" value="${esc(it.unit)}" list="poUnitList" style="text-align:center" ${roAttr}></td>
+   <td><input data-po-field="unitPrice" data-idx="${idx}" type="number" step="any" min="0" value="${it.unitPrice?it.unitPrice:''}" placeholder="0,00" class="num-in" ${roAttr}></td>
+   <td><select data-po-field="currency" data-idx="${idx}" ${disAttr}>${['TL','EUR','USD'].map(c=>`<option value="${c}" ${(it.currency||'TL')===c?'selected':''}>${c}</option>`).join('')}</select></td>
+   <td class="akg-tot-cell" data-po-total="${idx}">${fmtCur2(it.total||0)}</td>
+   <td><input data-po-field="deliveryDate" data-idx="${idx}" value="${esc(it.deliveryDate)}" placeholder="GG.AA.YYYY" ${roAttr}></td>
+  </tr>`).join('');
+ const grandTotal=d.items.reduce((s,x)=>s+(Number(x.total)||0),0);
+ const hasStockItems=d.items.some(x=>x.itemId&&Number(x.qty)>0);
+ $('#content').innerHTML=`
+  <datalist id="poCostCenterList">${costCenters.map(x=>`<option value="${esc(x)}"></option>`).join('')}</datalist>
+  <datalist id="poSupplierList">${suppliers.map(x=>`<option value="${esc(x)}"></option>`).join('')}</datalist>
+  <datalist id="poUnitList">${units.map(x=>`<option value="${esc(x)}"></option>`).join('')}</datalist>
+  <div class="po-actions-bar">
+   <div class="button-row">
+    ${!readOnly?`<button type="button" class="btn ghost sm" data-action="order-add-row">${ic('plus','ic-sm')} Satır Ekle</button>`:''}
+    ${!readOnly&&!isOp?`<button type="button" class="btn ghost sm" data-action="order-fill-missing">${ic('alert','ic-sm')} Eksik Stokları Doldur</button>`:''}
+    ${!d.isNew&&!isOp?`<select id="poStatusSelect" aria-label="Sipariş Durumu" style="padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-weight:700;font-size:12.5px;background:#fff">${Object.entries(ORDER_STATUS_META).map(([k,[lbl]])=>`<option value="${k}" ${d.status===k?'selected':''}>Durum: ${lbl}</option>`).join('')}</select>`:''}
+    ${!d.isNew&&!isOp&&hasStockItems&&!d.stockSynced?`<button type="button" class="btn ghost sm" data-action="order-receive-stock">${ic('check','ic-sm')} Teslim Al & Stoğa Ekle</button>`:''}
+   </div>
+   <div class="button-row">
+    <button type="button" class="btn ghost sm" data-action="order-copy-text">${ic('copy','ic-sm')} Metin Kopyala</button>
+    <button type="button" class="btn ghost sm" data-action="order-export-csv">${ic('download','ic-sm')} CSV / Excel</button>
+    <button type="button" class="btn primary sm" data-action="order-print-draft">${ic('print','ic-sm')} A4 Yatay Yazdır (AKG)</button>
+   </div>
+  </div>
+  <div class="akg-wrap">
+   <form id="akgOrderForm" class="akg-sheet">
+    <div class="akg-head">
+     <div class="akg-logo-cell">${akgLogoSvg(40)}</div>
+     <div class="akg-title-cell">Satın Alma Talep Formu / Purchase Request Form</div>
+     <div class="akg-doc-cell"><input id="poDocCode" value="${esc(d.docCode||'IZM_350600_LJT_001')}" ${roAttr}></div>
+    </div>
+    <div class="akg-meta">
+     <div class="akg-meta-lbl"><span>Talep Tarihi</span><span>Date of Request</span></div>
+     <div class="akg-meta-val"><input id="poRequestDate" value="${esc(d.requestDate)}" ${roAttr}></div>
+     <div class="akg-meta-lbl"><span>Talep Eden Bölüm</span><span>Department</span></div>
+     <div class="akg-meta-val"><select id="poDepartment" ${disAttr}><option value="">Bölüm / Makine seçiniz...</option>${depts.map(x=>`<option value="${esc(x)}" ${d.department===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div>
+     <div class="akg-meta-lbl"><span>Form Numarası</span><span>Form Number</span></div>
+     <div class="akg-meta-val"><input id="poFormNo" value="${esc(d.formNo)}" class="mono" ${!d.isNew||isOp?'readonly':''}></div>
+     <div class="akg-meta-lbl"><span>Talep Eden Kişi</span><span>Requested by</span></div>
+     <div class="akg-meta-val"><input id="poRequestedBy" value="${esc(d.requestedBy)}" ${isOp||readOnly?'readonly':''}></div>
+     <div class="akg-meta-lbl"><span>Maliyet Merkezi</span><span>Cost Center</span></div>
+     <div class="akg-meta-val"><input id="poCostCenter" value="${esc(d.costCenter)}" list="poCostCenterList" placeholder="Bölüm seçilince otomatik gelir" ${roAttr}></div>
+     <div class="akg-meta-lbl"><span>Ekli Doküman Adedi</span><span>Attachment Quantity</span></div>
+     <div class="akg-meta-val"><input id="poAttachmentQty" value="${esc(d.attachmentQty)}" placeholder="0" ${roAttr}></div>
+    </div>
+    <table class="akg-tbl">
+     <colgroup>
+      <col style="width:30px"><col style="width:24%"><col style="width:11%"><col style="width:14%">
+      <col style="width:7%"><col style="width:6%"><col style="width:11%"><col style="width:6%">
+      <col style="width:10%"><col style="width:11%">
+     </colgroup>
+     <thead>
+      <tr>
+       <th>#</th>
+       <th>Malzeme Tanımı<br>Description of Material</th>
+       <th>Malzeme Kodu<br>Material Code</th>
+       <th>Tedarikçi Firma<br>Supplier</th>
+       <th>Miktar<br>Quantity</th>
+       <th>Birim<br>Unit</th>
+       <th>Birim Fiyat (KDV Hariç)<br>Unit Price (VAT Ex.)</th>
+       <th>Para Birimi<br>Currency</th>
+       <th>Toplam Tutar<br>Total Amount</th>
+       <th>Teslim Tarihi<br>Delivery Date</th>
+      </tr>
+     </thead>
+     <tbody id="poRowsBody">${rowsHtml}</tbody>
+     <tfoot>
+      <tr class="akg-total-row">
+       <td colspan="8" class="r">TOPLAM TUTAR (<span class="akg-red">KDV HARİÇ</span>) / TOTAL AMOUNT (<span class="akg-red">VAT EXCLUDED</span>)</td>
+       <td class="akg-grand" id="poGrandTotal">${fmtCur2(grandTotal)}</td>
+       <td></td>
+      </tr>
+     </tfoot>
+    </table>
+    <div class="akg-pay">
+     <div class="akg-pay-lbl"><span>Ödeme Şekli</span><span>Payment Term</span></div>
+     <div class="akg-pay-val"><select id="poPaymentTerm" ${disAttr}>${PAYMENT_TERMS.map(x=>`<option value="${esc(x)}" ${d.paymentTerm===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div>
+     <div class="akg-pay-lbl"><span>Ödeme Vadesi</span><span>Payment Maturity</span></div>
+     <div class="akg-pay-val"><select id="poPaymentMaturity" ${disAttr}>${PAYMENT_MATURITIES.map(x=>`<option value="${esc(x)}" ${d.paymentMaturity===x?'selected':''}>${esc(x||'Seçiniz')}</option>`).join('')}</select></div>
+     <div class="akg-pay-lbl"><span>Nakliye</span><span>Transport</span></div>
+     <div class="akg-pay-val"><select id="poTransport" ${disAttr}>${TRANSPORT_TYPES.map(x=>`<option value="${esc(x)}" ${d.transport===x?'selected':''}>${esc(x||'Seçiniz')}</option>`).join('')}</select></div>
+     <div class="akg-pay-lbl"><span>Teslimat Yeri</span><span>Delivery Place</span></div>
+     <div class="akg-pay-val"><input id="poDeliveryPlace" value="${esc(d.deliveryPlace)}" placeholder="Örn: İzmir Fabrika" ${roAttr}></div>
+    </div>
+    <div class="akg-details">
+     <div class="akg-details-lbl"><span>Detaylar</span><span>Details</span></div>
+     <div class="akg-details-val"><textarea id="poDetails" placeholder="Kullanılacak makine, arıza veya satın alma gerekçesini yazın..." ${roAttr}>${esc(d.details)}</textarea></div>
+    </div>
+    <div class="akg-sigs">
+     <div class="akg-sig-col">
+      <div class="akg-sig-top">Talep Eden<br>Requirer</div>
+      <div class="akg-sig-sub single"><span>Onay / Approval</span></div>
+      <div class="akg-sig-inputs single"><input id="poSigRequirer" value="${esc(d.approvals?.requirer||d.requestedBy)}" readonly></div>
+     </div>
+     <div class="akg-sig-col">
+      <div class="akg-sig-top">Talep Edenin Amiri<br>Manager of Requirer</div>
+      <div class="akg-sig-sub"><span>Onay / Approval</span><span>Tarih / Date</span></div>
+      <div class="akg-sig-inputs"><input id="poSigManager" value="${esc(d.approvals?.managerName||'FUAT ÇETİN')}" ${roAttr}><input id="poSigManagerDate" value="${esc(d.approvals?.managerDate||'')}" placeholder="GG.AA.YYYY" ${roAttr}></div>
+     </div>
+     <div class="akg-sig-col">
+      <div class="akg-sig-top">1.Onay /<br>1.Approval</div>
+      <div class="akg-sig-sub"><span>Onay / Approval</span><span>Tarih / Date</span></div>
+      <div class="akg-sig-inputs"><input id="poSig1Name" value="${esc(d.approvals?.approval1Name||'İbrahim Özdemir')}" ${roAttr}><input id="poSig1Date" value="${esc(d.approvals?.approval1Date||'')}" placeholder="GG.AA.YYYY" ${roAttr}></div>
+     </div>
+     <div class="akg-sig-col">
+      <div class="akg-sig-top">2.Onay /<br>2.Approval</div>
+      <div class="akg-sig-sub"><span>Onay / Approval</span><span>Tarih / Date</span></div>
+      <div class="akg-sig-inputs"><input id="poSig2Name" value="${esc(d.approvals?.approval2Name||'Yüksel Kurun')}" ${roAttr}><input id="poSig2Date" value="${esc(d.approvals?.approval2Date||'')}" placeholder="GG.AA.YYYY" ${roAttr}></div>
+     </div>
+     <div class="akg-sig-col">
+      <div class="akg-sig-top">3.Onay /<br>3.Approval</div>
+      <div class="akg-sig-sub"><span>Onay / Approval</span><span>Tarih / Date</span></div>
+      <div class="akg-sig-inputs"><input id="poSig3Name" value="${esc(d.approvals?.approval3Name||'İbrahim Özdemir')}" ${roAttr}><input id="poSig3Date" value="${esc(d.approvals?.approval3Date||'')}" placeholder="GG.AA.YYYY" ${roAttr}></div>
+     </div>
+    </div>
+   </form>
+  </div>`;
+}
+function syncDraftFromDom(){
+ const d=state.orderDraft;if(!d||!$('#akgOrderForm'))return d;
+ d.docCode=$('#poDocCode')?.value.trim()||'IZM_350600_LJT_001';
+ d.requestDate=$('#poRequestDate')?.value.trim()||formatTrDate(new Date());
+ d.department=$('#poDepartment')?.value.trim()||'';
+ d.formNo=$('#poFormNo')?.value.trim()||d.formNo;
+ d.requestedBy=state.user?.role==='OP'?state.user.name:($('#poRequestedBy')?.value.trim()||state.user?.name||'');
+ d.costCenter=$('#poCostCenter')?.value.trim()||d.department;
+ d.attachmentQty=$('#poAttachmentQty')?.value.trim()||'';
+ d.paymentTerm=$('#poPaymentTerm')?.value||'Peşin / Cash';
+ d.paymentMaturity=$('#poPaymentMaturity')?.value||'';
+ d.transport=$('#poTransport')?.value||'';
+ d.deliveryPlace=$('#poDeliveryPlace')?.value.trim()||'';
+ d.details=$('#poDetails')?.value.trim()||'';
+ if($('#poStatusSelect'))d.status=$('#poStatusSelect').value;
+ d.approvals={
+  requirer:d.requestedBy,
+  managerName:$('#poSigManager')?.value.trim()||'FUAT ÇETİN',
+  managerDate:$('#poSigManagerDate')?.value.trim()||'',
+  approval1Name:$('#poSig1Name')?.value.trim()||'İbrahim Özdemir',
+  approval1Date:$('#poSig1Date')?.value.trim()||'',
+  approval2Name:$('#poSig2Name')?.value.trim()||'Yüksel Kurun',
+  approval2Date:$('#poSig2Date')?.value.trim()||'',
+  approval3Name:$('#poSig3Name')?.value.trim()||'İbrahim Özdemir',
+  approval3Date:$('#poSig3Date')?.value.trim()||''
+ };
+ if($('#poSigRequirer'))$('#poSigRequirer').value=d.requestedBy;
+ d.totalAmount=Math.round(d.items.reduce((s,x)=>s+(Number(x.total)||0),0)*100)/100;
+ const filled=d.items.filter(x=>x.name||x.code);
+ d.currency=filled[0]?.currency||'TL';
+ return d;
+}
+function recalcOrderRow(idx){
+ const d=state.orderDraft;if(!d||!d.items[idx])return;
+ const it=d.items[idx];
+ it.total=Math.round((Number(it.qty)||0)*(Number(it.unitPrice)||0)*100)/100;
+ const cell=$(`[data-po-total="${idx}"]`);
+ if(cell)cell.textContent=fmtCur2(it.total);
+ const grand=d.items.reduce((s,x)=>s+(Number(x.total)||0),0);
+ d.totalAmount=Math.round(grand*100)/100;
+ const gt=$('#poGrandTotal');if(gt)gt.textContent=fmtCur2(grand);
+}
+function openOrderStockPicker(rowIdx){
+ const list=state.data?.stock||[];
+ modal('Stok Kartından Satıra Aktar',`
+  <div class="search" style="margin-bottom:8px">${ic('search','ic-sm')}<input id="poPickSearch" placeholder="Parça adı, kod, tedarikçi veya raf ara..."></div>
+  <div class="po-picker-list" id="poPickList">${renderOrderPickerRows(list,rowIdx,'')}</div>
+ `,`<button class="btn ghost" data-close>Kapat</button>`);
+ $('#modalRoot').dataset.poPickRow=String(rowIdx);
+}
+function renderOrderPickerRows(list,rowIdx,q=''){
+ const rows=list.filter(x=>!q||norm([x.name,x.code,x.company,x.shelf,x.category].join(' ')).includes(norm(q))).slice(0,40);
+ return rows.length?rows.map(x=>`<button type="button" class="po-picker-row" data-po-pick-item="${esc(x.id)}" data-po-pick-row="${rowIdx}"><div><b>${esc(x.name)}</b><small><span class="mono">${esc(x.code)}</span> · ${esc(x.company||'Firma yok')} · Stok: ${num(x.stock)} / Min: ${num(x.min)} ${esc(x.unit)}</small></div><strong class="mono">${x.unitPrice?money(x.unitPrice):'0,00 ₺'}</strong></button>`).join(''):'<div class="empty">Eşleşen stok kartı bulunamadı.</div>';
+}
+function saveOrderFromEditor(){
+ const d=syncDraftFromDom();if(!d)return;
+ const filledItems=d.items.filter(x=>String(x.name||'').trim()||String(x.code||'').trim()).map(x=>({
+  itemId:x.itemId||'',name:String(x.name||'').trim(),code:String(x.code||'').trim(),
+  supplier:String(x.supplier||'').trim(),qty:Number(x.qty)||0,unit:String(x.unit||'AD').trim()||'AD',
+  unitPrice:Number(x.unitPrice)||0,currency:x.currency||'TL',
+  total:Math.round((Number(x.qty)||0)*(Number(x.unitPrice)||0)*100)/100,
+  deliveryDate:String(x.deliveryDate||'').trim()
+ }));
+ if(!filledItems.length)return toast('Sipariş formuna en az bir malzeme satırı yazın.','error');
+ if(filledItems.some(x=>!(x.qty>0)))return toast('Eklenen her malzeme için 0’dan büyük miktar girin.','error');
+ saveOrderDefaults({docCode:d.docCode,department:d.department,costCenter:d.costCenter,deliveryPlace:d.deliveryPlace,paymentTerm:d.paymentTerm,paymentMaturity:d.paymentMaturity,transport:d.transport,managerName:d.approvals.managerName,approval1Name:d.approvals.approval1Name,approval2Name:d.approvals.approval2Name,approval3Name:d.approvals.approval3Name});
+ const payload={...d,items:filledItems,totalAmount:Math.round(filledItems.reduce((s,x)=>s+x.total,0)*100)/100,currency:filledItems[0]?.currency||'TL',createdAt:d.createdAt||new Date().toISOString()};
+ delete payload.isNew;
+ const isCreate=!!d.isNew;
+ if(!state.data.orders)state.data.orders=[];
+ const prevList=[...state.data.orders];
+ if(isCreate){state.data.orders.unshift(payload);}
+ else{const idx=state.data.orders.findIndex(x=>norm(x.formNo)===norm(payload.formNo));if(idx>=0)state.data.orders[idx]=payload;else state.data.orders.unshift(payload);}
+ state.orderView='list';state.orderDraft=null;
+ saveBootCache(state.user?.role,state.data);
+ renderNav();showPage('orders',false);
+ enqueueSave({
+  label:isCreate?'Yeni Sipariş Formu':'Sipariş Formu Güncelleme',
+  detail:`${payload.formNo} · ${filledItems.length} kalem · ${fmtCur2(payload.totalAmount)} ${payload.currency}`,
+  run:()=>api(isCreate?'purchaseOrderCreate':'purchaseOrderUpdate',payload),
+  onSuccess:r=>{
+   if(r?.order){
+    const idx=state.data.orders.findIndex(x=>norm(x.formNo)===norm(payload.formNo));
+    if(idx>=0)state.data.orders[idx]=r.order;
+   }
+   saveBootCache(state.user?.role,state.data);
+   refreshViewQuietly();
+  },
+  onError:()=>{
+   state.data.orders=prevList;
+   refreshViewQuietly();
+  }
+ });
+ toast(isCreate?`Sipariş formu sıraya alındı (${payload.formNo})`:`Sipariş güncellendi (${payload.formNo})`);
+}
+function printPurchaseOrder(order){
+ if(!order)return;
+ const rows=padOrderRows(order.items||[],Math.max(14,(order.items||[]).length));
+ const grand=rows.reduce((s,x)=>s+(Number(x.total)||0),0);
+ const ap=order.approvals||{};
+ const bodyRows=rows.map((it,i)=>{
+  const has=!!(it.name||it.code);
+  return`<tr>
+   <td class="c">${i+1}</td>
+   <td>${esc(it.name)}</td>
+   <td class="c mono">${esc(it.code)}</td>
+   <td class="c">${esc(it.supplier)}</td>
+   <td class="c">${fmtQty1(it.qty)}</td>
+   <td class="c">${has?esc(it.unit||'AD'):''}</td>
+   <td class="c">${fmtCur2(it.unitPrice)}</td>
+   <td class="c">${has?esc(it.currency||'TL'):''}</td>
+   <td class="c">${fmtCur2(it.total)}</td>
+   <td class="c">${esc(it.deliveryDate)}</td>
+  </tr>`;
+ }).join('');
+ const docHtml=`<!doctype html><meta charset="utf-8"><title>${esc(order.formNo||'Satın Alma Talep Formu')}</title><style>@page{size:A4 landscape;margin:7mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}html,body{margin:0;padding:0;background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;font-size:10px}.sheet{width:100%;border:1.5px solid #000}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #000;padding:3.5px 5px;vertical-align:middle;word-wrap:break-word}.c{text-align:center}.r{text-align:right}.b{font-weight:700}.mono{font-family:monospace}.red{color:#dc2626}.hdr{display:grid;grid-template-columns:170px 1fr 170px;border-bottom:1.5px solid #000}.hdr>div{display:flex;align-items:center;justify-content:center;padding:6px 8px}.hdr>div+div{border-left:1px solid #000}.hdr-title{font-size:19px;font-weight:800}.hdr-doc{font-size:11.5px;font-weight:700;font-family:monospace}.meta{display:grid;grid-template-columns:135px 1fr 135px 1.25fr 140px 1fr;border-bottom:1.5px solid #000}.meta>div{padding:4px 6px;border-right:1px solid #000;border-bottom:1px solid #000;line-height:1.25}.meta>div:nth-child(6n){border-right:0}.meta>div:nth-last-child(-n+6){border-bottom:0}.ml{font-size:9px;font-weight:700}.mv{font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;text-align:center}.mv.left{justify-content:flex-start;text-align:left}.itbl th{font-size:9px;font-weight:700;text-align:center;line-height:1.2;border-top:0}.itbl td{height:20px;font-size:9.8px;font-weight:700}.itbl td:first-child,.itbl th:first-child{border-left:0}.itbl td:last-child,.itbl th:last-child{border-right:0}.totrow td{border-top:1.5px solid #000;border-bottom:1.5px solid #000;padding:6px 7px;font-size:10px;font-weight:800}.totval{font-size:14px;font-weight:800;text-align:center}.pay{display:grid;grid-template-columns:115px 1fr 115px 1fr 80px 1fr 110px 1fr;border-bottom:1px solid #000}.pay>div{padding:4px 6px;border-right:1px solid #000;line-height:1.25;display:flex;flex-direction:column;justify-content:center}.pay>div:last-child{border-right:0}.pv{font-size:10px;font-weight:600;text-align:center;align-items:center}.det{display:grid;grid-template-columns:115px 1fr;border-bottom:1.5px solid #000;min-height:56px}.det>div{padding:6px 8px;display:flex;flex-direction:column;justify-content:center}.det>div:first-child{border-right:1px solid #000;font-size:9.5px;font-weight:700}.det-txt{font-size:11px;font-weight:700;white-space:pre-wrap}.sigs{display:grid;grid-template-columns:1.05fr 1.55fr 1.55fr 1.55fr 1.55fr}.sc{border-right:1px solid #000;display:flex;flex-direction:column}.sc:last-child{border-right:0}.st{padding:4px;text-align:center;font-size:9.5px;font-weight:700;line-height:1.2;border-bottom:1px solid #000}.ss{display:grid;grid-template-columns:1fr 76px;border-bottom:1px dashed #333;font-size:8.5px;font-weight:700;text-align:center}.ss.one{grid-template-columns:1fr}.ss span{padding:2.5px 3px}.ss span+span{border-left:1px dashed #333}.sv{display:grid;grid-template-columns:1fr 76px;min-height:40px}.sv.one{grid-template-columns:1fr}.sv span{display:flex;align-items:center;justify-content:center;text-align:center;padding:4px;font-size:10.5px;font-weight:700}.sv span+span{border-left:1px dashed #333;font-size:9.5px;font-weight:600}</style><div class="sheet"><div class="hdr"><div>${akgLogoSvg(32)}</div><div class="hdr-title">Satın Alma Talep Formu / Purchase Request Form</div><div class="hdr-doc">${esc(order.docCode||'IZM_350600_LJT_001')}</div></div><div class="meta"><div class="ml">Talep Tarihi<br>Date of Request</div><div class="mv left">${esc(order.requestDate||'')}</div><div class="ml">Talep Eden Bölüm<br>Department</div><div class="mv">${esc(order.department||'')}</div><div class="ml">Form Numarası<br>Form Number</div><div class="mv">${esc(order.formNo||'')}</div><div class="ml">Talep Eden Kişi<br>Requested by</div><div class="mv left">${esc(order.requestedBy||'')}</div><div class="ml">Maliyet Merkezi<br>Cost Center</div><div class="mv">${esc(order.costCenter||'')}</div><div class="ml">Ekli Doküman Adedi<br>Attachment Quantity</div><div class="mv">${esc(order.attachmentQty||'')}</div></div><table class="itbl"><colgroup><col style="width:26px"><col style="width:25%"><col style="width:11%"><col style="width:14%"><col style="width:6.5%"><col style="width:6%"><col style="width:10.5%"><col style="width:6%"><col style="width:9.5%"><col style="width:11.5%"></colgroup><thead><tr><th>#</th><th>Malzeme Tanımı<br>Description of Material</th><th>Malzeme Kodu<br>Material Code</th><th>Tedarikçi Firma<br>Supplier</th><th>Miktar<br>Quantity</th><th>Birim<br>Unit</th><th>Birim Fiyat (KDV Hariç)<br>Unit Price (VAT Ex.)</th><th>Para Birimi<br>Currency</th><th>Toplam Tutar<br>Total Amount</th><th>Teslim Tarihi<br>Delivery Date</th></tr></thead><tbody>${bodyRows}</tbody><tfoot><tr class="totrow"><td colspan="8" class="r">TOPLAM TUTAR (<span class="red">KDV HARİÇ</span>) / TOTAL AMOUNT (<span class="red">VAT EXCLUDED</span>)</td><td class="totval">${fmtCur2(grand)}</td><td></td></tr></tfoot></table><div class="pay"><div class="ml">Ödeme Şekli<br>Payment Term</div><div class="pv">${esc(order.paymentTerm||'')}</div><div class="ml">Ödeme Vadesi<br>Payment Maturity</div><div class="pv">${esc(order.paymentMaturity||'')}</div><div class="ml">Nakliye<br>Transport</div><div class="pv">${esc(order.transport||'')}</div><div class="ml">Teslimat Yeri<br>Delivery Place</div><div class="pv">${esc(order.deliveryPlace||'')}</div></div><div class="det"><div>Detaylar<br>Details</div><div class="det-txt">${esc(order.details||'')}</div></div><div class="sigs"><div class="sc"><div class="st">Talep Eden<br>Requirer</div><div class="ss one"><span>Onay / Approval</span></div><div class="sv one"><span>${esc(ap.requirer||order.requestedBy||'')}</span></div></div><div class="sc"><div class="st">Talep Edenin Amiri<br>Manager of Requirer</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.managerName||'FUAT ÇETİN')}</span><span>${esc(ap.managerDate||'')}</span></div></div><div class="sc"><div class="st">1.Onay /<br>1.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval1Name||'İbrahim Özdemir')}</span><span>${esc(ap.approval1Date||'')}</span></div></div><div class="sc"><div class="st">2.Onay /<br>2.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval2Name||'Yüksel Kurun')}</span><span>${esc(ap.approval2Date||'')}</span></div></div><div class="sc"><div class="st">3.Onay /<br>3.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval3Name||'İbrahim Özdemir')}</span><span>${esc(ap.approval3Date||'')}</span></div></div></div></div>`;
+ let frame=$('#orderPrintFrame');
+ if(!frame){frame=document.createElement('iframe');frame.id='orderPrintFrame';frame.setAttribute('aria-hidden','true');frame.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';document.body.appendChild(frame);}
+ const doc=frame.contentDocument||frame.contentWindow.document;
+ doc.open();doc.write(docHtml);doc.close();
+ const runPrint=()=>{try{frame.contentWindow.focus();frame.contentWindow.print();}catch{toast('Yazdırma penceresi açılamadı.','error');}};
+ const logoImg=doc.querySelector('img');
+ if(logoImg&&!logoImg.complete){let done=false;const go=()=>{if(done)return;done=true;setTimeout(runPrint,60);};logoImg.onload=go;logoImg.onerror=go;setTimeout(go,500);}
+ else setTimeout(runPrint,120);
+}
+function exportOrderCsv(order){
+ if(!order)return;
+ const filled=(order.items||[]).filter(x=>x.name||x.code);
+ const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;
+ const lines=[
+  ['Form No','Doküman Kodu','Talep Tarihi','Talep Eden','Bölüm','Maliyet Merkezi','Ödeme Şekli','Detaylar'].map(q).join(';'),
+  [order.formNo,order.docCode,order.requestDate,order.requestedBy,order.department,order.costCenter,order.paymentTerm,order.details].map(q).join(';'),
+  '',
+  ['#','Malzeme Tanımı','Malzeme Kodu','Tedarikçi Firma','Miktar','Birim','Birim Fiyat (KDV Hariç)','Para Birimi','Toplam Tutar','Teslim Tarihi'].map(q).join(';'),
+  ...filled.map((it,i)=>[i+1,it.name,it.code,it.supplier,fmtQty1(it.qty),it.unit,fmtCur2(it.unitPrice),it.currency,fmtCur2(it.total),it.deliveryDate].map(q).join(';'))
+ ];
+ const blob=new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'}), url=URL.createObjectURL(blob), a=document.createElement('a');
+ a.href=url;a.download=`${order.formNo||'Siparis_Formu'}.csv`;a.click();
+ setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+function copyOrderSummary(order){
+ if(!order)return;
+ const filled=(order.items||[]).filter(x=>x.name||x.code);
+ const text=[
+  `SATIN ALMA TALEP FORMU (${order.formNo})`,
+  `Tarih: ${order.requestDate||''} | Talep Eden: ${order.requestedBy||''}`,
+  order.department?`Bölüm / Maliyet Merkezi: ${order.department}`:'',
+  '---',
+  ...filled.map((it,i)=>`${i+1}. ${it.name}${it.code?' ('+it.code+')':''} — ${fmtQty1(it.qty)} ${it.unit||'AD'}${it.unitPrice?' x '+fmtCur2(it.unitPrice)+' '+(it.currency||'TL')+' = '+fmtCur2(it.total)+' '+(it.currency||'TL'):''}${it.supplier?' ['+it.supplier+']':''}`),
+  '---',
+  `TOPLAM (KDV Hariç): ${fmtCur2(order.totalAmount||0)} ${order.currency||'TL'}`,
+  order.details?`Detay: ${order.details}`:''
+ ].filter(Boolean).join('\n');
+ navigator.clipboard.writeText(text).then(()=>toast('Sipariş özeti panoya kopyalandı.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));
+}
+function receiveOrderToStock(){
+ const d=syncDraftFromDom();if(!d||d.isNew)return;
+ const stockItems=d.items.filter(x=>x.itemId&&Number(x.qty)>0);
+ if(!stockItems.length)return toast('Stok kartıyla eşleşen kalem bulunamadı.','error');
+ if(stockItems.some(x=>!(Number(x.unitPrice)>0)))return toast('Stoğa aktarmak için eşleşen kalemlerin birim fiyatını (> 0) girin.','error');
+ d.status='TESLIM_ALINDI';d.stockSynced=true;
+ const filled=d.items.filter(x=>x.name||x.code);
+ const payload={...d,items:filled,totalAmount:Math.round(filled.reduce((s,x)=>s+x.total,0)*100)/100};
+ delete payload.isNew;
+ stockItems.forEach(ln=>{
+  const st=state.data.stock.find(x=>x.id===ln.itemId);
+  if(st){st.stock=(Number(st.stock)||0)+Number(ln.qty);st.incoming=(Number(st.incoming)||0)+Number(ln.qty);st.unitPrice=Number(ln.unitPrice);}
+ });
+ const idx=(state.data.orders||[]).findIndex(x=>norm(x.formNo)===norm(d.formNo));
+ if(idx>=0)state.data.orders[idx]=payload;
+ state.orderView='list';state.orderDraft=null;state.cost=null;
+ saveBootCache(state.user?.role,state.data);renderNav();showPage('orders',false);
+ enqueueSave({
+  label:'Sipariş Teslim & Stok Girişi',
+  detail:`${payload.formNo} · ${stockItems.length} stok kalemi`,
+  run:async()=>{
+   for(const ln of stockItems){await api('stockIn',{itemId:ln.itemId,qty:Number(ln.qty),unitPrice:Number(ln.unitPrice)});}
+   await api('purchaseOrderUpdate',payload);
+  },
+  onSuccess:()=>{saveBootCache(state.user?.role,state.data);refreshViewQuietly();}
+ });
+ toast(`${payload.formNo} teslim alındı ve ${stockItems.length} kalem stok girişi sıraya alındı.`);
+}
+
+function renderConnection(){const code=$('#gasCode').textContent.trim();const gasOk=state.mode==='demo'||state.data?.apiVersion==='V8.8-SIPARIS';$('#content').innerHTML=`<section class="connection-grid"><article class="panel"><div class="panel-head"><div><h2>Bağlantı Modu</h2><p>GitHub Pages yayınında Doğrudan GAS (/exec), yerel sunucuda /api/gas önerilir</p></div><span class="connection ${state.mode}"><i></i>${state.mode.toUpperCase()}</span></div><div class="mode-cards">${[['proxy','Güvenli /api/gas','GAS adresi ve proxy anahtarı sunucuda gizli kalır; V8 kayıt akışı etkindir.'],['direct','Tek HTML / Doğrudan','GitHub Pages veya tek HTML için Apps Script ALLOW_DIRECT=true ile kullanın.'],['demo','Demo / Yerel','Gerçek tabloya yazmaz; tüm ekranlar test edilir.']].map(([m,t,d])=>`<label class="${state.mode===m?'selected':''}"><input type="radio" name="mode" value="${m}" ${state.mode===m?'checked':''}><span><b>${t}</b><small>${d}</small></span></label>`).join('')}</div>${field('Apps Script /exec adresi',`<input id="directUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan mod dışında tarayıcıya açılmaz.')}<div class="button-row"><button class="btn ghost" data-action="test-connection">Bağlantıyı Test Et</button><button class="btn primary" data-action="save-connection">Ayarları Kaydet</button></div></article><article class="panel"><div class="panel-head"><div><h2>Bağımsız Tek HTML Dosyaları</h2><p>Tam yönetim paneli ve sahaya özel bağımsız QR çıkış terminali</p></div><span class="ic" style="color:var(--orange)">${ic('download','ic-lg')}</span></div><div class="download-card"><b>1. Ana Yönetim Paneli (Tek HTML)</b><p>CSS, JavaScript ve QR üreticisi tek dosyada. Demo veya canlı Google Sheets bağlantısı ile çalışır.</p><button class="btn primary large" data-action="download-html">${ic('download','ic-sm')} Ana Panel HTML İndir</button></div><div class="download-card" style="margin-top:12px"><b>2. Bağımsız Depo QR Terminali (Tek HTML)</b><p>Depodaki QR kodu okutulduğunda önce OP şifresini sorar, eşleşen parçayı açar; Depo Onayı Gerekli ise Depocu onayı ister, değilse doğrudan stoktan düşer.</p><div class="button-row"><button class="btn primary" data-action="download-qr-terminal">${ic('download','ic-sm')} QR Terminali İndir</button><button class="btn ghost" data-action="open-qr-terminal">${ic('qr','ic-sm')} Terminali Dene</button></div></div><div class="security-list"><p><span>${ic('check','ic-sm')}</span> Rol ve depo kapsamı hem arayüzde hem Kod.gs’de doğrulanır</p><p><span>${ic('check','ic-sm')}</span> PIN yerine imzalı, süreli oturum belirteci kullanılır</p><p><span>${ic('check','ic-sm')}</span> Bağımsız QR terminali <span class="mono">./qr-terminal.html</span> ve <span class="mono">?qr=KOD</span> destekler</p></div></article></section><section class="panel code-panel"><div class="panel-head"><div><h2>Google Apps Script · Kod.gs ${gasOk?'<span class="badge success">Güncel (V8.8-SIPARIS)</span>':'<span class="badge danger">Eski Sürüm Bağlı — Güncelleme Gerekli</span>'}</h2><p>Kodu kopyalayıp Apps Script’te kaydettikten sonra <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> yapın (mevcut /exec adresiniz değişmez).</p></div><button class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kodu Kopyala</button></div><pre><code>${esc(code)}</code></pre></section>`;}
 
 let cameraStream=null,cameraTimer=null;
 async function openScanner(){modal('QR Kodunu Okut',`<div class="camera"><video id="cameraVideo" playsinline muted></video><div class="camera-frame"></div></div><p class="camera-help">Kamera izni verin ve kodu çerçeveye hizalayın. Desteklenmiyorsa kodu elle girin.</p>${field('Manuel kod','<input id="scanManual" placeholder="RUL-6205 veya ISG-DOLAP">')}`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="scan-manual-go">Devam Et</button>`);try{cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});const v=$('#cameraVideo');v.srcObject=cameraStream;await v.play();if('BarcodeDetector'in window){const det=new BarcodeDetector({formats:['qr_code']});cameraTimer=setInterval(async()=>{try{const codes=await det.detect(v);if(codes[0]?.rawValue){handleQr(codes[0].rawValue);}}catch{}},500);}}catch(e){toast('Kamera açılamadı; kodu elle girebilirsiniz.','error');}}
@@ -3844,11 +4619,43 @@ async function actionHandler(e){const page=e.target.closest('[data-page]')?.data
   }
   if(a==='recipe-edit')return recipeEditModal();if(a==='recipe-line-add'){return $('#recipeEditRows').insertAdjacentHTML('beforeend',recipeEditRow());}if(a==='remove-line')return e.target.closest('.recipe-edit-row').remove();if(a==='recipe-save'){const f=$('#recipeForm'),fd=new FormData(f),ids=fd.getAll('itemId'),qs=fd.getAll('qty');if(!f.reportValidity())return;const p={machine:fd.get('machine'),period:fd.get('period'),items:ids.map((id,i)=>({itemId:id,qty:Number(qs[i])}))};closeModal();enqueueSave({label:'Bakım Reçetesi',detail:`${p.machine} · ${p.period}`,run:()=>api('recipeSave',p),onSuccess:()=>{refreshViewQuietly();}});return;}
   if(a==='recipe-bulk'){const machine=$('#recipeMachine').value,period=$('#recipePeriod').value;if(isAllRecipePeriods(period))return toast('Seti toplu düşmek için tek bir periyot seçin.','error');beginSave('Bakım seti çıkışı kaydediliyor...');try{const r=await api('recipeBulkCheckout',{machine,period});endSave(true,'Bakım seti stoktan düşüldü ✓');toast('Bakım seti toplu olarak stoktan düşüldü.');scheduleBgSync(100);if(r.autoLogout)setTimeout(logout,700);}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}
-  if(a==='sync-queue-modal')return syncQueueModal();if(a==='sync-retry-all')return retryAllSyncJobs();if(a==='sync-clear-done')return clearDoneSyncJobs();if(a==='maintenance-pick')return showPage('maintenance');if(a==='stock-print-modal')return stockPrintModal();if(a==='stock-print-run')return printStockList();if(a==='print-ppe'||a==='print-movements'||a==='print-costs')return window.print();if(a==='export-costs-csv')return exportCostsCsv();if(a==='print-cabinet')return printLabels([{code:'ISG-DOLAP',name:'İSG DOLABI',shelf:'Tek Sabit QR'}],'İSG DOLABI QR ETİKETİ');if(a==='labels-toggle-all'){const boxes=$$('.label-select input[type="checkbox"]');const allChecked=boxes.length&&boxes.every(x=>x.checked);boxes.forEach(x=>x.checked=!allChecked);const btn=e.target.closest('[data-action="labels-toggle-all"]');if(btn)btn.textContent=allChecked?'Tümünü Seç':'Seçimi Temizle';return;}if(a==='print-selected'){const ids=$$('.label-select input:checked').map(x=>x.value),items=state.data.stock.filter(x=>ids.includes(x.id));return items.length?printLabels(items):toast('En az bir etiket seçin.','error');}if(a==='label-one'){const item=state.data.stock.find(x=>x.id===e.target.closest('[data-id]').dataset.id);return printLabels([item]);}
+  if(a==='sync-queue-modal')return syncQueueModal();if(a==='sync-retry-all')return retryAllSyncJobs();if(a==='sync-clear-done')return clearDoneSyncJobs();
+  if(a==='order-new')return openOrderEditor(null);
+  if(a==='order-from-missing')return openOrderFromMissing();
+  if(a==='order-back-list'){state.orderView='list';state.orderDraft=null;$('#pageActions').innerHTML=pageActionHtml('orders');return renderOrders();}
+  if(a==='order-save')return saveOrderFromEditor();
+  if(a==='order-add-row'){syncDraftFromDom();if(state.orderDraft){state.orderDraft.items.push(emptyOrderRow());renderOrderEditor();}return;}
+  if(a==='order-fill-missing'){syncDraftFromDom();if(state.orderDraft){const missing=(state.data?.stock||[]).filter(x=>Number(x.stock)<=Number(x.min));if(!missing.length)return toast('Eksik stok kalemi bulunamadı.');const seeds=missing.slice(0,25).map(it=>emptyOrderRow({itemId:it.id,name:it.name,code:it.code,supplier:it.company||'',qty:Math.max(1,(Number(it.min)||1)-Math.max(0,Number(it.stock)||0)),unit:it.unit||'AD',unitPrice:Number(it.unitPrice)||0,currency:'TL',deliveryDate:formatTrDate(new Date())}));state.orderDraft.items=padOrderRows(seeds,Math.max(14,seeds.length));renderOrderEditor();toast(`${seeds.length} eksik stok satırlara dolduruldu.`);}return;}
+  if(a==='order-print-draft')return printPurchaseOrder(syncDraftFromDom());
+  if(a==='order-export-csv')return exportOrderCsv(syncDraftFromDom());
+  if(a==='order-copy-text')return copyOrderSummary(syncDraftFromDom());
+  if(a==='order-receive-stock')return receiveOrderToStock();
+  if(a==='maintenance-pick')return showPage('maintenance');if(a==='stock-print-modal')return stockPrintModal();if(a==='stock-print-run')return printStockList();if(a==='print-ppe'||a==='print-movements'||a==='print-costs')return window.print();if(a==='export-costs-csv')return exportCostsCsv();if(a==='print-cabinet')return printLabels([{code:'ISG-DOLAP',name:'İSG DOLABI',shelf:'Tek Sabit QR'}],'İSG DOLABI QR ETİKETİ');if(a==='labels-toggle-all'){const boxes=$$('.label-select input[type="checkbox"]');const allChecked=boxes.length&&boxes.every(x=>x.checked);boxes.forEach(x=>x.checked=!allChecked);const btn=e.target.closest('[data-action="labels-toggle-all"]');if(btn)btn.textContent=allChecked?'Tümünü Seç':'Seçimi Temizle';return;}if(a==='print-selected'){const ids=$$('.label-select input:checked').map(x=>x.value),items=state.data.stock.filter(x=>ids.includes(x.id));return items.length?printLabels(items):toast('En az bir etiket seçin.','error');}if(a==='label-one'){const item=state.data.stock.find(x=>x.id===e.target.closest('[data-id]').dataset.id);return printLabels([item]);}
   if(a==='copy-gas'){navigator.clipboard.writeText($('#gasCode').textContent).then(()=>toast('Kod.gs panoya kopyalandı.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));return;}if(a==='login-settings-modal')return loginSettingsModal();if(a==='pwa-install-modal')return installAppModal();if(a==='pwa-install-now'){location.href=qrAppUrl();return;}if(a==='copy-qr-url'){navigator.clipboard.writeText(qrAppUrl()).then(()=>toast('Operatör QR kurulum linki kopyalandı.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));return;}if(a==='share-qr-url'){const u=qrAppUrl();if(navigator.share){navigator.share({title:'Operatör QR Okuyucu',text:'Operatör QR uygulamasını telefonunuza kurmak için bu bağlantıyı açıp "Kur" butonuna basın:',url:u}).catch(()=>{});}else{navigator.clipboard.writeText(u).then(()=>toast('Link panoya kopyalandı; WhatsApp veya SMS ile operatöre gönderebilirsiniz.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));}return;}if(a==='download-html'){const url=URL.createObjectURL(new Blob([ORIGINAL_HTML],{type:'text/html;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='Mekanik_Depo_V8.7_Tek_HTML.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);return;}if(a==='open-qr-terminal'){const u=qrAppUrl();if(window.innerWidth<=768){location.href=u;return;}modal('Operatör QR Okuyucu',`<div style="border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#0F172A;max-width:430px;margin:0 auto"><iframe src="${esc(u)}" allow="camera" title="Operatör QR Okuyucu" style="width:100%;height:min(76vh,700px);border:0;display:block"></iframe></div>`,`<button class="btn ghost" data-action="pwa-install-modal">${ic('phone','ic-sm')} Operatör Telefonuna Kur</button><button class="btn ghost" data-action="download-qr-terminal">${ic('download','ic-sm')} HTML İndir</button><a class="btn ghost" href="${esc(u)}" target="_blank" rel="noopener">Yeni Sekmede Aç</a><button class="btn primary" data-close>Kapat</button>`);return;}if(a==='download-qr-terminal'){beginSave('QR Terminali indiriliyor...');try{let res=await fetch('./qr-terminal.html');if(!res.ok)res=await fetch('./public/qr-terminal.html');if(!res.ok)throw Error('QR Terminal dosyası okunamadı.');const html=(await res.text()).replace(/<script[^>]*src="\/@vite\/client"[^>]*><\/script>\s*/gi,''),url=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download='Operator_QR_Okuyucu.html';link.click();setTimeout(()=>URL.revokeObjectURL(url),2000);endSave(true,'Operatör QR indirildi ✓');toast('Operatör QR Okuyucu (Operator_QR_Okuyucu.html) indirildi.');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(a==='save-connection'){state.mode=$('[name=mode]:checked').value;state.directUrl=$('#directUrl').value.trim();localStorage.setItem('depo.mode',state.mode);localStorage.setItem('depo.directUrl',state.directUrl);toast('Bağlantı ayarı kaydedildi; yeniden giriş yapın.');return;}if(a==='test-connection'){const old=state.directUrl,oldMode=state.mode;state.mode=$('[name=mode]:checked')?.value||state.mode;state.directUrl=$('#directUrl').value.trim();beginSave('Bağlantı test ediliyor...');try{await api('health');endSave(true,'Bağlantı başarılı ✓');toast('Bağlantı yanıt verdi.');}catch(x){endSave(false,x.message);toast(x.message,'error');}finally{state.directUrl=old;state.mode=oldMode;}return;}if(a==='login-save-conn'){const mode=$('#loginMode')?.value||'demo',url=($('#loginDirectUrl')?.value||'').trim();if(mode==='direct'&&!url)return toast('Doğrudan mod için Apps Script /exec adresi girin.','error');state.mode=mode;state.directUrl=url;localStorage.setItem('depo.mode',state.mode);localStorage.setItem('depo.directUrl',state.directUrl);closeModal();renderLogin();toast('Bağlantı ayarı kaydedildi ('+(mode==='demo'?'Demo':mode==='direct'?'Doğrudan GAS':'/api/gas')+').');return;}if(a==='login-test-conn'){const oldMode=state.mode,oldUrl=state.directUrl;state.mode=$('#loginMode')?.value||state.mode;state.directUrl=($('#loginDirectUrl')?.value||'').trim();beginSave('Bağlantı test ediliyor...');try{await api('health');endSave(true,'Bağlantı başarılı ✓');toast('Bağlantı başarılı.');}catch(x){endSave(false,x.message);toast(x.message,'error');}finally{state.mode=oldMode;state.directUrl=oldUrl;}return;}
  }
   const sqRetry=e.target.closest('[data-sync-retry]');if(sqRetry)return retrySyncJob(sqRetry.dataset.syncRetry);
   const sqDismiss=e.target.closest('[data-sync-dismiss]');if(sqDismiss)return dismissSyncJob(sqDismiss.dataset.syncDismiss);
+  const ordSt=e.target.closest('[data-order-status]');if(ordSt){state.orderFilter.status=ordSt.dataset.orderStatus;return renderOrders();}
+  const ordOpen=e.target.closest('[data-order-open]');if(ordOpen){const o=(state.data?.orders||[]).find(x=>norm(x.formNo)===norm(ordOpen.dataset.orderOpen));if(o)return openOrderEditor(o);}
+  const ordPrint=e.target.closest('[data-order-print]');if(ordPrint){const o=(state.data?.orders||[]).find(x=>norm(x.formNo)===norm(ordPrint.dataset.orderPrint));if(o)return printPurchaseOrder(o);}
+  const ordFromItem=e.target.closest('[data-order-from-item]');if(ordFromItem)return openOrderFromItem(ordFromItem.dataset.orderFromItem);
+  const poPick=e.target.closest('[data-po-pick]');if(poPick){syncDraftFromDom();return openOrderStockPicker(Number(poPick.dataset.poPick));}
+  const poPickItem=e.target.closest('[data-po-pick-item]');if(poPickItem){
+   const it=(state.data?.stock||[]).find(x=>x.id===poPickItem.dataset.poPickItem);
+   const rIdx=Number(poPickItem.dataset.poPickRow);
+   if(it&&state.orderDraft&&state.orderDraft.items[rIdx]){
+    const curQty=Number(state.orderDraft.items[rIdx].qty)||Math.max(1,(Number(it.min)||1)-Math.max(0,Number(it.stock)||0));
+    state.orderDraft.items[rIdx]=emptyOrderRow({itemId:it.id,name:it.name,code:it.code,supplier:it.company||'',qty:curQty,unit:it.unit||'AD',unitPrice:Number(it.unitPrice)||0,currency:'TL',deliveryDate:state.orderDraft.items[rIdx].deliveryDate||formatTrDate(new Date())});
+    if(!state.orderDraft.department&&it.machine){
+     const firstMac=String(it.machine).split('|')[0].trim();
+     state.orderDraft.department=firstMac;
+     const autoCc=resolveCostCenterForDepartment(firstMac);
+     if(autoCc)state.orderDraft.costCenter=autoCc;
+    }
+    closeModal();renderOrderEditor();
+   }
+   return;
+  }
   const fillPin=e.target.closest('[data-fill-pin]');if(fillPin){closeModal();const inp=$('#loginForm [name="pin"]');if(inp){inp.value=fillPin.dataset.fillPin;inp.focus();}return;}
   const lblPreset=e.target.closest('[data-label-preset]');if(lblPreset){saveLabelCfg({...state.labelCfg,w:Number(lblPreset.dataset.w),h:Number(lblPreset.dataset.h)});if($('#lblWidth'))$('#lblWidth').value=state.labelCfg.w;if($('#lblHeight'))$('#lblHeight').value=state.labelCfg.h;updateLabelPreview();return;}
   const lblPos=e.target.closest('[data-label-pos]');if(lblPos){saveLabelCfg({...state.labelCfg,textPos:lblPos.dataset.labelPos});updateLabelPreview();return;}
@@ -3883,7 +4690,7 @@ async function actionHandler(e){const page=e.target.closest('[data-page]')?.data
  }
  const ai=e.target.closest('[data-analysis-item]');if(ai)return analysisDetail(ai.dataset.analysisItem);const cg=e.target.closest('[data-cost-group]');if(cg){state.costFilter.group=cg.dataset.costGroup;return renderCosts();}const ck=e.target.closest('[data-cost-key]');if(ck)return costDetailModal(ck.dataset.costKind,ck.dataset.costKey);const q=e.target.closest('[data-qty]');if(q){const i=$('[name=qty]');i.value=Math.max(.01,Number(i.value)+Number(q.dataset.qty));}
 }
-async function changeHandler(e){if(e.target.name==='spScope'||['spDepot','spCategory','spOnlyMissing'].includes(e.target.id)){return syncStockPrintModal();}if(e.target.id==='lblMode'){saveLabelCfg({...state.labelCfg,mode:e.target.value});return updateLabelPreview();}if(e.target.matches('[data-label-field]')){saveLabelCfg({...state.labelCfg,[e.target.dataset.labelField]:e.target.checked});return updateLabelPreview();}if(e.target.closest('.label-select')){return updateLabelPreview();}if(e.target.name==='ppeSignMode'){const now=e.target.value==='now',box=$('#ppeSignNowBox'),btn=$('#ppeCreateSubmitBtn');if(box)box.hidden=!now;if(btn)btn.textContent=now?'İmzala ve Teslim Et':'Onaya Gönder';if(now)setTimeout(()=>{activeSigPad=initSigPad($('#ppeCreateSigCanvas'));},40);else activeSigPad=null;return;}if(e.target.name==='usageOption'){if(e.target.checked&&e.target.value==='Tekli Makine')$('[name="usageOption"][value="Çoklu Makine"]').checked=false;if(e.target.checked&&e.target.value==='Çoklu Makine')$('[name="usageOption"][value="Tekli Makine"]').checked=false;return syncItemForm();}if(e.target.name==='machineOption'){if(selectedRegistrationUsage().includes('Tekli Makine')&&e.target.checked)$$('[name="machineOption"]').forEach(x=>{if(x!==e.target)x.checked=false;});return syncItemForm();}if(e.target.id==='stockStatus'){state.stockFilter.status=e.target.value;return renderStock();}if(e.target.id==='stockCategory'){state.stockFilter.category=e.target.value;return renderStock();}if(e.target.id==='stockUsage'){state.stockFilter.usage=e.target.value;return renderStock();}if(e.target.matches('[data-filter-depot]')){state.stockFilter.depot=e.target.dataset.filterDepot;return renderStock();}if(e.target.id==='recipeMachine'||e.target.id==='recipePeriod'){const m=$('#recipeMachine').value,p=$('#recipePeriod').value;syncRecipeMachineSelection(m);$('#recipePanel').innerHTML=recipeTable(m,p,recipeRows(m,p));return;}if(e.target.matches('[data-ppe]')){const nextRange=e.target.dataset.ppe||'30d';state.ppeRange=nextRange;beginSave('KKD analizi yükleniyor...');try{await loadPpeAnalysis(nextRange,true);await renderPpe();endSave(true,'Güncellendi ✓');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(['anaRange','anaDepot'].includes(e.target.id)){beginSave('Tüketim analizi yükleniyor...');try{state.analysis=await api('movementAnalysis',{range:$('#anaRange').value,depot:$('#anaDepot').value});await renderAnalysis();endSave(true,'Güncellendi ✓');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(e.target.id==='anaSort')$('#analysisBars').innerHTML=analysisBars(state.analysis.rows,e.target.value);if(['costRange','costDepot'].includes(e.target.id)){state.costFilter.range=$('#costRange')?.value||state.costFilter.range;if($('#costDepot'))state.costFilter.depot=$('#costDepot').value;beginSave('Maliyet analizi yükleniyor...');try{await loadCostAnalysis(true);await renderCosts();endSave(true,'Güncellendi ✓');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(e.target.id==='costSort'){state.costFilter.sort=e.target.value;return renderCosts();}}
+async function changeHandler(e){if(e.target.id==='poDepartment'&&state.orderDraft){const dep=e.target.value.trim();state.orderDraft.department=dep;const cc=resolveCostCenterForDepartment(dep);if(cc){state.orderDraft.costCenter=cc;if($('#poCostCenter'))$('#poCostCenter').value=cc;}return;}if(e.target.dataset?.poField&&state.orderDraft){const idx=Number(e.target.dataset.idx),f=e.target.dataset.poField;if(state.orderDraft.items[idx]){state.orderDraft.items[idx][f]=['qty','unitPrice'].includes(f)?(Number(e.target.value)||0):e.target.value;if(['qty','unitPrice'].includes(f))recalcOrderRow(idx);}return;}if(e.target.id==='poStatusSelect'&&state.orderDraft){state.orderDraft.status=e.target.value;return;}if(e.target.name==='spScope'||['spDepot','spCategory','spOnlyMissing'].includes(e.target.id)){return syncStockPrintModal();}if(e.target.id==='lblMode'){saveLabelCfg({...state.labelCfg,mode:e.target.value});return updateLabelPreview();}if(e.target.matches('[data-label-field]')){saveLabelCfg({...state.labelCfg,[e.target.dataset.labelField]:e.target.checked});return updateLabelPreview();}if(e.target.closest('.label-select')){return updateLabelPreview();}if(e.target.name==='ppeSignMode'){const now=e.target.value==='now',box=$('#ppeSignNowBox'),btn=$('#ppeCreateSubmitBtn');if(box)box.hidden=!now;if(btn)btn.textContent=now?'İmzala ve Teslim Et':'Onaya Gönder';if(now)setTimeout(()=>{activeSigPad=initSigPad($('#ppeCreateSigCanvas'));},40);else activeSigPad=null;return;}if(e.target.name==='usageOption'){if(e.target.checked&&e.target.value==='Tekli Makine')$('[name="usageOption"][value="Çoklu Makine"]').checked=false;if(e.target.checked&&e.target.value==='Çoklu Makine')$('[name="usageOption"][value="Tekli Makine"]').checked=false;return syncItemForm();}if(e.target.name==='machineOption'){if(selectedRegistrationUsage().includes('Tekli Makine')&&e.target.checked)$$('[name="machineOption"]').forEach(x=>{if(x!==e.target)x.checked=false;});return syncItemForm();}if(e.target.id==='stockStatus'){state.stockFilter.status=e.target.value;return renderStock();}if(e.target.id==='stockCategory'){state.stockFilter.category=e.target.value;return renderStock();}if(e.target.id==='stockUsage'){state.stockFilter.usage=e.target.value;return renderStock();}if(e.target.matches('[data-filter-depot]')){state.stockFilter.depot=e.target.dataset.filterDepot;return renderStock();}if(e.target.id==='recipeMachine'||e.target.id==='recipePeriod'){const m=$('#recipeMachine').value,p=$('#recipePeriod').value;syncRecipeMachineSelection(m);$('#recipePanel').innerHTML=recipeTable(m,p,recipeRows(m,p));return;}if(e.target.matches('[data-ppe]')){const nextRange=e.target.dataset.ppe||'30d';state.ppeRange=nextRange;beginSave('KKD analizi yükleniyor...');try{await loadPpeAnalysis(nextRange,true);await renderPpe();endSave(true,'Güncellendi ✓');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(['anaRange','anaDepot'].includes(e.target.id)){beginSave('Tüketim analizi yükleniyor...');try{state.analysis=await api('movementAnalysis',{range:$('#anaRange').value,depot:$('#anaDepot').value});await renderAnalysis();endSave(true,'Güncellendi ✓');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(e.target.id==='anaSort')$('#analysisBars').innerHTML=analysisBars(state.analysis.rows,e.target.value);if(['costRange','costDepot'].includes(e.target.id)){state.costFilter.range=$('#costRange')?.value||state.costFilter.range;if($('#costDepot'))state.costFilter.depot=$('#costDepot').value;beginSave('Maliyet analizi yükleniyor...');try{await loadCostAnalysis(true);await renderCosts();endSave(true,'Güncellendi ✓');}catch(x){endSave(false,x.message);toast(x.message,'error');}return;}if(e.target.id==='costSort'){state.costFilter.sort=e.target.value;return renderCosts();}}
 async function clickStockOp(e){
  const b=e.target.closest('[data-stock-op]');if(!b)return;
  const form=$('#stockOpForm');if(form&&!form.reportValidity())return;
@@ -3924,7 +4731,7 @@ async function clickStockOp(e){
  });
 }
 function keepInputFocus(id,fn){const el=$('#'+id),pos=el?.selectionStart;fn();const next=$('#'+id);if(next){next.focus();if(typeof pos==='number')next.setSelectionRange(pos,pos);}}
-function inputHandler(e){if(e.target.id==='lblWidth'||e.target.id==='lblHeight'||e.target.id==='lblCopies'){const w=Number($('#lblWidth')?.value),h=Number($('#lblHeight')?.value),copies=Number($('#lblCopies')?.value);if(w>=25&&h>=15){saveLabelCfg({...state.labelCfg,w,h,copies:copies>=1?copies:state.labelCfg.copies});updateLabelPreview();}return;}if(e.target.id==='lblFontRange'){saveLabelCfg({...state.labelCfg,fontPt:Number(e.target.value)});updateLabelPreview();return;}if(e.target.id==='lblCustomText'){saveLabelCfg({...state.labelCfg,customText:e.target.value});updateLabelPreview();return;}if(e.target.id==='itemInitial'||e.target.id==='itemUnitPrice')updateRegistrationTotal();if(e.target.id==='itemMachineSearch')filterRegistrationMachines(e.target.value);if(e.target.id==='stockSearch'){state.stockFilter.query=e.target.value;clearTimeout(inputHandler.t);inputHandler.t=setTimeout(()=>keepInputFocus('stockSearch',renderStock),90);}if(e.target.id==='movSearch'){state.movQuery=e.target.value;clearTimeout(inputHandler.mt);inputHandler.mt=setTimeout(()=>keepInputFocus('movSearch',renderMovements),90);}if(e.target.id==='ppeSearch'){state.ppeFilter.query=e.target.value;clearTimeout(inputHandler.pt);inputHandler.pt=setTimeout(()=>keepInputFocus('ppeSearch',renderPpe),90);}if(e.target.id==='ppeUsageSearch'){state.ppeUsageQuery=e.target.value;clearTimeout(inputHandler.put);inputHandler.put=setTimeout(()=>keepInputFocus('ppeUsageSearch',renderPpe),90);}if(e.target.id==='costSearch'){state.costFilter.query=e.target.value;clearTimeout(inputHandler.ct);inputHandler.ct=setTimeout(()=>keepInputFocus('costSearch',renderCosts),90);}}
+function inputHandler(e){if(e.target.id==='poPickSearch'){const rIdx=Number($('#modalRoot')?.dataset.poPickRow||0);const box=$('#poPickList');if(box)box.innerHTML=renderOrderPickerRows(state.data?.stock||[],rIdx,e.target.value);return;}if(e.target.dataset?.poField&&state.orderDraft){const idx=Number(e.target.dataset.idx),f=e.target.dataset.poField;if(state.orderDraft.items[idx]){state.orderDraft.items[idx][f]=['qty','unitPrice'].includes(f)?(Number(e.target.value)||0):e.target.value;if(['qty','unitPrice'].includes(f))recalcOrderRow(idx);}return;}if(e.target.id==='poRequestedBy'&&$('#poSigRequirer')){$('#poSigRequirer').value=e.target.value;return;}if(e.target.id==='orderSearch'){state.orderFilter.query=e.target.value;clearTimeout(inputHandler.ot);inputHandler.ot=setTimeout(()=>keepInputFocus('orderSearch',renderOrders),90);return;}if(e.target.id==='lblWidth'||e.target.id==='lblHeight'||e.target.id==='lblCopies'){const w=Number($('#lblWidth')?.value),h=Number($('#lblHeight')?.value),copies=Number($('#lblCopies')?.value);if(w>=25&&h>=15){saveLabelCfg({...state.labelCfg,w,h,copies:copies>=1?copies:state.labelCfg.copies});updateLabelPreview();}return;}if(e.target.id==='lblFontRange'){saveLabelCfg({...state.labelCfg,fontPt:Number(e.target.value)});updateLabelPreview();return;}if(e.target.id==='lblCustomText'){saveLabelCfg({...state.labelCfg,customText:e.target.value});updateLabelPreview();return;}if(e.target.id==='itemInitial'||e.target.id==='itemUnitPrice')updateRegistrationTotal();if(e.target.id==='itemMachineSearch')filterRegistrationMachines(e.target.value);if(e.target.id==='stockSearch'){state.stockFilter.query=e.target.value;clearTimeout(inputHandler.t);inputHandler.t=setTimeout(()=>keepInputFocus('stockSearch',renderStock),90);}if(e.target.id==='movSearch'){state.movQuery=e.target.value;clearTimeout(inputHandler.mt);inputHandler.mt=setTimeout(()=>keepInputFocus('movSearch',renderMovements),90);}if(e.target.id==='ppeSearch'){state.ppeFilter.query=e.target.value;clearTimeout(inputHandler.pt);inputHandler.pt=setTimeout(()=>keepInputFocus('ppeSearch',renderPpe),90);}if(e.target.id==='ppeUsageSearch'){state.ppeUsageQuery=e.target.value;clearTimeout(inputHandler.put);inputHandler.put=setTimeout(()=>keepInputFocus('ppeUsageSearch',renderPpe),90);}if(e.target.id==='costSearch'){state.costFilter.query=e.target.value;clearTimeout(inputHandler.ct);inputHandler.ct=setTimeout(()=>keepInputFocus('costSearch',renderCosts),90);}}
 
 document.addEventListener('click',e=>{if(!e.target.closest('.sidebar')){$('.sidebar.open')?.classList.remove('open');$('#navMenuBtn')?.setAttribute('aria-expanded','false');}if(e.target.closest('#nav [data-action="pwa-install-modal"]')){$('.sidebar.open')?.classList.remove('open');$('#navMenuBtn')?.setAttribute('aria-expanded','false');}actionHandler(e);clickStockOp(e);const d=e.target.closest('[data-filter-depot],[data-ppe]');if(d)changeHandler({target:d});if(e.target.closest('[data-action="toggle-pin"]')){const i=$('[name=pin]');i.type=i.type==='password'?'text':'password';}});
 document.addEventListener('change',changeHandler);document.addEventListener('input',inputHandler);document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('.sidebar.open')){$('.sidebar.open').classList.remove('open');$('#navMenuBtn')?.setAttribute('aria-expanded','false');}if(!$('#modalRoot')?.hidden)closeModal();}});

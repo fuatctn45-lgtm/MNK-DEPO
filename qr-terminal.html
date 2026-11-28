@@ -60,7 +60,7 @@ html,body{
   font:16px/1.45 var(--font);-webkit-font-smoothing:antialiased;
   overscroll-behavior-y:contain;
 }
-button,input,select{font:inherit;color:inherit;touch-action:manipulation}
+button,input,select,textarea{font:inherit;color:inherit;touch-action:manipulation}
 button{cursor:pointer;user-select:none;-webkit-user-select:none}
 .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .num{font-variant-numeric:tabular-nums}
@@ -189,6 +189,7 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
 .hist-status.deducted{color:var(--green)}
 .hist-status.pending{color:var(--amber)}
 .hist-status.rejected{color:var(--red)}
+.hist-status.order{color:var(--blue)}
 .empty-box{text-align:center;padding:34px 18px;color:var(--muted)}
 .empty-box b{display:block;font-size:15px;color:var(--ink);margin-top:10px}
 .empty-box p{margin:4px 0 14px;font-size:13px}
@@ -402,6 +403,47 @@ select.input{
 }
 .input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(234,88,12,.14)}
 .input[readonly]{background:var(--surface-2);color:var(--ink-2);border-color:var(--border)}
+textarea.input{height:auto;min-height:76px;padding:11px 14px;resize:vertical;line-height:1.45;font-weight:500}
+
+/* Mobile Purchase Request Form */
+.order-cta-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:11px 13px;border-radius:12px;
+  background:linear-gradient(135deg,#0B4C8C 0%,#1D4ED8 100%);
+  color:#fff;border:1px solid rgba(255,255,255,.16);
+  width:100%;text-align:left;box-shadow:0 6px 16px rgba(11,76,140,.28);
+}
+.order-cta-bar:active{transform:scale(.98)}
+.order-cta-bar > div{min-width:0;flex:1}
+.order-cta-bar b{display:block;font-size:14.5px;font-weight:800;line-height:1.2}
+.order-cta-bar small{display:block;font-size:12px;color:#DBEAFE;margin-top:2px;font-weight:500}
+.order-cta-ic{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.16);display:grid;place-items:center;flex:none;color:#fff}
+.op-lock-box{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:11px 13px;border-radius:12px;margin-bottom:14px;
+  background:var(--blue-soft);border:1.5px solid var(--blue-line);
+}
+.op-lock-box small{display:block;font-size:11px;font-weight:700;color:#1D4ED8;text-transform:uppercase;letter-spacing:.04em}
+.op-lock-box b{display:block;font-size:15.5px;font-weight:800;color:#0F172A;margin-top:1px}
+.order-items-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0 8px}
+.order-items-head span{font-size:13.5px;font-weight:800;color:var(--ink)}
+.order-item-card{
+  background:var(--surface-2);border:1.5px solid var(--border);border-radius:12px;
+  padding:11px;margin-bottom:10px;
+}
+.order-item-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.order-item-num{font-size:12px;font-weight:800;color:#1D4ED8;background:var(--blue-soft);border:1px solid var(--blue-line);padding:2px 8px;border-radius:6px}
+.order-item-del{border:1px solid var(--red-line);background:#fff;color:var(--red);border-radius:8px;height:30px;padding:0 9px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.order-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.order-grid-qty{display:grid;grid-template-columns:1fr 96px;gap:8px}
+.order-item-card .field{margin-bottom:8px}
+.order-item-card .field:last-child{margin-bottom:0}
+.order-item-card .field > span{font-size:12px;margin-bottom:4px}
+.order-item-card .input,.order-item-card select.input{height:44px;font-size:14.5px;padding:0 11px}
+.order-item-card select.input{padding-right:34px}
+.btn.blue{background:#0B4C8C;color:#fff}
+.btn.blue:hover:not(:disabled){background:#083B6E}
+.receipt-icon.blue{background:var(--blue-soft);color:var(--blue);border:1.5px solid var(--blue-line)}
 
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
@@ -774,6 +816,32 @@ const nowStr = () => new Date().toLocaleString('tr-TR');
 const PREFS_KEY = 'depo.qr.prefs';
 const HIST_KEY = 'depo.qr.history';
 const STOCK_CACHE_KEY = 'depo.qr.stockCache';
+const LOCAL_ORDERS_KEY = 'depo.localOrders';
+function loadLocalOrders() {
+  try { const a = JSON.parse(localStorage.getItem(LOCAL_ORDERS_KEY) || '[]'); return Array.isArray(a) ? a : []; }
+  catch { return []; }
+}
+function saveLocalOrder(order) {
+  const list = loadLocalOrders();
+  const idx = list.findIndex(x => x.id === order.id);
+  if (idx >= 0) list[idx] = order; else list.unshift(order);
+  try { localStorage.setItem(LOCAL_ORDERS_KEY, JSON.stringify(list.slice(0, 120))); } catch {}
+  return order;
+}
+function nextOrderFormNo() {
+  const yr = new Date().getFullYear();
+  const existing = loadLocalOrders();
+  let maxN = 1;
+  existing.forEach(o => {
+    const m = String(o.formNo || '').match(/(\d+)$/);
+    if (m) maxN = Math.max(maxN, Number(m[1]) || 0);
+  });
+  return `SAT-${yr}-${String(maxN + 1).padStart(3, '0')}`;
+}
+function todayTr() {
+  const d = new Date();
+  return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+}
 function loadPrefs() {
   try { return {sound:true, vibrate:true, wakeLock:true, ...JSON.parse(localStorage.getItem(PREFS_KEY)||'{}')}; }
   catch { return {sound:true, vibrate:true, wakeLock:true}; }
@@ -807,13 +875,15 @@ function loadStockCache() {
     return c;
   } catch { return null; }
 }
-function saveStockCache(stock, machines) {
+function saveStockCache(stock, machines, costCenters, machineCostCenters) {
   try {
     localStorage.setItem(STOCK_CACHE_KEY, JSON.stringify({
       sig: cacheKeySig(),
       ts: Date.now(),
       stock: stock || [],
-      machines: machines || []
+      machines: machines || [],
+      costCenters: costCenters || [],
+      machineCostCenters: machineCostCenters || {}
     }));
   } catch {}
 }
@@ -825,7 +895,7 @@ function patchCachedStock(itemId, deltaOrRemaining, isAbsolute = false) {
   };
   apply(state.stock);
   const c = loadStockCache();
-  if (c) { apply(c.stock); saveStockCache(c.stock, c.machines); }
+  if (c) { apply(c.stock); saveStockCache(c.stock, c.machines, c.costCenters, c.machineCostCenters); }
 }
 const vibrate = ms => { try { if (state.prefs.vibrate && navigator.vibrate) navigator.vibrate(ms); } catch {} };
 
@@ -856,7 +926,10 @@ const SVG = {
   eye: '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>',
   x: '<path d="M18 6 6 18M6 6l12 12"/>',
   download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
-  phone: '<rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12.01" y2="18"/>'
+  phone: '<rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12.01" y2="18"/>',
+  fileText: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/>',
+  plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/>'
 };
 const ic = (name, cls='') => `<span class="ic ${cls}" aria-hidden="true"><svg viewBox="0 0 24 24">${SVG[name]||''}</svg></span>`;
 
@@ -888,7 +961,20 @@ const DEMO = {
     {id:'ISG-0003',depot:'ISG',type:'İSG MALZEME',code:'MAS-FFP2',name:'FFP2 Toz Maskesi',category:'İSG MALZEME',company:'3M',unit:'AD',usage:'İSG / KKD',shelf:'İSG-03',machine:'',min:40,stock:25},
     {id:'ISG-0004',depot:'ISG',type:'İSG MALZEME',code:'KUL-SNR32',name:'Kulak Koruyucu SNR 32',category:'İSG MALZEME',company:'Uvex',unit:'AD',usage:'İSG / KKD',shelf:'İSG-04',machine:'',min:10,stock:16}
   ],
-  machines: ['Kondanser Boru Makinesi','Paketleme Makinesi','Dolum Makinesi','Kompresör','Kazan Dairesi'],
+  machines: ['PLANLI BAKIMLAR','KOMPRESÖR KAİSER','Kondanser Boru Makinesi','Paketleme Makinesi','Dolum Makinesi','Kompresör','Kazan Dairesi','ARÇELİK KLİMA 18000BTU KLİMA DEPO OFİS','DEPO ISITMA SİSTEMİ','16-351110-Blok Dizme (Alu)'],
+  costCenters: ['01-350522-Bakim ve Onarim & Üretim','03-350600-Satinalma ve Lojistik','16-351110-Blok Dizme (Alu)'],
+  machineCostCenters: {
+    'PLANLI BAKIMLAR':'01-350522-Bakim ve Onarim & Üretim',
+    'KOMPRESÖR KAİSER':'01-350522-Bakim ve Onarim & Üretim',
+    'Kondanser Boru Makinesi':'01-350522-Bakim ve Onarim & Üretim',
+    'Paketleme Makinesi':'01-350522-Bakim ve Onarim & Üretim',
+    'Dolum Makinesi':'01-350522-Bakim ve Onarim & Üretim',
+    'Kompresör':'01-350522-Bakim ve Onarim & Üretim',
+    'Kazan Dairesi':'01-350522-Bakim ve Onarim & Üretim',
+    'ARÇELİK KLİMA 18000BTU KLİMA DEPO OFİS':'03-350600-Satinalma ve Lojistik',
+    'DEPO ISITMA SİSTEMİ':'03-350600-Satinalma ve Lojistik',
+    '16-351110-Blok Dizme (Alu)':'16-351110-Blok Dizme (Alu)'
+  },
   approvals: []
 };
 
@@ -938,12 +1024,16 @@ const state = {
   directUrl: localStorage.getItem('depo.directUrl') || '',
   tab: 'scan',
   step: 'scan',
+  intent: 'scan',
   scannedQr: readInitialQr(),
   user: null,
   session: '',
   stock: [],
   machines: [],
+  costCenters: [],
+  machineCostCenters: {},
   item: null,
+  orderDraft: null,
   pendingCheckout: null,
   approvalTab: 'pin',
   receipt: null,
@@ -1009,7 +1099,7 @@ function updateInstallUI() {
   const btn = $('#installTopBtn');
   if (btn) btn.hidden = state.isInstalled;
   const sub = $('#appModeSub');
-  if (sub) sub.textContent = state.isInstalled ? 'Uygulama Modu · V8.7' : 'Mekanik + İSG Depo';
+  if (sub) sub.textContent = state.isInstalled ? 'Uygulama Modu · V8.8' : 'Mekanik + İSG Depo';
 }
 function updateNavUI() {
   $$('.bnav-btn').forEach(b => b.classList.toggle('active', b.dataset.nav === state.tab));
@@ -1120,9 +1210,13 @@ function updateConnBadge() {
 function updateStepper() {
   const st = $('#stepper');
   if (st) st.hidden = state.tab !== 'scan';
+  const isOrder = state.intent === 'order' || state.step === 'order';
+  const labels = isOrder ? ['Sipariş', 'OP PIN', 'Talep Formu'] : ['QR Okut', 'OP PIN', 'Çıkış'];
   const stepNum = state.step === 'scan' ? 1 : state.step === 'pin' ? 2 : 3;
   $$('#stepper .step').forEach(el => {
     const n = Number(el.dataset.step);
+    const sp = el.querySelector('span');
+    if (sp) sp.textContent = labels[n - 1] || '';
     el.classList.toggle('active', n === stepNum);
     el.classList.toggle('done', n < stepNum || state.step === 'receipt');
   });
@@ -1170,7 +1264,7 @@ async function demoApi(action, p = {}) {
       (state.user.role === 'MEK_ADMIN' && x.depot === 'MEKANIK') ||
       (state.user.role === 'ISG_ADMIN' && x.depot === 'ISG')
     );
-    return {user:state.user, stock, lists:{machines: DEMO.machines}};
+    return {user:state.user, stock, lists:{machines: DEMO.machines, costCenters: DEMO.costCenters, machineCostCenters: DEMO.machineCostCenters}};
   }
   if (action === 'checkout') {
     const item = DEMO.stock.find(x => x.id === p.itemId || norm(x.code) === norm(p.code));
@@ -1200,6 +1294,54 @@ async function demoApi(action, p = {}) {
 
     item.stock = Number((item.stock - qty).toFixed(2));
     return {completed:true, id:uid('CIK'), remaining:item.stock, autoLogout:state.user.role==='OP'};
+  }
+  if (action === 'purchaseOrderCreate') {
+    const cleanItems = (Array.isArray(p.items) ? p.items : []).filter(r => String(r.name || '').trim()).map((r, i) => ({
+      no: i + 1,
+      itemId: String(r.itemId || ''),
+      name: String(r.name || '').trim(),
+      code: String(r.code || '').trim(),
+      supplier: String(r.supplier || '').trim(),
+      qty: Number(r.qty) || 0,
+      unit: String(r.unit || 'AD').trim() || 'AD',
+      unitPrice: Number(r.unitPrice) || 0,
+      currency: String(r.currency || 'TL').trim() || 'TL',
+      total: Number(((Number(r.qty) || 0) * (Number(r.unitPrice) || 0)).toFixed(2)),
+      deliveryDate: String(r.deliveryDate || '').trim()
+    }));
+    if (!cleanItems.length) throw new Error('En az 1 malzeme satırı doldurun.');
+    const formNo = String(p.formNo || '').trim() || nextOrderFormNo();
+    const totalAmount = Number(cleanItems.reduce((s, r) => s + (r.total || 0), 0).toFixed(2));
+    const rec = {
+      id: uid('SIP'),
+      formNo,
+      formCode: p.formCode || 'IZM_350600_LJT_001',
+      requestDate: p.requestDate || todayTr(),
+      requestedBy: state.user?.name || String(p.requestedBy || ''),
+      department: String(p.department || '').trim(),
+      costCenter: String(p.costCenter || p.department || '').trim(),
+      attachmentQty: Number(p.attachmentQty) || 0,
+      paymentTerm: p.paymentTerm || 'Peşin / Cash',
+      paymentMaturity: p.paymentMaturity || '',
+      transport: p.transport || '',
+      deliveryPlace: p.deliveryPlace || '',
+      details: String(p.details || '').trim(),
+      sigRequirer: state.user?.name || String(p.requestedBy || ''),
+      sigManager: 'FUAT ÇETİN',
+      sigApproval1: 'İbrahim Özdemir',
+      sigApproval2: 'Yüksel Kurun',
+      sigApproval3: 'İbrahim Özdemir',
+      items: cleanItems,
+      totalAmount,
+      currency: cleanItems[0]?.currency || 'TL',
+      status: 'TALEP_OLUSTURULDU',
+      source: 'QR_TERMINAL',
+      createdAt: nowStr(),
+      createdBy: state.user?.name || '',
+      updatedAt: nowStr()
+    };
+    saveLocalOrder(rec);
+    return rec;
   }
   throw new Error('Desteklenmeyen işlem: ' + action);
 }
@@ -1353,11 +1495,73 @@ function selectQrCode(code) {
   const clean = extractCodeFromQr(code);
   if (!clean) return toast('QR kodu okunamadı.', 'err');
   stopCamera();
+  state.intent = 'scan';
   state.scannedQr = clean;
   state.user = null;
   state.session = '';
   state.item = null;
+  state.orderDraft = null;
   state.pendingCheckout = null;
+  state.showPin = false;
+  state.step = 'pin';
+  render();
+}
+
+function makeOrderRow(seed = {}) {
+  return {
+    itemId: seed.itemId || '',
+    name: seed.name || '',
+    code: seed.code || '',
+    supplier: seed.supplier || '',
+    qty: seed.qty || 1,
+    unit: seed.unit || 'AD',
+    unitPrice: Number(seed.unitPrice) || 0,
+    currency: seed.currency || 'TL',
+    deliveryDate: seed.deliveryDate || ''
+  };
+}
+
+function resolveCostCenterForDepartment(dept) {
+  const key = String(dept || '').trim();
+  if (!key) return '';
+  const map = state.machineCostCenters || {};
+  if (map[key]) return map[key];
+  const nk = norm(key);
+  for (const [m, cc] of Object.entries(map)) {
+    if (norm(m) === nk) return cc;
+  }
+  const ccs = state.costCenters || [];
+  return ccs.find(c => norm(c) === nk) || '';
+}
+
+function startOrderFlow(seedItem = null) {
+  stopCamera();
+  state.tab = 'scan';
+  state.intent = 'order';
+  state.pendingCheckout = null;
+  const seed = seedItem ? makeOrderRow({
+    itemId: seedItem.id || '',
+    name: seedItem.name || '',
+    code: seedItem.code || '',
+    supplier: seedItem.company || '',
+    qty: Math.max(1, Number(((Number(seedItem.min) || 1) - (Number(seedItem.stock) || 0)).toFixed(2)) || 1),
+    unit: seedItem.unit || 'AD',
+    unitPrice: Number(seedItem.unitPrice) || 0
+  }) : makeOrderRow();
+  const seedDept = String(seedItem?.machine || '').split('|')[0].trim();
+  const autoCc = resolveCostCenterForDepartment(seedDept);
+  state.orderDraft = {
+    department: seedDept,
+    costCenter: autoCc || seedDept,
+    details: seedItem ? `${seedItem.name} (${seedItem.code || seedItem.id}) için malzeme sipariş talebi` : '',
+    items: [seed]
+  };
+  if (state.user) {
+    state.step = 'order';
+    render();
+    return;
+  }
+  state.scannedQr = '';
   state.showPin = false;
   state.step = 'pin';
   render();
@@ -1366,11 +1570,13 @@ function selectQrCode(code) {
 function resetToScan() {
   stopCamera();
   state.tab = 'scan';
+  state.intent = 'scan';
   state.scannedQr = '';
   state.user = null;
   state.session = '';
   state.stock = [];
   state.item = null;
+  state.orderDraft = null;
   state.pendingCheckout = null;
   state.receipt = null;
   state.showPin = false;
@@ -1428,6 +1634,7 @@ function render() {
   else if (state.step === 'pin') root.innerHTML = renderPin();
   else if (state.step === 'part') root.innerHTML = renderPart();
   else if (state.step === 'cabinet') root.innerHTML = renderCabinet();
+  else if (state.step === 'order') root.innerHTML = renderOrder();
   else if (state.step === 'approval') root.innerHTML = renderApproval();
   else if (state.step === 'receipt') root.innerHTML = renderReceipt();
   else if (state.step === 'notfound') root.innerHTML = renderNotFound();
@@ -1481,6 +1688,14 @@ function renderScan() {
       <div class="scan-foot-msg">
         <span><b>Adım 1:</b> Depodaki raf veya İSG dolabı QR etiketini kameraya tutun, ardından OP PIN girin.</span>
       </div>
+      <button class="order-cta-bar" type="button" data-action="start-order">
+        <span class="order-cta-ic">${ic('fileText')}</span>
+        <div>
+          <b>Sipariş Formu Oluştur</b>
+          <small>OP PIN ile giriş yapıp satın alma talebi gönderin</small>
+        </div>
+        ${ic('arrow','ic-sm')}
+      </button>
     </div>
   </section>
 
@@ -1524,7 +1739,7 @@ function renderHistory() {
         </div>
         <div class="hist-right">
           <strong class="num">${num(h.qty)} ${esc(h.unit)}</strong>
-          <span class="hist-status ${esc(h.status)}">${h.status === 'deducted' ? 'Düşüldü' : h.status === 'pending' ? 'Onay Bekliyor' : 'İptal'}</span>
+          <span class="hist-status ${esc(h.status)}">${h.status === 'deducted' ? 'Düşüldü' : h.status === 'pending' ? 'Onay Bekliyor' : h.status === 'order' ? 'Sipariş Talebi' : 'İptal'}</span>
         </div>
       </div>`).join('')}</div>` : `
       <div class="empty-box">
@@ -1608,22 +1823,23 @@ function renderSettings() {
 }
 
 function renderPin() {
+  const isOrder = state.intent === 'order';
   return `
   <section class="card">
     <div class="qr-banner">
       <div class="qr-banner-left">
-        <div class="qr-badge-ic">${ic('qr')}</div>
+        <div class="qr-badge-ic">${ic(isOrder ? 'fileText' : 'qr')}</div>
         <div>
-          <small>Okutulan QR</small>
-          <strong class="mono">${esc(state.scannedQr)}</strong>
+          <small>${isOrder ? 'Satın Alma Talebi' : 'Okutulan QR'}</small>
+          <strong class="${isOrder ? '' : 'mono'}">${esc(isOrder ? 'Sipariş Formu Oluştur' : state.scannedQr)}</strong>
         </div>
       </div>
-      <button class="qr-change" type="button" data-action="reset-scan">Yeniden Okut</button>
+      <button class="qr-change" type="button" data-action="reset-scan">${isOrder ? 'İptal' : 'Yeniden Okut'}</button>
     </div>
     <div class="card-head">
       <div>
         <h2>Operatör Şifresi (PIN)</h2>
-        <p>Parçayı açmak için OP PIN’inizi tuşlayın</p>
+        <p>${isOrder ? 'Sipariş veren operatör adınızı doğrulamak için OP PIN’inizi tuşlayın' : 'Parçayı açmak için OP PIN’inizi tuşlayın'}</p>
       </div>
       <span style="color:var(--orange);display:inline-flex">${ic('lock')}</span>
     </div>
@@ -1639,7 +1855,7 @@ function renderPin() {
           <button type="button" data-key="0">0</button>
           <button type="button" class="fn" data-key="DEL">Sil</button>
         </div>
-        <button class="btn primary wide" type="submit">Parçayı Getir ${ic('arrow','ic-sm')}</button>
+        <button class="btn ${isOrder ? 'blue' : 'primary'} wide" type="submit">${isOrder ? 'Sipariş Formunu Aç' : 'Parçayı Getir'} ${ic('arrow','ic-sm')}</button>
       </form>
       ${state.mode === 'demo' ? `
       <div class="demo-hint">
@@ -1734,6 +1950,7 @@ function renderPart() {
           <button class="btn ${reqDepot ? 'primary' : 'success'} wide" type="submit" ${outOfStock ? 'disabled' : ''}>
             ${reqDepot ? `${ic('lock','ic-sm')} Depocu Onayına Geç` : `${ic('check','ic-sm')} Stoktan Direkt Düş`}
           </button>
+          <button class="btn blue wide" type="button" data-action="order-this-part">${ic('fileText','ic-sm')} Bu Parça İçin Sipariş Formu Oluştur</button>
           <button class="btn ghost wide" type="button" data-action="reset-scan">Vazgeç ve Yeni QR Okut</button>
         </div>
       </form>
@@ -1855,11 +2072,125 @@ function renderApproval() {
   </section>`;
 }
 
+function renderOrder() {
+  const d = state.orderDraft || {department: '', costCenter: '', details: '', items: [makeOrderRow()]};
+  const machines = state.machines?.length ? state.machines : DEMO.machines;
+  const costCenters = [...new Set([...(state.costCenters || []), ...Object.values(state.machineCostCenters || {}), d.costCenter].filter(Boolean))];
+  const deptOptions = [...new Set([...machines, ...costCenters, d.department].filter(Boolean))];
+  const stockList = state.stock || [];
+  return `
+  <section class="card">
+    ${renderOpStrip()}
+    <div class="card-head">
+      <div style="display:flex;align-items:center;gap:10px">
+        <img src="./assets/aistudio/Resim1_dc78301f.png" alt="AKG" style="height:26px;width:auto;object-fit:contain;flex:none">
+        <div>
+          <h2>Satın Alma Talep Formu</h2>
+          <p>Sipariş Sayfasına doğrudan düşer</p>
+        </div>
+      </div>
+      <span class="tag blue mono">IZM_350600_LJT_001</span>
+    </div>
+    <div class="card-body">
+      <div class="op-lock-box">
+        <div>
+          <small>Talep Eden Kişi (Sipariş Veren OP)</small>
+          <b>${esc(state.user?.name || '')}</b>
+        </div>
+        <span class="tag blue">${ic('lock','ic-sm')} Otomatik</span>
+      </div>
+
+      <form id="orderCreateForm">
+        <label class="field">
+          <span>Talep Eden Bölüm / Makine *</span>
+          <select class="input" id="ordDept" name="department" required>
+            <option value="">Bölüm / Makine seçiniz...</option>
+            ${deptOptions.map(m => `<option value="${esc(m)}" ${d.department === m ? 'selected' : ''}>${esc(m)}</option>`).join('')}
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Maliyet Merkezi (Bölüm seçilince otomatik dolar)</span>
+          <input class="input" id="ordCost" name="costCenter" list="ordCostCentersList" value="${esc(d.costCenter || '')}" placeholder="Bölüm seçilince otomatik gelir">
+          <datalist id="ordCostCentersList">
+            ${costCenters.map(c => `<option value="${esc(c)}"></option>`).join('')}
+          </datalist>
+        </label>
+
+        <div class="order-items-head">
+          <span>Malzeme Kalemleri (${d.items.length})</span>
+          <button class="btn ghost sm" type="button" data-action="ord-add-row" style="min-height:34px;padding:0 10px;font-size:12.5px">${ic('plus','ic-sm')} Kalem Ekle</button>
+        </div>
+
+        <datalist id="ordStockNames">
+          ${stockList.map(s => `<option value="${esc(s.name)}">${esc(s.code)} · ${esc(s.company || '')}</option>`).join('')}
+        </datalist>
+
+        ${d.items.map((row, idx) => `
+        <div class="order-item-card" data-ord-row="${idx}">
+          <div class="order-item-top">
+            <span class="order-item-num">#${idx + 1} Kalem</span>
+            ${d.items.length > 1 ? `<button class="order-item-del" type="button" data-action="ord-del-row" data-idx="${idx}">${ic('trash','ic-sm')} Sil</button>` : ''}
+          </div>
+          ${stockList.length ? `
+          <label class="field">
+            <span>Stok Kartından Hızlı Seç (Opsiyonel)</span>
+            <select class="input" data-ord-pick="${idx}">
+              <option value="">— Stok kartı seç veya aşağıya manuel yaz —</option>
+              ${stockList.map(s => `<option value="${esc(s.id)}" ${row.itemId === s.id ? 'selected' : ''}>${esc(s.code)} · ${esc(s.name)} (Stok: ${num(s.stock)} ${esc(s.unit)})</option>`).join('')}
+            </select>
+          </label>` : ''}
+          <label class="field">
+            <span>Malzeme Tanımı *</span>
+            <input class="input" data-ord-field="name" data-idx="${idx}" list="ordStockNames" value="${esc(row.name)}" placeholder="Örn. HİGH 25 HWİN ARABA" required>
+          </label>
+          <div class="order-grid-2">
+            <label class="field">
+              <span>Malzeme Kodu</span>
+              <input class="input mono" data-ord-field="code" data-idx="${idx}" value="${esc(row.code)}" placeholder="Opsiyonel">
+            </label>
+            <label class="field">
+              <span>Tedarikçi Firma</span>
+              <input class="input" data-ord-field="supplier" data-idx="${idx}" value="${esc(row.supplier)}" placeholder="Örn. ÜNLÜ TEKNİK">
+            </label>
+          </div>
+          <div class="order-grid-qty">
+            <label class="field">
+              <span>Miktar *</span>
+              <input class="input mono" type="number" inputmode="decimal" min="0.01" step="any" data-ord-field="qty" data-idx="${idx}" value="${row.qty || 1}" required>
+            </label>
+            <label class="field">
+              <span>Birim</span>
+              <select class="input" data-ord-field="unit" data-idx="${idx}">
+                ${['AD','METRE','LİTRE','KG','KUTU','SET','ÇİFT','PAKET'].map(u => `<option value="${u}" ${(row.unit || 'AD') === u ? 'selected' : ''}>${u}</option>`).join('')}
+              </select>
+            </label>
+          </div>
+          <label class="field">
+            <span>İstenen Teslim Tarihi</span>
+            <input class="input" data-ord-field="deliveryDate" data-idx="${idx}" value="${esc(row.deliveryDate || '')}" placeholder="Örn. ${todayTr()} veya Acil">
+          </label>
+        </div>`).join('')}
+
+        <label class="field">
+          <span>Detaylar / Kullanım Yeri</span>
+          <textarea class="input" id="ordDetails" name="details" placeholder="Örn. Dizgi makinası sağ ve sol dayama kolları hareket arabalarında kullanılacak">${esc(d.details || '')}</textarea>
+        </label>
+
+        <div class="btn-stack">
+          <button class="btn blue wide" type="submit">${ic('check','ic-sm')} Sipariş Talebini Gönder</button>
+          <button class="btn ghost wide" type="button" data-action="reset-scan">Vazgeç ve QR Ekranına Dön</button>
+        </div>
+      </form>
+    </div>
+  </section>`;
+}
+
 function renderReceipt() {
   const r = state.receipt;
   if (!r) return renderScan();
-  const tone = r.status === 'deducted' ? 'green' : r.status === 'pending' ? 'amber' : 'red';
-  const icon = r.status === 'deducted' ? 'check' : r.status === 'pending' ? 'clock' : 'x';
+  const tone = r.status === 'deducted' ? 'green' : r.status === 'pending' ? 'amber' : r.status === 'order' ? 'blue' : 'red';
+  const icon = r.status === 'deducted' ? 'check' : r.status === 'pending' ? 'clock' : r.status === 'order' ? 'fileText' : 'x';
   return `
   <section class="card">
     <div class="receipt-hero">
@@ -1869,16 +2200,19 @@ function renderReceipt() {
     </div>
     <div class="card-body">
       <div class="receipt-rows">
-        ${r.refId ? `<div class="receipt-row"><span>İşlem No</span><b class="mono">${esc(r.refId)}</b></div>` : ''}
-        <div class="receipt-row"><span>Malzeme</span><b>${esc(r.itemName)} <span class="mono" style="color:var(--muted);font-weight:600">(${esc(r.itemCode)})</span></b></div>
+        ${r.refId ? `<div class="receipt-row"><span>${r.status === 'order' ? 'Form Numarası' : 'İşlem No'}</span><b class="mono">${esc(r.refId)}</b></div>` : ''}
+        <div class="receipt-row"><span>${r.status === 'order' ? 'Kalemler' : 'Malzeme'}</span><b>${esc(r.itemName)}${r.itemCode ? ` <span class="mono" style="color:var(--muted);font-weight:600">(${esc(r.itemCode)})</span>` : ''}</b></div>
         <div class="receipt-row"><span>Miktar</span><b class="num">${num(r.qty)} ${esc(r.unit)}</b></div>
         ${r.remaining !== undefined ? `<div class="receipt-row"><span>Kalan Stok</span><b class="num" style="font-size:17px;color:${r.status === 'deducted' ? 'var(--green)' : 'var(--ink)'}">${num(r.remaining)} ${esc(r.unit)}</b></div>` : ''}
-        <div class="receipt-row"><span>Makine</span><b>${esc(r.machine)}</b></div>
-        <div class="receipt-row"><span>Operatör</span><b>${esc(r.operator)}</b></div>
-        <div class="receipt-row"><span>Onay</span><b>${esc(r.approvalLabel)}</b></div>
+        <div class="receipt-row"><span>${r.status === 'order' ? 'Bölüm / Makine' : 'Makine'}</span><b>${esc(r.machine)}</b></div>
+        <div class="receipt-row"><span>${r.status === 'order' ? 'Talep Eden OP' : 'Operatör'}</span><b>${esc(r.operator)}</b></div>
+        <div class="receipt-row"><span>${r.status === 'order' ? 'Durum' : 'Onay'}</span><b>${esc(r.approvalLabel)}</b></div>
         <div class="receipt-row"><span>Tarih</span><b class="mono">${esc(r.time)}</b></div>
       </div>
-      <button class="btn primary wide" type="button" data-action="reset-scan">${ic('scan','ic-sm')} Yeni QR Okut</button>
+      <div class="btn-stack">
+        ${r.status === 'order' ? `<button class="btn blue wide" type="button" data-action="start-order">${ic('fileText','ic-sm')} Yeni Sipariş Formu Oluştur</button>` : ''}
+        <button class="btn primary wide" type="button" data-action="reset-scan">${ic('scan','ic-sm')} Yeni QR Okut</button>
+      </div>
     </div>
   </section>`;
 }
@@ -1889,7 +2223,10 @@ function renderNotFound() {
     ${renderOpStrip()}
     <div class="card-body">
       <div class="callout red">${ic('alert','ic-sm')}<div><b>Parça Bulunamadı</b><span class="mono">${esc(state.scannedQr)}</span> kodu aktif stok kartlarıyla eşleşmedi.</div></div>
-      <button class="btn primary wide" type="button" data-action="reset-scan">${ic('scan','ic-sm')} Yeni QR Okut</button>
+      <div class="btn-stack">
+        <button class="btn blue wide" type="button" data-action="order-notfound">${ic('fileText','ic-sm')} Bu Kod İçin Sipariş Formu Oluştur</button>
+        <button class="btn primary wide" type="button" data-action="reset-scan">${ic('scan','ic-sm')} Yeni QR Okut</button>
+      </div>
     </div>
   </section>`;
 }
@@ -1921,19 +2258,36 @@ async function submitOpPin(pinRaw) {
     const cached = loadStockCache();
     const cachedVisible = cached ? stockVisibleForRole(cached.stock, auth.user.role) : [];
 
-    if (cached && cachedVisible.length && hasQrInStock(cachedVisible, state.scannedQr)) {
+    const isOrder = state.intent === 'order';
+    if (cached && cachedVisible.length && (isOrder || hasQrInStock(cachedVisible, state.scannedQr))) {
       state.stock = cachedVisible;
       state.machines = cached.machines?.length ? cached.machines : DEMO.machines;
-      endSave(true, 'Doğrulandı · Stok hazır');
+      state.costCenters = cached.costCenters?.length ? cached.costCenters : (state.mode === 'demo' ? DEMO.costCenters : []);
+      state.machineCostCenters = (cached.machineCostCenters && Object.keys(cached.machineCostCenters).length) ? cached.machineCostCenters : (state.mode === 'demo' ? DEMO.machineCostCenters : {});
+      endSave(true, isOrder ? 'Doğrulandı · Sipariş formu hazır' : 'Doğrulandı · Stok hazır');
       vibrate(35);
-      resolveScannedItem();
-      // Silently refresh live stock in background so quantities stay current
+      if (isOrder) {
+        if (!state.orderDraft) state.orderDraft = {department: '', costCenter: '', details: '', items: [makeOrderRow()]};
+        if (state.orderDraft.department && !state.orderDraft.costCenter) {
+          state.orderDraft.costCenter = resolveCostCenterForDepartment(state.orderDraft.department) || state.orderDraft.department;
+        }
+        state.step = 'order';
+        render();
+      } else {
+        resolveScannedItem();
+      }
+      // Silently refresh live stock & cost center maps in background
       api('bootstrap', {}, reqSession).then(boot => {
         if (!boot?.stock) return;
-        saveStockCache(boot.stock, boot.lists?.machines || state.machines);
+        const freshMac = boot.lists?.machines || state.machines;
+        const freshCc = boot.lists?.costCenters || state.costCenters;
+        const freshMap = boot.lists?.machineCostCenters || state.machineCostCenters;
+        saveStockCache(boot.stock, freshMac, freshCc, freshMap);
         if (state.session === reqSession) {
           state.stock = boot.stock;
-          state.machines = boot.lists?.machines || state.machines;
+          state.machines = freshMac;
+          state.costCenters = freshCc;
+          state.machineCostCenters = freshMap;
           if (state.step === 'part' && state.item) {
             const fresh = boot.stock.find(x => x.id === state.item.id);
             if (fresh && fresh.stock !== state.item.stock) {
@@ -1950,16 +2304,143 @@ async function submitOpPin(pinRaw) {
     const boot = await api('bootstrap', {}, reqSession);
     state.stock = boot.stock || [];
     state.machines = boot.lists?.machines || DEMO.machines;
-    saveStockCache(state.stock, state.machines);
-    endSave(true, 'Stok bilgisi alındı');
+    state.costCenters = boot.lists?.costCenters || (state.mode === 'demo' ? DEMO.costCenters : []);
+    state.machineCostCenters = boot.lists?.machineCostCenters || (state.mode === 'demo' ? DEMO.machineCostCenters : {});
+    saveStockCache(state.stock, state.machines, state.costCenters, state.machineCostCenters);
+    endSave(true, isOrder ? 'Sipariş formu hazır' : 'Stok bilgisi alındı');
     vibrate(35);
-    resolveScannedItem();
+    if (isOrder) {
+      if (!state.orderDraft) state.orderDraft = {department: '', costCenter: '', details: '', items: [makeOrderRow()]};
+      if (state.orderDraft.department && !state.orderDraft.costCenter) {
+        state.orderDraft.costCenter = resolveCostCenterForDepartment(state.orderDraft.department) || state.orderDraft.department;
+      }
+      state.step = 'order';
+      render();
+    } else {
+      resolveScannedItem();
+    }
   } catch (err) {
     endSave(false, err.message);
     vibrate([40, 40, 40]);
     toast(err.message, 'err');
     const inp = $('#opPinInput');
     if (inp) { inp.value = ''; $('#opPinBox')?.classList.remove('filled'); }
+  }
+}
+
+function syncOrderDraftFromDom() {
+  if (!state.orderDraft) return;
+  const dept = $('#ordDept'), cost = $('#ordCost'), det = $('#ordDetails');
+  if (dept) state.orderDraft.department = dept.value;
+  if (cost) state.orderDraft.costCenter = cost.value;
+  if (det) state.orderDraft.details = det.value;
+  $$('[data-ord-field]').forEach(el => {
+    const idx = Number(el.dataset.idx), f = el.dataset.ordField;
+    if (state.orderDraft.items[idx]) {
+      state.orderDraft.items[idx][f] = f === 'qty' ? (Number(el.value) || 0) : el.value;
+    }
+  });
+}
+
+async function submitOrderForm() {
+  syncOrderDraftFromDom();
+  const d = state.orderDraft;
+  if (!d) return;
+  const opName = state.user?.name || '';
+  if (!opName) return toast('Önce operatör PIN ile giriş yapın.', 'err');
+  const dept = String(d.department || '').trim();
+  if (!dept) return toast('Talep eden bölüm veya makineyi girin.', 'err');
+  const validItems = (d.items || []).filter(r => String(r.name || '').trim() && Number(r.qty) > 0).map((r, i) => ({
+    no: i + 1,
+    itemId: String(r.itemId || ''),
+    name: String(r.name || '').trim(),
+    code: String(r.code || '').trim(),
+    supplier: String(r.supplier || '').trim(),
+    qty: Number(r.qty) || 1,
+    unit: String(r.unit || 'AD').trim() || 'AD',
+    unitPrice: Number(r.unitPrice) || 0,
+    currency: String(r.currency || 'TL').trim() || 'TL',
+    total: Number(((Number(r.qty) || 1) * (Number(r.unitPrice) || 0)).toFixed(2)),
+    deliveryDate: String(r.deliveryDate || '').trim()
+  }));
+  if (!validItems.length) return toast('En az bir malzeme tanımı ve geçerli miktar girin.', 'err');
+
+  const reqSession = state.session;
+  const payload = {
+    formCode: 'IZM_350600_LJT_001',
+    requestDate: todayTr(),
+    requestedBy: opName,
+    department: dept,
+    costCenter: String(d.costCenter || '').trim() || dept,
+    attachmentQty: 0,
+    paymentTerm: 'Peşin / Cash',
+    details: String(d.details || '').trim(),
+    sigRequirer: opName,
+    sigManager: 'FUAT ÇETİN',
+    sigApproval1: 'İbrahim Özdemir',
+    sigApproval2: 'Yüksel Kurun',
+    sigApproval3: 'İbrahim Özdemir',
+    items: validItems,
+    source: 'QR_TERMINAL'
+  };
+
+  beginSave('Sipariş talebi kaydediliyor...');
+  try {
+    let res;
+    try {
+      res = await api('purchaseOrderCreate', payload, reqSession);
+    } catch (err) {
+      if (state.mode !== 'demo' && /Bilinmeyen işlem|Desteklenmeyen/i.test(String(err.message || ''))) {
+        const localRec = {
+          ...payload,
+          id: uid('SIP'),
+          formNo: nextOrderFormNo(),
+          totalAmount: Number(validItems.reduce((s, r) => s + (r.total || 0), 0).toFixed(2)),
+          currency: validItems[0]?.currency || 'TL',
+          status: 'TALEP_OLUSTURULDU',
+          createdAt: nowStr(),
+          createdBy: opName,
+          updatedAt: nowStr(),
+          _localOnly: true
+        };
+        saveLocalOrder(localRec);
+        res = localRec;
+        toast('Sipariş yerel kaydedildi (Kod.gs V8.8 güncellenince Sheets’e aktarılır).', 'warn');
+      } else {
+        throw err;
+      }
+    }
+
+    const first = validItems[0];
+    const summaryName = validItems.length > 1 ? `${first.name} (+${validItems.length - 1} kalem)` : first.name;
+    const totalQty = validItems.reduce((s, r) => s + (Number(r.qty) || 0), 0);
+    state.receipt = {
+      status: 'order',
+      title: 'Sipariş Talebi Oluşturuldu',
+      subtitle: 'Talep ana sistemdeki Sipariş Sayfasına iletildi.',
+      refId: res?.formNo || res?.id || '',
+      itemName: summaryName,
+      itemCode: first.code || `${validItems.length} kalem`,
+      qty: validItems.length === 1 ? first.qty : totalQty,
+      unit: validItems.length === 1 ? first.unit : 'Kalem Toplam',
+      machine: dept,
+      operator: opName,
+      approvalLabel: 'Talep Oluşturuldu',
+      time: nowStr()
+    };
+    pushHistory(state.receipt);
+    endSave(true, `Sipariş kaydedildi (${state.receipt.refId || 'OK'}) ✓`);
+    vibrate(60);
+    state.user = null;
+    state.session = '';
+    state.orderDraft = null;
+    state.intent = 'scan';
+    state.step = 'receipt';
+    render();
+  } catch (err) {
+    endSave(false, err.message);
+    vibrate([40, 40, 40]);
+    toast(err.message, 'err');
   }
 }
 
@@ -2277,6 +2758,23 @@ document.addEventListener('click', async e => {
   if (act === 'start-cam') return startCamera(false);
   if (act === 'toggle-torch') return toggleTorch();
   if (act === 'reset-scan') return resetToScan();
+  if (act === 'start-order') { vibrate(18); return startOrderFlow(null); }
+  if (act === 'order-this-part') { vibrate(18); return startOrderFlow(state.item); }
+  if (act === 'order-notfound') { vibrate(18); return startOrderFlow({code: state.scannedQr, name: state.scannedQr, unit: 'AD', stock: 0, min: 1}); }
+  if (act === 'ord-add-row') {
+    syncOrderDraftFromDom();
+    if (state.orderDraft) { state.orderDraft.items.push(makeOrderRow()); render(); }
+    return;
+  }
+  if (act === 'ord-del-row') {
+    const idx = Number(e.target.closest('[data-idx]')?.dataset.idx);
+    syncOrderDraftFromDom();
+    if (state.orderDraft && state.orderDraft.items.length > 1 && !Number.isNaN(idx)) {
+      state.orderDraft.items.splice(idx, 1);
+      render();
+    }
+    return;
+  }
   if (act === 'back-to-part') { state.step = 'part'; return render(); }
   if (act === 'toggle-pin-eye') {
     state.showPin = !state.showPin;
@@ -2362,6 +2860,45 @@ document.addEventListener('submit', async e => {
     if (!pin) return toast('Depocu PIN’ini tuşlayın.', 'err');
     const extra = pc.requiresManagerFallback ? {managerPin: pin} : {depotApproverPin: pin};
     return executeCheckout({item: pc.item, qty: pc.qty, machine: pc.machine, extra});
+  }
+  if (id === 'orderCreateForm') return submitOrderForm();
+});
+
+document.addEventListener('change', e => {
+  if (e.target.id === 'ordDept' && state.orderDraft) {
+    const dep = e.target.value.trim();
+    state.orderDraft.department = dep;
+    const cc = resolveCostCenterForDepartment(dep);
+    if (cc) {
+      state.orderDraft.costCenter = cc;
+      if ($('#ordCost')) $('#ordCost').value = cc;
+    }
+    return;
+  }
+  const pickIdx = e.target.dataset?.ordPick;
+  if (pickIdx !== undefined && state.orderDraft) {
+    syncOrderDraftFromDom();
+    const idx = Number(pickIdx);
+    const it = state.stock.find(s => s.id === e.target.value);
+    if (it && state.orderDraft.items[idx]) {
+      state.orderDraft.items[idx] = {
+        ...state.orderDraft.items[idx],
+        itemId: it.id,
+        name: it.name,
+        code: it.code || '',
+        supplier: it.company || '',
+        unit: it.unit || 'AD',
+        unitPrice: Number(it.unitPrice) || 0,
+        qty: Math.max(1, Number(((Number(it.min) || 1) - (Number(it.stock) || 0)).toFixed(2)) || 1)
+      };
+      if (!state.orderDraft.department && it.machine) {
+        const firstMac = String(it.machine).split('|')[0].trim();
+        state.orderDraft.department = firstMac;
+        const autoCc = resolveCostCenterForDepartment(firstMac);
+        if (autoCc) state.orderDraft.costCenter = autoCc;
+      }
+      render();
+    }
   }
 });
 
