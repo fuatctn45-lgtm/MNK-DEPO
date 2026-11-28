@@ -1521,17 +1521,25 @@ function makeOrderRow(seed = {}) {
   };
 }
 
+function flatKey(s) {
+  return String(s || '').replace(/\s+/g, ' ').trim()
+    .replace(/i/g, 'İ').replace(/ı/g, 'I').toUpperCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/İ/g, 'I').replace(/Ş/g, 'S').replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ö/g, 'O').replace(/Ç/g, 'C')
+    .replace(/[^A-Z0-9]+/g, '');
+}
+
 function resolveCostCenterForDepartment(dept) {
-  const key = String(dept || '').trim();
+  const key = String(dept || '').replace(/\s+/g, ' ').trim();
   if (!key) return '';
   const map = state.machineCostCenters || {};
   if (map[key]) return map[key];
-  const nk = norm(key);
+  const fk = flatKey(key);
   for (const [m, cc] of Object.entries(map)) {
-    if (norm(m) === nk) return cc;
+    if (flatKey(m) === fk) return cc;
   }
   const ccs = state.costCenters || [];
-  return ccs.find(c => norm(c) === nk) || '';
+  return ccs.find(c => flatKey(c) === fk) || '';
 }
 
 function startOrderFlow(seedItem = null) {
@@ -2074,16 +2082,19 @@ function renderApproval() {
 
 function renderOrder() {
   const d = state.orderDraft || {department: '', costCenter: '', details: '', items: [makeOrderRow()]};
-  const machines = state.machines?.length ? state.machines : DEMO.machines;
-  const costCenters = [...new Set([...(state.costCenters || []), ...Object.values(state.machineCostCenters || {}), d.costCenter].filter(Boolean))];
-  const deptOptions = [...new Set([...machines, ...costCenters, d.department].filter(Boolean))];
+  const cleanTxt = s => String(s || '').replace(/\s+/g, ' ').trim();
+  const dDeptClean = cleanTxt(d.department);
+  const machines = (state.machines?.length ? state.machines : DEMO.machines).map(cleanTxt).filter(Boolean);
+  const costCenters = [...new Set([...(state.costCenters || []).map(cleanTxt), ...Object.values(state.machineCostCenters || {}).map(cleanTxt), cleanTxt(d.costCenter)].filter(Boolean))];
+  const deptOptions = [...new Set([...machines, ...costCenters, dDeptClean].filter(Boolean))];
   const stockList = state.stock || [];
+  const missingCostMap = state.mode !== 'demo' && !Object.keys(state.machineCostCenters || {}).length;
   return `
   <section class="card">
     ${renderOpStrip()}
     <div class="card-head">
       <div style="display:flex;align-items:center;gap:10px">
-        <img src="./assets/aistudio/Resim1_dc78301f.png" alt="AKG" style="height:26px;width:auto;object-fit:contain;flex:none">
+        <img src="./akg-logo.svg" alt="AKG" style="height:26px;width:auto;object-fit:contain;flex:none">
         <div>
           <h2>Satın Alma Talep Formu</h2>
           <p>Sipariş Sayfasına doğrudan düşer</p>
@@ -2092,6 +2103,7 @@ function renderOrder() {
       <span class="tag blue mono">IZM_350600_LJT_001</span>
     </div>
     <div class="card-body">
+      ${missingCostMap ? `<div class="callout amber">${ic('alert','ic-sm')}<div><b>Maliyet Merkezi Eşleşmesi Bekliyor</b>Ana sistemdeki Bağlantı sekmesinden güncel <b>Kod.gs (V8.8.1)</b> dağıtıldığında maliyet merkezi otomatik gelir.</div></div>` : ''}
       <div class="op-lock-box">
         <div>
           <small>Talep Eden Kişi (Sipariş Veren OP)</small>
@@ -2105,7 +2117,7 @@ function renderOrder() {
           <span>Talep Eden Bölüm / Makine *</span>
           <select class="input" id="ordDept" name="department" required>
             <option value="">Bölüm / Makine seçiniz...</option>
-            ${deptOptions.map(m => `<option value="${esc(m)}" ${d.department === m ? 'selected' : ''}>${esc(m)}</option>`).join('')}
+            ${deptOptions.map(m => `<option value="${esc(m)}" ${flatKey(dDeptClean) === flatKey(m) ? 'selected' : ''}>${esc(m)}</option>`).join('')}
           </select>
         </label>
 

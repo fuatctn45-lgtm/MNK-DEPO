@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 74" role="img" aria-label="AKG">
+  <defs>
+    <linearGradient id="akgBlue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1aa3ff"/>
+      <stop offset="55%" stop-color="#0084e8"/>
+      <stop offset="100%" stop-color="#0066c4"/>
+    </linearGradient>
+    <linearGradient id="akgMetal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#dce4e8"/>
+      <stop offset="48%" stop-color="#eef3f5"/>
+      <stop offset="100%" stop-color="#a8bcc6"/>
+    </linearGradient>
+  </defs>
+  <!-- Top radiator cap -->
+  <rect x="27" y="4" width="20" height="4.5" rx="1" fill="#0077d6"/>
+  <!-- Blue shield / cooler body -->
+  <path d="M10 15 C18 10.5, 27 9.5, 37 9.5 C47 9.5, 56 10.5, 64 15 L59 50 C52 53, 45 53, 43 49 L42 20 C34 23, 28 31, 29 44 C30 49, 25 53, 15 50 Z" fill="url(#akgBlue)" stroke="#0064bd" stroke-width="1.2" stroke-linejoin="round"/>
+  <!-- Inner curved cutout glow -->
+  <path d="M40 16 C30 22, 26 33, 30 48 C34 55, 42 54, 43 46 C44 37, 42 25, 40 16 Z" fill="#ffffff"/>
+  <!-- 3 wavy blue bottom bands -->
+  <path d="M14 55 C22 50, 30 52, 35 55 C41 58, 50 58, 59 53 L58.2 57.5 C49 62.5, 40 62.5, 34 59.5 C29 56.5, 22 54.5, 14.8 59.5 Z" fill="url(#akgBlue)"/>
+  <path d="M15.4 61.5 C23 56.5, 30 58.5, 35 61.5 C41 64.5, 49.5 64.5, 58 59.8 L57.2 64 C48.5 68.8, 40 68.8, 34 65.8 C29 62.8, 22.5 61, 16.1 65.8 Z" fill="url(#akgBlue)"/>
+  <path d="M16.8 67.5 C24 62.8, 30.5 64.8, 35 67.5 C41 70.5, 49 70.5, 56.8 66 L56 70 C48 74.2, 40 74.2, 34 71.2 C29.5 68.5, 23.5 67, 17.6 71.2 Z" fill="url(#akgBlue)"/>
+  <!-- Metallic AKG wordmark -->
+  <text x="72" y="62" font-family="Arial Black, 'Segoe UI Black', Impact, sans-serif" font-size="56" font-weight="900" font-style="italic" letter-spacing="-2.5" fill="url(#akgMetal)" stroke="#7c939e" stroke-width="2.4" paint-order="stroke fill">AKG</text>
+  <!-- Registered trademark symbol -->
+  <circle cx="241" cy="18" r="9.5" fill="none" stroke="#859aa4" stroke-width="1.8"/>
+  <text x="241" y="22.5" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="800" fill="#859aa4">R</text>
+</svg>
