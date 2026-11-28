@@ -973,7 +973,7 @@ const CFG = Object.freeze({
     recipes: 'PLANLI_BAKIM_RECETE', ppeForms: 'KKD_ZIMMET', orders: 'SIPARIS_TALEPLERI', log: 'LOG', faults: 'Açık Arizalar'
   },
   spreadsheetId: '1AtCrVmav8bIQno5aeP-sFtS3L90KwdipMpZtFeP1KT4',
-  apiVersion: 'V8.8.2-MALIYET',
+  apiVersion: 'V8.8.3-MAIL',
   sessionHours: 8,
   roles: ['OP', 'MEK_ADMIN', 'ISG_ADMIN', 'YONETICI'],
   periods: ['AYLIK', '3 AYLIK', '6 AYLIK', 'YILLIK']
@@ -1036,7 +1036,8 @@ function route_(action, p, token) {
     ppeFormCreate: () => ppeFormCreate_(user, p), ppeFormSign: () => ppeFormSign_(user, p),
     purchaseOrderCreate: () => purchaseOrderCreate_(user, p),
     purchaseOrderUpdate: () => purchaseOrderUpdate_(user, p),
-    purchaseOrderStatus: () => purchaseOrderStatus_(user, p)
+    purchaseOrderStatus: () => purchaseOrderStatus_(user, p),
+    purchaseOrderEmail: () => purchaseOrderEmail_(user, p)
   };
   if (!write[action]) throw new Error('Bilinmeyen işlem: ' + action);
   const lock = LockService.getScriptLock(); lock.waitLock(20000);
@@ -2188,6 +2189,246 @@ function purchaseOrderUpdate_(u, p) {
 function purchaseOrderStatus_(u, p) {
   return purchaseOrderUpdate_(u, { formNo: p.formNo, status: s_(p.status), stockSynced: p.stockSynced });
 }
+function escHtml_(v) {
+  return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function fmtTrNum_(v, dec) {
+  const num = Number(v) || 0;
+  const fixed = num.toFixed(dec);
+  const parts = fixed.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return dec > 0 ? (parts[0] + ',' + parts[1]) : parts[0];
+}
+function buildOrderPdfHtml_(order, logoDataUrl) {
+  const rawItems = Array.isArray(order.items) ? order.items : [];
+  const rows = [];
+  for (let i = 0; i < Math.max(14, rawItems.length); i++) {
+    const it = rawItems[i] || {};
+    const has = !!(s_(it.name).trim() || s_(it.code).trim());
+    const qty = n_(it.qty), up = n_(it.unitPrice), tot = n_(it.total) || Math.round(qty * up * 100) / 100;
+    rows.push({
+      no: i + 1, has: has, name: s_(it.name).trim(), code: s_(it.code).trim(),
+      supplier: s_(it.supplier).trim(), qty: qty, unit: has ? (s_(it.unit).trim() || 'AD') : '',
+      unitPrice: up, currency: has ? (s_(it.currency).trim() || 'TL') : '', total: tot,
+      deliveryDate: s_(it.deliveryDate).trim()
+    });
+  }
+  const grand = rows.reduce((acc, r) => acc + r.total, 0);
+  const ap = order.approvals || {};
+  const safeLogo = (typeof logoDataUrl === 'string' && /^data:image\/(png|jpeg|jpg);base64,[A-Za-z0-9+/=]+$/.test(logoDataUrl))
+    ? '<img src="' + logoDataUrl + '" style="height:34px;width:auto;display:block;margin:0 auto" />'
+    : '<span style="font-family:Arial,Helvetica,sans-serif;font-size:24px;font-weight:900;font-style:italic;color:#0077d6;letter-spacing:-1px">AKG<sup style="font-size:11px;font-style:normal;color:#64748b">®</sup></span>';
+  const bodyRows = rows.map(r =>
+    '<tr>' +
+      '<td class="c b">' + r.no + '</td>' +
+      '<td class="b">' + escHtml_(r.name) + '</td>' +
+      '<td class="c mono b">' + escHtml_(r.code) + '</td>' +
+      '<td class="c b">' + escHtml_(r.supplier) + '</td>' +
+      '<td class="c b">' + fmtTrNum_(r.qty, 1) + '</td>' +
+      '<td class="c b">' + escHtml_(r.unit) + '</td>' +
+      '<td class="c b">' + fmtTrNum_(r.unitPrice, 2) + '</td>' +
+      '<td class="c b">' + escHtml_(r.currency) + '</td>' +
+      '<td class="c b">' + fmtTrNum_(r.total, 2) + '</td>' +
+      '<td class="c b">' + escHtml_(r.deliveryDate) + '</td>' +
+    '</tr>'
+  ).join('');
+  return '<!DOCTYPE html><meta charset="utf-8" />' +
+    '<style>' +
+    '@page{size:A4 landscape;margin:7mm}' +
+    '*{box-sizing:border-box}' +
+    'body{margin:0;padding:0;background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;font-size:9.5px}' +
+    'table{width:100%;border-collapse:collapse;table-layout:fixed}' +
+    'th,td{border:1px solid #000;padding:3px 5px;vertical-align:middle;word-wrap:break-word}' +
+    '.wrap{width:100%;border:1.5px solid #000}' +
+    '.c{text-align:center}.r{text-align:right}.l{text-align:left}.b{font-weight:700}.mono{font-family:monospace}.red{color:#dc2626}' +
+    '.hdr td{padding:6px 8px;border-top:0;border-bottom:1.5px solid #000}' +
+    '.hdr td:first-child{border-left:0}.hdr td:last-child{border-right:0}' +
+    '.meta td{padding:3.5px 6px;line-height:1.25;border-top:0}' +
+    '.meta td:first-child{border-left:0}.meta td:last-child{border-right:0}' +
+    '.meta tr:last-child td{border-bottom:1.5px solid #000}' +
+    '.ml{font-size:8.5px;font-weight:700;background:#fff}' +
+    '.mv{font-size:10px;font-weight:700}' +
+    '.itbl th{font-size:8.5px;font-weight:700;text-align:center;line-height:1.2;border-top:0;padding:4px 3px}' +
+    '.itbl td{height:18px;font-size:9.2px;padding:2.5px 4px}' +
+    '.itbl th:first-child,.itbl td:first-child{border-left:0}' +
+    '.itbl th:last-child,.itbl td:last-child{border-right:0}' +
+    '.tot td{border-top:1.5px solid #000;border-bottom:1.5px solid #000;padding:5px 6px;font-size:9.5px;font-weight:700}' +
+    '.totval{font-size:13px;font-weight:700;text-align:center}' +
+    '.pay td{padding:4px 6px;border-top:0;line-height:1.25}' +
+    '.pay td:first-child{border-left:0}.pay td:last-child{border-right:0}' +
+    '.det td{padding:6px 8px;border-top:0;border-bottom:1.5px solid #000;height:46px;vertical-align:middle}' +
+    '.det td:first-child{border-left:0}.det td:last-child{border-right:0}' +
+    '.sigs td{padding:3px 4px;border-top:0;border-bottom:0;text-align:center}' +
+    '.sigs td:first-child{border-left:0}.sigs td:last-child{border-right:0}' +
+    '.sigs tr.st td{font-size:9px;font-weight:700;line-height:1.2;border-bottom:1px solid #000}' +
+    '.sigs tr.ss td{font-size:8px;font-weight:700;border-bottom:1px dashed #333}' +
+    '.sigs tr.sv td{height:34px;font-size:10px;font-weight:700}' +
+    '.dash-l{border-left:1px dashed #333 !important}' +
+    '</style>' +
+    '<div class="wrap">' +
+      '<table class="hdr"><colgroup><col style="width:18%" /><col style="width:64%" /><col style="width:18%" /></colgroup><tr>' +
+        '<td class="c">' + safeLogo + '</td>' +
+        '<td class="c b" style="font-size:18px">Satın Alma Talep Formu / Purchase Request Form</td>' +
+        '<td class="c b mono" style="font-size:11px">' + escHtml_(order.docCode || 'IZM_350600_LJT_001') + '</td>' +
+      '</tr></table>' +
+      '<table class="meta"><colgroup><col style="width:12%" /><col style="width:20%" /><col style="width:13%" /><col style="width:23%" /><col style="width:14%" /><col style="width:18%" /></colgroup>' +
+        '<tr>' +
+          '<td class="ml">Talep Tarihi<br />Date of Request</td>' +
+          '<td class="mv l">' + escHtml_(order.requestDate || '') + '</td>' +
+          '<td class="ml">Talep Eden Bölüm<br />Department</td>' +
+          '<td class="mv c">' + escHtml_(order.department || '') + '</td>' +
+          '<td class="ml">Form Numarası<br />Form Number</td>' +
+          '<td class="mv c mono">' + escHtml_(order.formNo || '') + '</td>' +
+        '</tr>' +
+        '<tr>' +
+          '<td class="ml">Talep Eden Kişi<br />Requested by</td>' +
+          '<td class="mv l">' + escHtml_(order.requestedBy || '') + '</td>' +
+          '<td class="ml">Maliyet Merkezi<br />Cost Center</td>' +
+          '<td class="mv c">' + escHtml_(order.costCenter || '') + '</td>' +
+          '<td class="ml">Ekli Doküman Adedi<br />Attachment Quantity</td>' +
+          '<td class="mv c">' + escHtml_(order.attachmentQty || '') + '</td>' +
+        '</tr>' +
+      '</table>' +
+      '<table class="itbl"><colgroup><col style="width:3%" /><col style="width:25%" /><col style="width:10.5%" /><col style="width:14%" /><col style="width:6.5%" /><col style="width:6%" /><col style="width:10.5%" /><col style="width:6%" /><col style="width:9.5%" /><col style="width:9%" /></colgroup>' +
+        '<thead><tr>' +
+          '<th>#</th>' +
+          '<th>Malzeme Tanımı<br />Description of Material</th>' +
+          '<th>Malzeme Kodu<br />Material Code</th>' +
+          '<th>Tedarikçi Firma<br />Supplier</th>' +
+          '<th>Miktar<br />Quantity</th>' +
+          '<th>Birim<br />Unit</th>' +
+          '<th>Birim Fiyat (KDV Hariç)<br />Unit Price (VAT Ex.)</th>' +
+          '<th>Para Birimi<br />Currency</th>' +
+          '<th>Toplam Tutar<br />Total Amount</th>' +
+          '<th>Teslim Tarihi<br />Delivery Date</th>' +
+        '</tr></thead>' +
+        '<tbody>' + bodyRows + '</tbody>' +
+        '<tfoot><tr class="tot">' +
+          '<td colspan="8" class="r">TOPLAM TUTAR (<span class="red">KDV HARİÇ</span>) / TOTAL AMOUNT (<span class="red">VAT EXCLUDED</span>)</td>' +
+          '<td class="totval">' + fmtTrNum_(grand, 2) + '</td>' +
+          '<td></td>' +
+        '</tr></tfoot>' +
+      '</table>' +
+      '<table class="pay"><colgroup><col style="width:11%" /><col style="width:15%" /><col style="width:11%" /><col style="width:15%" /><col style="width:8%" /><col style="width:14%" /><col style="width:11%" /><col style="width:15%" /></colgroup>' +
+        '<tr>' +
+          '<td class="ml">Ödeme Şekli<br />Payment Term</td><td class="c">' + escHtml_(order.paymentTerm || '') + '</td>' +
+          '<td class="ml">Ödeme Vadesi<br />Payment Maturity</td><td class="c">' + escHtml_(order.paymentMaturity || '') + '</td>' +
+          '<td class="ml">Nakliye<br />Transport</td><td class="c">' + escHtml_(order.transport || '') + '</td>' +
+          '<td class="ml">Teslimat Yeri<br />Delivery Place</td><td class="c">' + escHtml_(order.deliveryPlace || '') + '</td>' +
+        '</tr>' +
+      '</table>' +
+      '<table class="det"><colgroup><col style="width:11%" /><col style="width:89%" /></colgroup>' +
+        '<tr><td class="ml">Detaylar<br />Details</td><td class="b" style="font-size:10.5px">' + escHtml_(order.details || '').replace(/\n/g, '<br />') + '</td></tr>' +
+      '</table>' +
+      '<table class="sigs"><colgroup><col style="width:16%" /><col style="width:13%" /><col style="width:8%" /><col style="width:13%" /><col style="width:8%" /><col style="width:13%" /><col style="width:8%" /><col style="width:13%" /><col style="width:8%" /></colgroup>' +
+        '<tr class="st">' +
+          '<td>Talep Eden<br />Requirer</td>' +
+          '<td colspan="2">Talep Edenin Amiri<br />Manager of Requirer</td>' +
+          '<td colspan="2">1.Onay /<br />1.Approval</td>' +
+          '<td colspan="2">2.Onay /<br />2.Approval</td>' +
+          '<td colspan="2">3.Onay /<br />3.Approval</td>' +
+        '</tr>' +
+        '<tr class="ss">' +
+          '<td>Onay / Approval</td>' +
+          '<td>Onay / Approval</td><td class="dash-l">Tarih / Date</td>' +
+          '<td>Onay / Approval</td><td class="dash-l">Tarih / Date</td>' +
+          '<td>Onay / Approval</td><td class="dash-l">Tarih / Date</td>' +
+          '<td>Onay / Approval</td><td class="dash-l">Tarih / Date</td>' +
+        '</tr>' +
+        '<tr class="sv">' +
+          '<td>' + escHtml_(ap.requirer || order.requestedBy || '') + '</td>' +
+          '<td>' + escHtml_(ap.managerName || 'FUAT ÇETİN') + '</td><td class="dash-l" style="font-size:8.5px;font-weight:400">' + escHtml_(ap.managerDate || '') + '</td>' +
+          '<td>' + escHtml_(ap.approval1Name || 'İbrahim Özdemir') + '</td><td class="dash-l" style="font-size:8.5px;font-weight:400">' + escHtml_(ap.approval1Date || '') + '</td>' +
+          '<td>' + escHtml_(ap.approval2Name || 'Yüksel Kurun') + '</td><td class="dash-l" style="font-size:8.5px;font-weight:400">' + escHtml_(ap.approval2Date || '') + '</td>' +
+          '<td>' + escHtml_(ap.approval3Name || 'İbrahim Özdemir') + '</td><td class="dash-l" style="font-size:8.5px;font-weight:400">' + escHtml_(ap.approval3Date || '') + '</td>' +
+        '</tr>' +
+      '</table>' +
+    '</div>';
+}
+function purchaseOrderEmail_(u, p) {
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const parseEmails = raw => String(raw || '').split(/[,;\s]+/).map(x => x.trim()).filter(Boolean);
+  const toList = parseEmails(p.to);
+  if (!toList.length) throw new Error('En az bir alıcı e-posta adresi girin.');
+  const badTo = toList.find(x => !emailRe.test(x));
+  if (badTo) throw new Error('Geçersiz alıcı e-posta adresi: ' + badTo);
+  const ccList = parseEmails(p.cc);
+  const badCc = ccList.find(x => !emailRe.test(x));
+  if (badCc) throw new Error('Geçersiz CC e-posta adresi: ' + badCc);
+
+  let order = p.order;
+  if (!order && p.formNo) {
+    order = purchaseOrderList_(u).find(x => norm_(x.formNo) === norm_(p.formNo));
+  }
+  if (!order) throw new Error('Gönderilecek sipariş formu bulunamadı.');
+  const items = sanitizeOrderItems_(order.items);
+  if (!items.length) throw new Error('Sipariş formunda en az bir malzeme satırı olmalıdır.');
+  const cleanOrder = Object.assign({}, order, {
+    formNo: s_(order.formNo) || 'AKG-SIPARIS',
+    docCode: s_(order.docCode) || 'IZM_350600_LJT_001',
+    requestedBy: u.role === 'OP' ? u.name : (s_(order.requestedBy) || u.name),
+    items: items,
+    totalAmount: Math.round(items.reduce((acc, x) => acc + n_(x.total), 0) * 100) / 100,
+    currency: s_(order.currency) || (items[0] && items[0].currency) || 'TL'
+  });
+
+  const pdfName = cleanOrder.formNo.replace(/[^A-Za-z0-9_-]/g, '_') + '_AKG_Satinalma_Talep_Formu.pdf';
+  const pdfHtml = buildOrderPdfHtml_(cleanOrder, p.logoDataUrl || '');
+  const pdfBlob = Utilities.newBlob(pdfHtml, 'text/html', pdfName.replace(/\.pdf$/i, '.html'))
+    .getAs('application/pdf').setName(pdfName);
+
+  const subject = s_(p.subject).trim() || ('Satın Alma Talep Formu - ' + cleanOrder.formNo + (cleanOrder.department ? ' (' + cleanOrder.department + ')' : ''));
+  const customMsg = s_(p.message).trim();
+  const linesText = items.map((it, i) => (i + 1) + '. ' + it.name + (it.code ? ' (' + it.code + ')' : '') + ' — ' + fmtTrNum_(it.qty, 1) + ' ' + it.unit + (it.unitPrice ? ' x ' + fmtTrNum_(it.unitPrice, 2) + ' ' + it.currency + ' = ' + fmtTrNum_(it.total, 2) + ' ' + it.currency : '')).join('\n');
+  const plainBody = [
+    customMsg || 'Merhaba, ekte AKG Satın Alma Talep Formu PDF olarak yer almaktadır.',
+    '',
+    'Form No: ' + cleanOrder.formNo,
+    'Talep Tarihi: ' + (cleanOrder.requestDate || ''),
+    'Talep Eden: ' + cleanOrder.requestedBy,
+    cleanOrder.department ? ('Talep Eden Bölüm: ' + cleanOrder.department) : '',
+    cleanOrder.costCenter ? ('Maliyet Merkezi: ' + cleanOrder.costCenter) : '',
+    'Toplam Tutar (KDV Hariç): ' + fmtTrNum_(cleanOrder.totalAmount, 2) + ' ' + cleanOrder.currency,
+    '',
+    'Malzeme Kalemleri:',
+    linesText,
+    cleanOrder.details ? ('\nDetaylar: ' + cleanOrder.details) : ''
+  ].filter(x => x !== '').join('\n');
+
+  const htmlBody = '<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#0f172a;line-height:1.5">' +
+    '<p>' + escHtml_(customMsg || 'Merhaba, ekte AKG Satın Alma Talep Formu PDF olarak yer almaktadır.').replace(/\n/g, '<br />') + '</p>' +
+    '<table style="border-collapse:collapse;margin:12px 0;font-size:12.5px">' +
+      '<tr><td style="padding:4px 10px 4px 0;color:#64748b;font-weight:700">Form No:</td><td style="padding:4px 0;font-weight:700">' + escHtml_(cleanOrder.formNo) + '</td></tr>' +
+      '<tr><td style="padding:4px 10px 4px 0;color:#64748b;font-weight:700">Talep Eden:</td><td style="padding:4px 0">' + escHtml_(cleanOrder.requestedBy) + '</td></tr>' +
+      (cleanOrder.department ? '<tr><td style="padding:4px 10px 4px 0;color:#64748b;font-weight:700">Bölüm:</td><td style="padding:4px 0">' + escHtml_(cleanOrder.department) + '</td></tr>' : '') +
+      (cleanOrder.costCenter ? '<tr><td style="padding:4px 10px 4px 0;color:#64748b;font-weight:700">Maliyet Merkezi:</td><td style="padding:4px 0">' + escHtml_(cleanOrder.costCenter) + '</td></tr>' : '') +
+      '<tr><td style="padding:4px 10px 4px 0;color:#64748b;font-weight:700">Toplam (KDV Hariç):</td><td style="padding:4px 0;font-weight:700">' + fmtTrNum_(cleanOrder.totalAmount, 2) + ' ' + escHtml_(cleanOrder.currency) + ' (' + items.length + ' kalem)</td></tr>' +
+    '</table>' +
+    '<p style="color:#64748b;font-size:12px">Ekli PDF: <b>' + escHtml_(pdfName) + '</b></p>' +
+  '</div>';
+
+  const mailOpts = {
+    to: toList.join(','),
+    subject: subject,
+    body: plainBody,
+    htmlBody: htmlBody,
+    name: 'AKG Depo - Satın Alma Sistemi',
+    attachments: [pdfBlob]
+  };
+  if (ccList.length) mailOpts.cc = ccList.join(',');
+
+  try {
+    MailApp.sendEmail(mailOpts);
+  } catch (err) {
+    const m = String((err && err.message) || err);
+    if (/permission|yetki|authorize|MailApp/i.test(m)) {
+      throw new Error('Apps Script mail gönderme izni henüz verilmemiş. Apps Script editöründe TEST_MAIL_IZNI fonksiyonunu bir kez çalıştırıp izin verin.');
+    }
+    throw new Error('E-posta gönderilemedi: ' + m);
+  }
+  log_(u, 'SIPARIS_MAIL_GONDERILDI', cleanOrder.formNo, { to: toList, cc: ccList, fileName: pdfName });
+  return { sent: true, to: toList, cc: ccList, fileName: pdfName, remainingQuota: MailApp.getRemainingDailyQuota() };
+}
 function log_(u, action, source, detail) {
   try { append_(CFG.sheets.log, HEADERS.log, {TARIH:now_(), KULLANICI:u.name, ROL:u.role, ISLEM:action, KAYNAK_ID:source, DETAY:JSON.stringify(detail || {})}); } catch (e) {}
 }
@@ -2256,6 +2497,12 @@ function TEST_DEPO_ONAYI() {
   Logger.log(list.length ? list.join('\n') : 'Depo Onayı Gerekli işaretli parça yok.');
   return list;
 }
+/* V8.8.3 — Editörde 1 kez çalıştır: MailApp PDF gönderme iznini onaylatır. */
+function TEST_MAIL_IZNI() {
+  const q = MailApp.getRemainingDailyQuota();
+  Logger.log('MailApp izni aktif. Kalan günlük mail kotası: ' + q);
+  return { ok: true, remainingQuota: q };
+}
 </script>
 </head>
 <body>
@@ -2307,6 +2554,7 @@ const ICONS={
  fileCheck:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/>',
  phone:'<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M12 18h.01"/>',
  fileText:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h6M8 9h2"/>',
+ mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>'
 };
 function ic(name,cls=''){return`<span class="ic ${cls}" aria-hidden="true"><svg viewBox="0 0 24 24">${ICONS[name]||''}</svg></span>`;}
@@ -2393,6 +2641,8 @@ function loadLabelCfg(){try{return sanitizeLabelCfg(JSON.parse(localStorage.getI
 function saveLabelCfg(cfg){state.labelCfg=sanitizeLabelCfg(cfg);try{localStorage.setItem('depo.labelCfg',JSON.stringify(state.labelCfg));}catch{}}
 function loadOrderDefaults(){try{return Object.assign({docCode:'IZM_350600_LJT_001',department:'',costCenter:'',deliveryPlace:'',paymentTerm:'Peşin / Cash',paymentMaturity:'',transport:'',managerName:'FUAT ÇETİN',approval1Name:'İbrahim Özdemir',approval2Name:'Yüksel Kurun',approval3Name:'İbrahim Özdemir'},JSON.parse(localStorage.getItem('depo.orderDefaults')||'{}'));}catch{return{docCode:'IZM_350600_LJT_001',department:'',costCenter:'',deliveryPlace:'',paymentTerm:'Peşin / Cash',paymentMaturity:'',transport:'',managerName:'FUAT ÇETİN',approval1Name:'İbrahim Özdemir',approval2Name:'Yüksel Kurun',approval3Name:'İbrahim Özdemir'};}}
 function saveOrderDefaults(d){try{localStorage.setItem('depo.orderDefaults',JSON.stringify(d));}catch{}}
+function loadOrderEmailDefaults(){try{return Object.assign({to:'',cc:''},JSON.parse(localStorage.getItem('depo.orderEmailDefaults')||'{}'));}catch{return{to:'',cc:''};}}
+function saveOrderEmailDefaults(d){try{localStorage.setItem('depo.orderEmailDefaults',JSON.stringify({to:String(d.to||'').trim(),cc:String(d.cc||'').trim()}));}catch{}}
 function loadLocalOrders(){try{const arr=JSON.parse(localStorage.getItem('depo.localOrders')||'[]');return Array.isArray(arr)?arr:[];}catch{return[];}}
 function saveLocalOrders(list){try{localStorage.setItem('depo.localOrders',JSON.stringify(list||[]));}catch{}}
 function mergeOrdersWithLocal(serverOrders){
@@ -2460,7 +2710,7 @@ function loadBootCache(role){
  try{
   const raw=JSON.parse(localStorage.getItem(bootCacheKey(role))||'null');
   if(!raw||raw.url!==(state.directUrl||'')||!raw.data||!Array.isArray(raw.data.stock))return null;
-  if(raw.data.apiVersion!=='V8.8.2-MALIYET'||!Object.keys(raw.data.lists?.machineCostCenters||{}).length)return null;
+  if(!['V8.8.2-MALIYET','V8.8.3-MAIL'].includes(raw.data.apiVersion)||!Object.keys(raw.data.lists?.machineCostCenters||{}).length)return null;
   if(Date.now()-(raw.ts||0)>30*60*1000)return null;
   return raw.data;
  }catch{return null;}
@@ -2490,7 +2740,7 @@ async function demoApi(action,p={}){
   return state.user.role==='OP'?list.filter(x=>norm(x.requestedBy)===norm(state.user.name)):list;
  };
  const isValidSig=s=>typeof s==='string'&&s.length>=12&&/^SIG1:[ML0-9.,\s-]+$/.test(s.trim());
- if(action==='bootstrap')return{user:state.user,stock:visibleStock(),approvals:state.user.role==='OP'?[]:visibleApprovals(),recipes:recipes(),ppeForms:visiblePpeForms(),orders:visibleOrders(),movements:DEMO.movements,lists:DEMO.lists,serverTime:today(),apiVersion:'V8.8.2-MALIYET'};
+ if(action==='bootstrap')return{user:state.user,stock:visibleStock(),approvals:state.user.role==='OP'?[]:visibleApprovals(),recipes:recipes(),ppeForms:visiblePpeForms(),orders:visibleOrders(),movements:DEMO.movements,lists:DEMO.lists,serverTime:today(),apiVersion:'V8.8.3-MAIL'};
  if(action==='stockList')return visibleStock(); if(action==='approvalList')return visibleApprovals(); if(action==='recipeList')return recipes().filter(x=>(!p.machine||x.machine===p.machine)&&(!p.period||x.period===p.period));
  if(action==='ppeFormList')return visiblePpeForms();
  if(action==='purchaseOrderList')return visibleOrders();
@@ -3311,7 +3561,7 @@ function newItemModal(){
 function editItemModal(item){const selected=new Set(String(item.usage||'').split('|').map(norm)),depotApproval=needsDepotApprovalUi(item),usageHtml=REGISTRATION_USAGE_UI.map(x=>`<label><input type="checkbox" name="editUsageOption" value="${esc(x)}" ${selected.has(norm(x))?'checked':''}><span>${esc(x)}</span></label>`).join('');modal('Stok Kartını Düzenle',`<form id="editItemForm" class="form-grid"><input type="hidden" name="id" value="${esc(item.id)}">${field('Parça kodu *',`<input name="code" value="${esc(item.code)}" required>`)}${field('Malzeme adı *',`<input name="name" value="${esc(item.name)}" placeholder="Malzeme adını yazın" required>`)}${field('Kategori *',`<input name="category" list="editTypes" value="${esc(item.category)}" required><datalist id="editTypes">${opts(state.data.lists.types)}</datalist>`)}${field('Firma',`<input name="company" list="editCompanies" value="${esc(item.company)}"><datalist id="editCompanies">${opts(state.data.lists.companies)}</datalist>`)}${field('Birim *',`<select name="unit" required><option value="">Seçin</option>${opts(state.data.lists.units,item.unit)}</select>`)}<div class="field form-span-2"><span>Kullanım Şekli · Çoklu seçim</span><div class="usage-grid">${usageHtml}</div><small>Mevcut değerler “ | ” ayıracına göre işaretlenmiştir.</small></div><div class="field form-span-2"><span>Depo Onayı</span><select name="depotApproval"><option value="Gereksiz" ${depotApproval?'':'selected'}>Gereksiz</option><option value="Gerekli" ${depotApproval?'selected':''}>Gerekli</option></select><small>Mevcut kullanım değerine göre otomatik seçilir.</small></div>${field('Raf *',`<input name="shelf" list="editShelves" value="${esc(item.shelf)}" required><datalist id="editShelves">${opts(state.data.lists.shelves)}</datalist>`)}${field('Makine',`<select name="machine" ${item.depot==='ISG'||/SARF/.test(norm(item.type))?'disabled':''}><option value="">Ortak kullanım</option>${opts(state.data.lists.machines,item.machine)}</select>`)}${field('Kritik / Minimum stok *',`<input name="min" type="number" min="0.01" step="0.01" value="${Number(item.min)>0?item.min:''}" placeholder="Örn: 5" required>`,'0’dan büyük olmalıdır.')}${field('Birim fiyat (₺) *',`<input name="unitPrice" type="number" min="0.01" step="0.01" value="${Number(item.unitPrice)>0?item.unitPrice:''}" placeholder="Örn: 125,00" required>`,'Maliyet hesabı için zorunludur (0’dan büyük).')}${field('Durum',`<select name="active"><option value="AKTİF" ${norm(item.active)==='PASIF'?'':'selected'}>AKTİF</option><option value="PASİF" ${norm(item.active)==='PASIF'?'selected':''}>PASİF</option></select>`)}</form>`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="item-update-save">Değişiklikleri Kaydet</button>`);}
 
 function renderMovements(){const q=norm(state.movQuery||'');const rows=(state.data.movements||[]).filter(x=>(state.user.role==='YONETICI'||(state.user.role==='MEK_ADMIN'&&x.depot==='MEKANIK')||(state.user.role==='ISG_ADMIN'&&x.depot==='ISG'))&&(!q||norm([x.person,x.name,x.code,x.machine,x.source,x.depot].join(' ')).includes(q))).slice(0,200);$('#content').innerHTML=`<section class="panel table-panel print-area"><div class="toolbar"><div class="search">${ic('search','ic-sm')}<input id="movSearch" placeholder="Personel, malzeme, parça kodu, makine veya kaynak ara..." value="${esc(state.movQuery||'')}"></div><span class="meta-inline">${rows.length} kayıt</span></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Tarih</th><th>Çıkış Yapan</th><th>Malzeme</th><th>Depo</th><th>Makine / Bölüm</th><th class="num-col">Miktar</th><th>Kaynak</th></tr></thead><tbody>${rows.length?rows.map(x=>`<tr><td class="num">${fmt(x.date)}</td><td><b>${esc(x.person)}</b></td><td><b>${esc(x.name)}</b><small class="mono">${esc(x.code)}</small></td><td><span class="depot ${x.depot.toLowerCase()}">${x.depot==='ISG'?'İSG':'Mekanik'}</span></td><td>${esc(x.machine)}</td><td class="big num-col">${num(x.qty)} <small>${esc(x.unit)}</small></td><td><span class="badge neutral">${esc(x.source)}</span></td></tr>`).join(''):'<tr><td colspan="7"><div class="empty">Kriterlere uyan hareket kaydı bulunamadı.</div></td></tr>'}</tbody></table></div></section>`;}
-function renderApprovals(){const rows=[...(state.data.approvals||[])].map(x=>({...x,_st:approvalStatus(x),_dep:(norm(x.depot)==='ISG'||/ISG|KKD/.test(norm((x.machine||'')+' '+(x.itemId||''))))?'ISG':'MEKANIK'})).sort((a,b)=>(a._st==='BEKLIYOR'?0:1)-(b._st==='BEKLIYOR'?0:1));const oldGas=state.mode!=='demo'&&!['V8.7-ONAY2','V8.7-KKD','V8.8-SIPARIS','V8.8.1-MALIYET','V8.8.2-MALIYET'].includes(state.data?.apiVersion);$('#content').innerHTML=`${oldGas?`<div class="approval-warning" style="margin-bottom:16px"><b>${ic('alert','ic-sm')}</b><p><b>Google Apps Script (Kod.gs) eski sürümde çalışıyor!</b> Yeni kayıtların <b>ONAY_HAVUZU</b> tablosuna eksiksiz yazılması için <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs</b>’yi kopyalayın, Apps Script’e yapıştırıp kaydedin ve <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> adımlarını uygulayın (URL değişmez).</p></div>`:''}<section class="approval-kpis">${kpi('Bekleyen',rows.filter(x=>x._st==='BEKLIYOR').length,'Depocu veya yönetici kararı bekleyen','clock','orange')}${kpi('Onaylanan',rows.filter(x=>x._st==='ONAYLANDI').length,'Stoktan düşülen talepler','checkCircle','green')}${kpi('Reddedilen',rows.filter(x=>x._st==='REDDEDILDI').length,'Stok değişmeyen talepler','close','red')}</section><section class="panel"><div class="panel-head"><div><h2>Depocu / Yönetici Onay Havuzu</h2><p>Depo onayı gereken veya açık bakım kaydı bulunmayan çıkış talepleri</p></div><span class="meta-inline">${rows.length} talep</span></div><div class="approval-list">${rows.length?rows.map(x=>`<article><div class="approval-id"><span>${esc(x.id||'—')}</span><small>${x.date?fmt(x.date):'Tarih yok'}</small><span class="depot ${x._dep.toLowerCase()}">${x._dep==='ISG'?'İSG':'Mekanik'}</span>${x.depotApproval?'<span class="badge warning">Depo Onayı</span>':''}</div><div><b>${esc(x.name||'Eksik Talep Kaydı')}</b><p>${x.code?`<span class="mono">${esc(x.code)}</span> · `:''}${esc(x.machine||'—')}${x.qty?` · <strong>${num(x.qty)} ${esc(x.unit||'AD')}</strong>`:''}</p><small>${esc(x.requester||'Operatör yok')} — ${esc(x.reason||'')}</small></div><span class="badge ${x._st==='BEKLIYOR'?'warning':x._st==='ONAYLANDI'?'success':'danger'}">${esc(x._st)}</span>${x._st==='BEKLIYOR'?`<div class="approval-buttons"><button class="btn reject" data-approval="REDDET" data-id="${esc(x.id)}">${x.incomplete?'Reddet / Kapat':'Reddet'}</button>${x.incomplete?'':`<button class="btn approve" data-approval="ONAYLA" data-id="${esc(x.id)}">Onayla</button>`}</div>`:''}</article>`).join(''):'<div class="empty">Onay havuzunda bekleyen veya sonuçlanmış talep yok.</div>'}</div></section>`;}
+function renderApprovals(){const rows=[...(state.data.approvals||[])].map(x=>({...x,_st:approvalStatus(x),_dep:(norm(x.depot)==='ISG'||/ISG|KKD/.test(norm((x.machine||'')+' '+(x.itemId||''))))?'ISG':'MEKANIK'})).sort((a,b)=>(a._st==='BEKLIYOR'?0:1)-(b._st==='BEKLIYOR'?0:1));const oldGas=state.mode!=='demo'&&!['V8.7-ONAY2','V8.7-KKD','V8.8-SIPARIS','V8.8.1-MALIYET','V8.8.2-MALIYET','V8.8.3-MAIL'].includes(state.data?.apiVersion);$('#content').innerHTML=`${oldGas?`<div class="approval-warning" style="margin-bottom:16px"><b>${ic('alert','ic-sm')}</b><p><b>Google Apps Script (Kod.gs) eski sürümde çalışıyor!</b> Yeni kayıtların <b>ONAY_HAVUZU</b> tablosuna eksiksiz yazılması için <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs</b>’yi kopyalayın, Apps Script’e yapıştırıp kaydedin ve <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> adımlarını uygulayın (URL değişmez).</p></div>`:''}<section class="approval-kpis">${kpi('Bekleyen',rows.filter(x=>x._st==='BEKLIYOR').length,'Depocu veya yönetici kararı bekleyen','clock','orange')}${kpi('Onaylanan',rows.filter(x=>x._st==='ONAYLANDI').length,'Stoktan düşülen talepler','checkCircle','green')}${kpi('Reddedilen',rows.filter(x=>x._st==='REDDEDILDI').length,'Stok değişmeyen talepler','close','red')}</section><section class="panel"><div class="panel-head"><div><h2>Depocu / Yönetici Onay Havuzu</h2><p>Depo onayı gereken veya açık bakım kaydı bulunmayan çıkış talepleri</p></div><span class="meta-inline">${rows.length} talep</span></div><div class="approval-list">${rows.length?rows.map(x=>`<article><div class="approval-id"><span>${esc(x.id||'—')}</span><small>${x.date?fmt(x.date):'Tarih yok'}</small><span class="depot ${x._dep.toLowerCase()}">${x._dep==='ISG'?'İSG':'Mekanik'}</span>${x.depotApproval?'<span class="badge warning">Depo Onayı</span>':''}</div><div><b>${esc(x.name||'Eksik Talep Kaydı')}</b><p>${x.code?`<span class="mono">${esc(x.code)}</span> · `:''}${esc(x.machine||'—')}${x.qty?` · <strong>${num(x.qty)} ${esc(x.unit||'AD')}</strong>`:''}</p><small>${esc(x.requester||'Operatör yok')} — ${esc(x.reason||'')}</small></div><span class="badge ${x._st==='BEKLIYOR'?'warning':x._st==='ONAYLANDI'?'success':'danger'}">${esc(x._st)}</span>${x._st==='BEKLIYOR'?`<div class="approval-buttons"><button class="btn reject" data-approval="REDDET" data-id="${esc(x.id)}">${x.incomplete?'Reddet / Kapat':'Reddet'}</button>${x.incomplete?'':`<button class="btn approve" data-approval="ONAYLA" data-id="${esc(x.id)}">Onayla</button>`}</div>`:''}</article>`).join(''):'<div class="empty">Onay havuzunda bekleyen veya sonuçlanmış talep yok.</div>'}</div></section>`;}
 
 const RECIPE_PERIODS=['AYLIK','3 AYLIK','6 AYLIK','YILLIK'];
 function isAllRecipePeriods(period){return norm(period)==='TUMU';}
@@ -3522,7 +3772,7 @@ async function renderPpe(){
  const pendingForms=forms.filter(x=>x.status==='İMZA BEKLİYOR');
  const signedForms=forms.filter(x=>x.status==='İMZALANDI');
  const totalSignedQty=signedForms.reduce((s,x)=>s+(Number(x.totalQty)||0),0);
- const oldGas=state.mode!=='demo'&&!['V8.7-KKD','V8.8-SIPARIS','V8.8.1-MALIYET','V8.8.2-MALIYET'].includes(state.data?.apiVersion);
+ const oldGas=state.mode!=='demo'&&!['V8.7-KKD','V8.8-SIPARIS','V8.8.1-MALIYET','V8.8.2-MALIYET','V8.8.3-MAIL'].includes(state.data?.apiVersion);
  if(isOp){
   const selfCard=buildPpeFromMovements(state.data?.movements||[],[state.user.name],'all').cards[0]||{name:state.user.name,count:0,total:0,summary:[],records:[]};
   $('#content').innerHTML=`
@@ -4038,7 +4288,7 @@ function costMapWarningBanner(isEditor=false){
  if(state.mode==='demo')return '';
  const mapCount=Object.keys(state.data?.lists?.machineCostCenters||{}).length;
  const ver=state.data?.apiVersion||'';
- const verOk=ver==='V8.8.2-MALIYET';
+ const verOk=['V8.8.2-MALIYET','V8.8.3-MAIL'].includes(ver);
  if(verOk&&mapCount>0)return '';
  const isOp=state.user?.role==='OP';
  const macCount=(state.data?.lists?.machines||[]).length;
@@ -4046,7 +4296,7 @@ function costMapWarningBanner(isEditor=false){
  const meta=state.data?.lists?._meta;
  const diag=verOk
   ?`Bağlı sürüm: <b>${esc(ver)}</b> · Makine: <b>${macCount}</b> · Maliyet merkezi: <b>${ccCount}</b> · Eşleşme: <b>0</b>${meta?.headers?.length?` · VERİ başlıkları: <span class="mono">${esc(meta.headers.filter(Boolean).join(', '))}</span>`:''}`
-  :`Bağlı canlı <code>Kod.gs</code> sürümü: <b>${esc(ver||'Eski / V8.7')}</b> (beklenen: <b>V8.8.2-MALIYET</b>). Apps Script’te yeni kodu yapıştırıp <b>Ctrl+S (Kaydet)</b> yaptıktan sonra <b>Dağıt → Dağıtımları yönet → Kalem → Yeni sürüm → Dağıt</b> yapın${isOp?'':' veya Bağlantı sekmesindeki <code>/exec</code> adresinin güncel dağıtımla aynı olduğunu kontrol edin'}.`;
+  :`Bağlı canlı <code>Kod.gs</code> sürümü: <b>${esc(ver||'Eski / V8.7')}</b> (beklenen: <b>V8.8.3-MAIL</b>). Apps Script’te yeni kodu yapıştırıp <b>Ctrl+S (Kaydet)</b> yaptıktan sonra <b>Dağıt → Dağıtımları yönet → Kalem → Yeni sürüm → Dağıt</b> yapın${isOp?'':' veya Bağlantı sekmesindeki <code>/exec</code> adresinin güncel dağıtımla aynı olduğunu kontrol edin'}.`;
  return`<div class="notice" style="margin-bottom:${isEditor?12:14}px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
   <div style="flex:1;min-width:260px"><b>${verOk?'VERİ M Sütunu Eşleşmesi Bulunamadı':'Maliyet Merkezi Eşleşmesi Hazır Değil'}:</b> ${diag}</div>
   <div class="button-row" style="gap:8px;flex:none">
@@ -4104,6 +4354,7 @@ function renderOrders(){
         <td><span class="po-status ${esc(o.status)}">${esc(sm[0])}</span>${o.stockSynced?'<small style="color:var(--green);font-weight:700">Stok işlendi</small>':''}</td>
         <td><div class="button-row" style="gap:6px">
          <button type="button" class="btn ghost sm" data-order-open="${esc(o.formNo)}">${isOp?'Görüntüle':'Aç / Düzenle'}</button>
+         <button type="button" class="btn ghost sm" data-order-email="${esc(o.formNo)}" title="PDF Olarak Mail Gönder">${ic('mail','ic-sm')}</button>
          <button type="button" class="btn ghost sm" data-order-print="${esc(o.formNo)}" title="AKG A4 Yazdır">${ic('print','ic-sm')}</button>
         </div></td>
        </tr>`;
@@ -4161,6 +4412,7 @@ function renderOrderEditor(){
    <div class="button-row">
     <button type="button" class="btn ghost sm" data-action="order-copy-text">${ic('copy','ic-sm')} Metin Kopyala</button>
     <button type="button" class="btn ghost sm" data-action="order-export-csv">${ic('download','ic-sm')} CSV / Excel</button>
+    <button type="button" class="btn ghost sm" data-action="order-email-draft">${ic('mail','ic-sm')} PDF Mail Gönder</button>
     <button type="button" class="btn primary sm" data-action="order-print-draft">${ic('print','ic-sm')} A4 Yatay Yazdır (AKG)</button>
    </div>
   </div>
@@ -4413,6 +4665,92 @@ function copyOrderSummary(order){
  ].filter(Boolean).join('\n');
  navigator.clipboard.writeText(text).then(()=>toast('Sipariş özeti panoya kopyalandı.')).catch(()=>toast('Kopyalama izni verilmedi.','error'));
 }
+let _akgLogoPngCache=null;
+function akgLogoPngDataUrl(){
+ if(_akgLogoPngCache)return Promise.resolve(_akgLogoPngCache);
+ return new Promise(resolve=>{
+  try{
+   const svg=akgLogoSvg(74);
+   const blob=new Blob([svg],{type:'image/svg+xml;charset=utf-8'});
+   const url=URL.createObjectURL(blob);
+   const img=new Image();
+   img.onload=()=>{
+    try{
+     const c=document.createElement('canvas');c.width=520;c.height=148;
+     const ctx=c.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,520,148);
+     ctx.drawImage(img,0,0,520,148);
+     _akgLogoPngCache=c.toDataURL('image/png');
+    }catch{}
+    URL.revokeObjectURL(url);resolve(_akgLogoPngCache||'');
+   };
+   img.onerror=()=>{URL.revokeObjectURL(url);resolve('');};
+   img.src=url;
+  }catch{resolve('');}
+ });
+}
+let activeEmailOrder=null;
+function openOrderEmailModal(order){
+ if(!order)return;
+ const filled=(order.items||[]).filter(x=>String(x.name||'').trim()||String(x.code||'').trim());
+ if(!filled.length)return toast('Mail göndermek için formda en az bir malzeme satırı olmalıdır.','error');
+ activeEmailOrder=JSON.parse(JSON.stringify(order));
+ activeEmailOrder.items=filled;
+ activeEmailOrder.totalAmount=Math.round(filled.reduce((s,x)=>s+(Number(x.total)||0),0)*100)/100;
+ activeEmailOrder.currency=filled[0]?.currency||order.currency||'TL';
+ const defs=loadOrderEmailDefaults();
+ const pdfName=`${(activeEmailOrder.formNo||'AKG-SIPARIS').replace(/[^A-Za-z0-9_-]/g,'_')}_AKG_Satinalma_Talep_Formu.pdf`;
+ const defaultSubj=`Satın Alma Talep Formu - ${activeEmailOrder.formNo}${activeEmailOrder.department?' ('+activeEmailOrder.department+')':''}`;
+ const defaultMsg=`Merhaba,\n\n${activeEmailOrder.requestedBy||''} tarafından oluşturulan ${activeEmailOrder.formNo} numaralı AKG Satın Alma Talep Formu ekte PDF olarak paylaşılmıştır.${activeEmailOrder.details?'\n\nDetay: '+activeEmailOrder.details:''}`;
+ modal('Sipariş Formunu PDF Olarak Mail Gönder',`
+  <div class="item-summary" style="margin-bottom:12px">
+   <div>
+    <b>${esc(activeEmailOrder.formNo)} · ${filled.length} kalem</b>
+    <small>${esc(activeEmailOrder.department||'Bölüm belirtilmedi')}${activeEmailOrder.costCenter?' · '+esc(activeEmailOrder.costCenter):''}</small>
+    <small class="mono" style="color:var(--orange);display:block;margin-top:3px">PDF Ek: ${esc(pdfName)}</small>
+   </div>
+   <strong>${fmtCur2(activeEmailOrder.totalAmount)} ${esc(activeEmailOrder.currency)}</strong>
+  </div>
+  <form id="orderEmailForm" class="form-grid">
+   <div class="form-span-2">${field('Alıcı E-posta (Kime) *',`<input id="ordMailTo" type="text" value="${esc(defs.to)}" placeholder="satinalma@firma.com, yonetici@firma.com" required>`,'Birden fazla adres için virgül (,) ile ayırın; son adresler hatırlanır.')}</div>
+   <div class="form-span-2">${field('Bilgi / CC (Opsiyonel)',`<input id="ordMailCc" type="text" value="${esc(defs.cc)}" placeholder="opsiyonel@firma.com">`)}</div>
+   <div class="form-span-2">${field('Konu *',`<input id="ordMailSubj" type="text" value="${esc(defaultSubj)}" required>`)}</div>
+   <div class="form-span-2">${field('Mesaj',`<textarea id="ordMailMsg" rows="4" style="width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font:inherit">${esc(defaultMsg)}</textarea>`)}</div>
+  </form>
+  ${state.mode!=='demo'&&state.data?.apiVersion!=='V8.8.3-MAIL'?`<div class="notice" style="margin-top:10px"><b>Not:</b> Canlı PDF mail gönderimi için <b>Bağlantı</b> sekmesinden güncel <b>Kod.gs (V8.8.3-MAIL)</b> sürümünü Apps Script’e dağıtmanız gerekir.</div>`:''}
+ `,`
+  <button type="button" class="btn ghost" data-close>Vazgeç</button>
+  <button type="button" class="btn ghost" data-action="order-email-preview">${ic('print','ic-sm')} PDF Önizle</button>
+  <button type="button" class="btn primary" data-action="order-email-send">${ic('mail','ic-sm')} PDF Olarak Gönder</button>
+ `);
+}
+async function submitOrderEmail(){
+ const f=$('#orderEmailForm');if(!f||!f.reportValidity()||!activeEmailOrder)return;
+ const to=($('#ordMailTo')?.value||'').trim(), cc=($('#ordMailCc')?.value||'').trim();
+ const subject=($('#ordMailSubj')?.value||'').trim(), message=($('#ordMailMsg')?.value||'').trim();
+ const emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+ const toList=to.split(/[,;\s]+/).map(x=>x.trim()).filter(Boolean);
+ if(!toList.length)return toast('Alıcı e-posta adresi girin.','error');
+ const badTo=toList.find(x=>!emailRe.test(x));
+ if(badTo)return toast('Geçersiz e-posta adresi: '+badTo,'error');
+ const ccList=cc.split(/[,;\s]+/).map(x=>x.trim()).filter(Boolean);
+ const badCc=ccList.find(x=>!emailRe.test(x));
+ if(badCc)return toast('Geçersiz CC e-posta adresi: '+badCc,'error');
+ saveOrderEmailDefaults({to:toList.join(', '),cc:ccList.join(', ')});
+ beginSave('AKG PDF hazırlanıyor ve mail gönderiliyor...');
+ try{
+  const logoDataUrl=await akgLogoPngDataUrl();
+  const r=await api('purchaseOrderEmail',{
+   formNo:activeEmailOrder.formNo,order:activeEmailOrder,
+   to:toList.join(','),cc:ccList.join(','),subject,message,logoDataUrl
+  });
+  closeModal();
+  endSave(true,'PDF mail gönderildi ✓');
+  toast(r?.demo?`Demo modu: ${r.fileName} için gönderim simüle edildi (gerçek mail için canlı GAS gerekir).`:`PDF mail gönderildi → ${toList.join(', ')} (${r?.fileName||'PDF'})`);
+ }catch(err){
+  endSave(false,err.message);
+  toast(err.message,'error');
+ }
+}
 function receiveOrderToStock(){
  const d=syncDraftFromDom();if(!d||d.isNew)return;
  const stockItems=d.items.filter(x=>x.itemId&&Number(x.qty)>0);
@@ -4442,7 +4780,7 @@ function receiveOrderToStock(){
  toast(`${payload.formNo} teslim alındı ve ${stockItems.length} kalem stok girişi sıraya alındı.`);
 }
 
-function renderConnection(){const code=$('#gasCode').textContent.trim();const gasOk=state.mode==='demo'||state.data?.apiVersion==='V8.8.2-MALIYET';$('#content').innerHTML=`<section class="connection-grid"><article class="panel"><div class="panel-head"><div><h2>Bağlantı Modu</h2><p>GitHub Pages yayınında Doğrudan GAS (/exec), yerel sunucuda /api/gas önerilir</p></div><span class="connection ${state.mode}"><i></i>${state.mode.toUpperCase()}</span></div><div class="mode-cards">${[['proxy','Güvenli /api/gas','GAS adresi ve proxy anahtarı sunucuda gizli kalır; V8 kayıt akışı etkindir.'],['direct','Tek HTML / Doğrudan','GitHub Pages veya tek HTML için Apps Script ALLOW_DIRECT=true ile kullanın.'],['demo','Demo / Yerel','Gerçek tabloya yazmaz; tüm ekranlar test edilir.']].map(([m,t,d])=>`<label class="${state.mode===m?'selected':''}"><input type="radio" name="mode" value="${m}" ${state.mode===m?'checked':''}><span><b>${t}</b><small>${d}</small></span></label>`).join('')}</div>${field('Apps Script /exec adresi',`<input id="directUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan mod dışında tarayıcıya açılmaz.')}<div class="button-row"><button class="btn ghost" data-action="test-connection">Bağlantıyı Test Et</button><button class="btn primary" data-action="save-connection">Ayarları Kaydet</button></div></article><article class="panel"><div class="panel-head"><div><h2>Bağımsız Tek HTML Dosyaları</h2><p>Tam yönetim paneli ve sahaya özel bağımsız QR çıkış terminali</p></div><span class="ic" style="color:var(--orange)">${ic('download','ic-lg')}</span></div><div class="download-card"><b>1. Ana Yönetim Paneli (Tek HTML)</b><p>CSS, JavaScript ve QR üreticisi tek dosyada. Demo veya canlı Google Sheets bağlantısı ile çalışır.</p><button class="btn primary large" data-action="download-html">${ic('download','ic-sm')} Ana Panel HTML İndir</button></div><div class="download-card" style="margin-top:12px"><b>2. Bağımsız Depo QR Terminali (Tek HTML)</b><p>Depodaki QR kodu okutulduğunda önce OP şifresini sorar, eşleşen parçayı açar; Depo Onayı Gerekli ise Depocu onayı ister, değilse doğrudan stoktan düşer.</p><div class="button-row"><button class="btn primary" data-action="download-qr-terminal">${ic('download','ic-sm')} QR Terminali İndir</button><button class="btn ghost" data-action="open-qr-terminal">${ic('qr','ic-sm')} Terminali Dene</button></div></div><div class="security-list"><p><span>${ic('check','ic-sm')}</span> Rol ve depo kapsamı hem arayüzde hem Kod.gs’de doğrulanır</p><p><span>${ic('check','ic-sm')}</span> PIN yerine imzalı, süreli oturum belirteci kullanılır</p><p><span>${ic('check','ic-sm')}</span> Bağımsız QR terminali <span class="mono">./qr-terminal.html</span> ve <span class="mono">?qr=KOD</span> destekler</p></div></article></section><section class="panel code-panel"><div class="panel-head"><div><h2>Google Apps Script · Kod.gs ${gasOk?'<span class="badge success">Güncel (V8.8.2-MALIYET)</span>':'<span class="badge danger">Eski Sürüm Bağlı — Güncelleme Gerekli</span>'}</h2><p>Kodu kopyalayıp Apps Script’te kaydettikten sonra <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> yapın (mevcut /exec adresiniz değişmez).</p></div><button class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kodu Kopyala</button></div><pre><code>${esc(code)}</code></pre></section>`;}
+function renderConnection(){const code=$('#gasCode').textContent.trim();const gasOk=state.mode==='demo'||state.data?.apiVersion==='V8.8.3-MAIL';$('#content').innerHTML=`<section class="connection-grid"><article class="panel"><div class="panel-head"><div><h2>Bağlantı Modu</h2><p>GitHub Pages yayınında Doğrudan GAS (/exec), yerel sunucuda /api/gas önerilir</p></div><span class="connection ${state.mode}"><i></i>${state.mode.toUpperCase()}</span></div><div class="mode-cards">${[['proxy','Güvenli /api/gas','GAS adresi ve proxy anahtarı sunucuda gizli kalır; V8 kayıt akışı etkindir.'],['direct','Tek HTML / Doğrudan','GitHub Pages veya tek HTML için Apps Script ALLOW_DIRECT=true ile kullanın.'],['demo','Demo / Yerel','Gerçek tabloya yazmaz; tüm ekranlar test edilir.']].map(([m,t,d])=>`<label class="${state.mode===m?'selected':''}"><input type="radio" name="mode" value="${m}" ${state.mode===m?'checked':''}><span><b>${t}</b><small>${d}</small></span></label>`).join('')}</div>${field('Apps Script /exec adresi',`<input id="directUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan mod dışında tarayıcıya açılmaz.')}<div class="button-row"><button class="btn ghost" data-action="test-connection">Bağlantıyı Test Et</button><button class="btn primary" data-action="save-connection">Ayarları Kaydet</button></div></article><article class="panel"><div class="panel-head"><div><h2>Bağımsız Tek HTML Dosyaları</h2><p>Tam yönetim paneli ve sahaya özel bağımsız QR çıkış terminali</p></div><span class="ic" style="color:var(--orange)">${ic('download','ic-lg')}</span></div><div class="download-card"><b>1. Ana Yönetim Paneli (Tek HTML)</b><p>CSS, JavaScript ve QR üreticisi tek dosyada. Demo veya canlı Google Sheets bağlantısı ile çalışır.</p><button class="btn primary large" data-action="download-html">${ic('download','ic-sm')} Ana Panel HTML İndir</button></div><div class="download-card" style="margin-top:12px"><b>2. Bağımsız Depo QR Terminali (Tek HTML)</b><p>Depodaki QR kodu okutulduğunda önce OP şifresini sorar, eşleşen parçayı açar; Depo Onayı Gerekli ise Depocu onayı ister, değilse doğrudan stoktan düşer.</p><div class="button-row"><button class="btn primary" data-action="download-qr-terminal">${ic('download','ic-sm')} QR Terminali İndir</button><button class="btn ghost" data-action="open-qr-terminal">${ic('qr','ic-sm')} Terminali Dene</button></div></div><div class="security-list"><p><span>${ic('check','ic-sm')}</span> Rol ve depo kapsamı hem arayüzde hem Kod.gs’de doğrulanır</p><p><span>${ic('check','ic-sm')}</span> PIN yerine imzalı, süreli oturum belirteci kullanılır</p><p><span>${ic('check','ic-sm')}</span> Bağımsız QR terminali <span class="mono">./qr-terminal.html</span> ve <span class="mono">?qr=KOD</span> destekler</p></div></article></section><section class="panel code-panel"><div class="panel-head"><div><h2>Google Apps Script · Kod.gs ${gasOk?'<span class="badge success">Güncel (V8.8.3-MAIL)</span>':'<span class="badge danger">Eski Sürüm Bağlı — Güncelleme Gerekli</span>'}</h2><p>Kodu kopyalayıp Apps Script’te kaydettikten sonra <b>Dağıt → Dağıtımları yönet → Kalem (Düzenle) → Sürüm: Yeni sürüm → Dağıt</b> yapın (PDF mail izni için bir kez <code>TEST_MAIL_IZNI</code> çalıştırın).</p></div><button class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kodu Kopyala</button></div><pre><code>${esc(code)}</code></pre></section>`;}
 
 let cameraStream=null,cameraTimer=null;
 async function openScanner(){modal('QR Kodunu Okut',`<div class="camera"><video id="cameraVideo" playsinline muted></video><div class="camera-frame"></div></div><p class="camera-help">Kamera izni verin ve kodu çerçeveye hizalayın. Desteklenmiyorsa kodu elle girin.</p>${field('Manuel kod','<input id="scanManual" placeholder="RUL-6205 veya ISG-DOLAP">')}`,`<button class="btn ghost" data-close>Vazgeç</button><button class="btn primary" data-action="scan-manual-go">Devam Et</button>`);try{cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});const v=$('#cameraVideo');v.srcObject=cameraStream;await v.play();if('BarcodeDetector'in window){const det=new BarcodeDetector({formats:['qr_code']});cameraTimer=setInterval(async()=>{try{const codes=await det.detect(v);if(codes[0]?.rawValue){handleQr(codes[0].rawValue);}}catch{}},500);}}catch(e){toast('Kamera açılamadı; kodu elle girebilirsiniz.','error');}}
@@ -4471,7 +4809,7 @@ function loginSettingsModal(){
     ${field('Apps Script /exec Adresi',`<input id="loginDirectUrl" value="${esc(state.directUrl)}" placeholder="https://script.google.com/macros/s/.../exec">`,'Doğrudan modda Apps Script Web App /exec adresini yapıştırın.')}
     <div class="button-row">
      <button type="button" class="btn ghost" data-action="login-test-conn">Bağlantıyı Test Et</button>
-     <button type="button" class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kod.gs (V8.8.2) Kopyala</button>
+     <button type="button" class="btn ghost" data-action="copy-gas">${ic('copy','ic-sm')} Kod.gs (V8.8.3) Kopyala</button>
      <button type="button" class="btn primary" data-action="login-save-conn">Ayarları Kaydet</button>
     </div>
    </div>
@@ -4702,6 +5040,9 @@ async function actionHandler(e){const page=e.target.closest('[data-page]')?.data
   if(a==='order-add-row'){syncDraftFromDom();if(state.orderDraft){state.orderDraft.items.push(emptyOrderRow());renderOrderEditor();}return;}
   if(a==='order-fill-missing'){syncDraftFromDom();if(state.orderDraft){const missing=(state.data?.stock||[]).filter(x=>Number(x.stock)<=Number(x.min));if(!missing.length)return toast('Eksik stok kalemi bulunamadı.');const seeds=missing.slice(0,25).map(it=>emptyOrderRow({itemId:it.id,name:it.name,code:it.code,supplier:it.company||'',qty:Math.max(1,(Number(it.min)||1)-Math.max(0,Number(it.stock)||0)),unit:it.unit||'AD',unitPrice:Number(it.unitPrice)||0,currency:'TL',deliveryDate:formatTrDate(new Date())}));state.orderDraft.items=padOrderRows(seeds,Math.max(14,seeds.length));renderOrderEditor();toast(`${seeds.length} eksik stok satırlara dolduruldu.`);}return;}
   if(a==='order-print-draft')return printPurchaseOrder(syncDraftFromDom());
+  if(a==='order-email-draft')return openOrderEmailModal(syncDraftFromDom());
+  if(a==='order-email-preview')return printPurchaseOrder(activeEmailOrder);
+  if(a==='order-email-send')return submitOrderEmail();
   if(a==='order-export-csv')return exportOrderCsv(syncDraftFromDom());
   if(a==='order-copy-text')return copyOrderSummary(syncDraftFromDom());
   if(a==='order-receive-stock')return receiveOrderToStock();
@@ -4712,6 +5053,7 @@ async function actionHandler(e){const page=e.target.closest('[data-page]')?.data
   const sqDismiss=e.target.closest('[data-sync-dismiss]');if(sqDismiss)return dismissSyncJob(sqDismiss.dataset.syncDismiss);
   const ordSt=e.target.closest('[data-order-status]');if(ordSt){state.orderFilter.status=ordSt.dataset.orderStatus;return renderOrders();}
   const ordOpen=e.target.closest('[data-order-open]');if(ordOpen){const o=(state.data?.orders||[]).find(x=>norm(x.formNo)===norm(ordOpen.dataset.orderOpen));if(o)return openOrderEditor(o);}
+  const ordEmail=e.target.closest('[data-order-email]');if(ordEmail){const o=(state.data?.orders||[]).find(x=>norm(x.formNo)===norm(ordEmail.dataset.orderEmail));if(o)return openOrderEmailModal(o);}
   const ordPrint=e.target.closest('[data-order-print]');if(ordPrint){const o=(state.data?.orders||[]).find(x=>norm(x.formNo)===norm(ordPrint.dataset.orderPrint));if(o)return printPurchaseOrder(o);}
   const ordFromItem=e.target.closest('[data-order-from-item]');if(ordFromItem)return openOrderFromItem(ordFromItem.dataset.orderFromItem);
   const poPick=e.target.closest('[data-po-pick]');if(poPick){syncDraftFromDom();return openOrderStockPicker(Number(poPick.dataset.poPick));}

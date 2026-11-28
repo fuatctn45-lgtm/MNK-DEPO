@@ -129,7 +129,10 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none}
   flex:1;width:100%;max-width:480px;margin:0 auto;min-width:0;
   padding:10px 10px calc(76px + var(--safe-bot));
   display:flex;flex-direction:column;gap:10px;
+  transition:max-width .18s ease;
 }
+.wrap.wide{max-width:1140px}
+.wrap.wide .steps{max-width:480px;width:100%;margin:0 auto}
 
 /* Native Bottom Navigation Bar */
 .bottom-nav{
@@ -637,21 +640,124 @@ textarea.input{height:auto;min-height:76px;padding:11px 14px;resize:vertical;lin
   width:100%;max-width:480px;background:#fff;
   border-radius:20px 20px 0 0;padding-bottom:var(--safe-bot);
   box-shadow:0 -12px 40px rgba(15,23,42,.28);overflow:hidden;
+  max-height:92dvh;display:flex;flex-direction:column;
 }
+.modal.modal-lg{max-width:560px}
 @media (min-width:540px){
   .modal-back{place-items:center;padding:16px}
   .modal{border-radius:var(--radius);padding-bottom:0}
 }
 .modal-head{
   padding:15px 18px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
+  display:flex;align-items:center;justify-content:space-between;flex:none;
 }
 .modal-head h3{margin:0;font-size:17px;font-weight:800}
 .icon-btn{
   width:36px;height:36px;border-radius:10px;border:1px solid var(--border);
   background:#fff;color:var(--ink-2);display:grid;place-items:center;
 }
-.modal-body{padding:16px 18px 20px}
+.modal-body{padding:16px 18px 20px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal-foot{
+  display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;
+  padding:12px 18px;border-top:1px solid var(--border);background:var(--surface-2);flex:none;
+}
+.modal-foot .btn{min-height:42px;padding:0 14px;font-size:13.5px}
+
+/* Official AKG Satın Alma Talep Formu (Identical to Main Panel) */
+.po-actions-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.po-actions-bar .button-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.po-actions-bar .btn{min-height:40px;padding:0 12px;font-size:13px;border-radius:10px}
+.po-scroll-hint{
+  display:none;align-items:center;justify-content:space-between;gap:8px;
+  padding:8px 12px;margin-bottom:10px;border-radius:10px;
+  background:var(--blue-soft);border:1px solid var(--blue-line);
+  color:#1E40AF;font-size:12px;font-weight:700;
+}
+@media (max-width:1060px){.po-scroll-hint{display:flex}}
+.akg-wrap{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.akg-sheet{min-width:1020px;border:1.5px solid #0f172a;background:#fff;color:#0f172a;font-family:Arial,Helvetica,sans-serif;font-size:12px}
+.akg-head{display:grid;grid-template-columns:180px 1fr 190px;border-bottom:1.5px solid #0f172a;align-items:stretch}
+.akg-logo-cell{display:flex;align-items:center;justify-content:center;padding:8px 10px;border-right:1px solid #0f172a}
+.akg-title-cell{display:flex;align-items:center;justify-content:center;text-align:center;padding:10px 14px;font-size:20px;font-weight:800;letter-spacing:-.01em;border-right:1px solid #0f172a}
+.akg-doc-cell{display:flex;align-items:center;justify-content:center;padding:8px 10px}
+.akg-doc-cell input{width:100%;text-align:center;font-weight:700;font-size:12.5px;border:1px dashed transparent;background:transparent;padding:4px;font-family:var(--mono)}
+.akg-doc-cell input:focus{border-color:var(--orange);background:#fff7ed;outline:none}
+.akg-meta{display:grid;grid-template-columns:155px 1fr 155px 1.2fr 155px 1fr;border-bottom:1.5px solid #0f172a}
+.akg-meta-lbl{padding:5px 8px;font-size:10.5px;font-weight:700;line-height:1.25;border-right:1px solid #0f172a;border-bottom:1px solid #0f172a;background:#f8fafc;display:flex;flex-direction:column;justify-content:center}
+.akg-meta-val{padding:3px 6px;border-right:1px solid #0f172a;border-bottom:1px solid #0f172a;display:flex;align-items:center}
+.akg-meta-val:nth-child(6n){border-right:0}
+.akg-meta>div:nth-last-child(-n+6){border-bottom:0}
+.akg-meta-val input,.akg-meta-val select{width:100%;border:1px solid transparent;border-radius:4px;padding:4px 6px;font-size:12px;font-weight:700;color:#0f172a;background:transparent}
+.akg-meta-val input:focus,.akg-meta-val select:focus{border-color:var(--orange);background:#fff7ed;outline:none}
+.akg-meta-val input[readonly]{background:#f8fafc;color:#334155}
+.akg-tbl{width:100%;border-collapse:collapse;table-layout:fixed}
+.akg-tbl th{border:1px solid #0f172a;border-top:0;padding:5px 4px;font-size:10.5px;font-weight:700;text-align:center;line-height:1.25;background:#f8fafc}
+.akg-tbl th:first-child,.akg-tbl td:first-child{border-left:0}
+.akg-tbl th:last-child,.akg-tbl td:last-child{border-right:0}
+.akg-tbl td{border:1px solid #0f172a;padding:2px 3px;vertical-align:middle}
+.akg-tbl td.c{text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.akg-tbl td.r{text-align:right;font-variant-numeric:tabular-nums}
+.akg-tbl input,.akg-tbl select{width:100%;border:1px solid transparent;border-radius:3px;padding:4px 5px;font-size:11.5px;color:#0f172a;background:transparent;min-width:0}
+.akg-tbl input:focus,.akg-tbl select:focus{border-color:var(--orange);background:#fff7ed;outline:none}
+.akg-tbl input.num-in{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.akg-tbl .akg-tot-cell{padding:4px 6px;font-weight:700;font-variant-numeric:tabular-nums;text-align:right;font-size:11.5px}
+.akg-tbl .akg-pick-btn{width:22px;height:22px;border:1px solid #cbd5e1;border-radius:4px;background:#f8fafc;color:#475569;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:11px;padding:0;flex:none;font-weight:800}
+.akg-tbl .akg-pick-btn:hover{border-color:var(--orange);color:var(--orange);background:#fff7ed}
+.akg-name-cell{display:flex;align-items:center;gap:3px}
+.akg-total-row td{border-top:1.5px solid #0f172a;border-bottom:1.5px solid #0f172a;padding:7px 8px;font-weight:800;background:#fff}
+.akg-red{color:#dc2626}
+.akg-grand{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
+.akg-pay{display:grid;grid-template-columns:130px 1fr 130px 1fr 90px 1fr 125px 1fr;border-bottom:1px solid #0f172a}
+.akg-pay-lbl{padding:5px 7px;font-size:10.5px;font-weight:700;line-height:1.25;border-right:1px solid #0f172a;background:#f8fafc;display:flex;flex-direction:column;justify-content:center}
+.akg-pay-val{padding:3px 5px;border-right:1px solid #0f172a;display:flex;align-items:center}
+.akg-pay-val:last-child{border-right:0}
+.akg-pay-val input,.akg-pay-val select{width:100%;border:1px solid transparent;border-radius:4px;padding:4px 5px;font-size:11.5px;color:#0f172a;background:transparent}
+.akg-pay-val input:focus,.akg-pay-val select:focus{border-color:var(--orange);background:#fff7ed;outline:none}
+.akg-details{display:grid;grid-template-columns:130px 1fr;border-bottom:1.5px solid #0f172a;min-height:68px}
+.akg-details-lbl{padding:8px 8px;font-size:11px;font-weight:700;line-height:1.3;border-right:1px solid #0f172a;background:#f8fafc;display:flex;flex-direction:column;justify-content:center}
+.akg-details-val{padding:5px 8px;display:flex}
+.akg-details-val textarea{width:100%;min-height:56px;border:1px solid transparent;border-radius:4px;padding:4px 6px;font-size:12.5px;font-weight:700;font-family:inherit;color:#0f172a;resize:vertical;background:transparent}
+.akg-details-val textarea:focus{border-color:var(--orange);background:#fff7ed;outline:none}
+.akg-sigs{display:grid;grid-template-columns:1.1fr 1.5fr 1.5fr 1.5fr 1.5fr}
+.akg-sig-col{border-right:1px solid #0f172a;display:flex;flex-direction:column}
+.akg-sig-col:last-child{border-right:0}
+.akg-sig-top{padding:5px 6px;text-align:center;font-size:10.5px;font-weight:700;line-height:1.25;border-bottom:1px solid #0f172a;background:#f8fafc}
+.akg-sig-sub{display:grid;grid-template-columns:1fr 90px;border-bottom:1px dashed #64748b;font-size:10px;font-weight:700;text-align:center}
+.akg-sig-sub.single{grid-template-columns:1fr}
+.akg-sig-sub span{padding:3px 4px}
+.akg-sig-sub span+span{border-left:1px dashed #64748b}
+.akg-sig-inputs{display:grid;grid-template-columns:1fr 90px;min-height:44px}
+.akg-sig-inputs.single{grid-template-columns:1fr}
+.akg-sig-inputs input{width:100%;border:0;text-align:center;font-size:11.5px;font-weight:700;padding:5px 4px;color:#0f172a;background:transparent}
+.akg-sig-inputs input:focus{background:#fff7ed;outline:none}
+.akg-sig-inputs input[readonly]{background:#f8fafc;color:#334155}
+.akg-sig-inputs input+input{border-left:1px dashed #64748b;font-size:10.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.po-search-box{
+  display:flex;align-items:center;gap:8px;padding:0 12px;height:44px;
+  border:1.5px solid var(--border-strong);border-radius:10px;background:#fff;margin-bottom:10px;
+}
+.po-search-box input{border:0;outline:none;width:100%;font-size:14px;background:transparent}
+.po-picker-list{display:grid;gap:7px;max-height:48dvh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.po-picker-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 12px;border:1px solid var(--border);border-radius:10px;
+  background:#fff;cursor:pointer;text-align:left;width:100%;
+}
+.po-picker-row:hover,.po-picker-row:active{border-color:var(--orange);background:var(--orange-soft)}
+.po-picker-row b{display:block;font-size:13.5px;color:var(--ink)}
+.po-picker-row small{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+.po-bottom-actions{
+  display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:12px;
+}
+.po-bottom-actions .btn{min-height:46px;padding:0 16px;font-size:14px}
+.modal-summary{
+  padding:12px 14px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);
+  margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.modal-summary > div{min-width:0}
+.modal-summary b{display:block;font-size:14.5px;color:var(--ink)}
+.modal-summary small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.modal-summary strong{font-size:16px;font-weight:800;color:var(--ink);white-space:nowrap}
 
 /* Toasts */
 .toasts{
@@ -800,6 +906,19 @@ body.busy .busy-bar{display:block}
   </section>
 </div>
 
+<div class="modal-back" id="qrModal" hidden>
+  <section class="modal modal-lg" role="dialog" aria-modal="true" aria-labelledby="qrModalTitle">
+    <div class="modal-head">
+      <h3 id="qrModalTitle"></h3>
+      <button class="icon-btn" type="button" data-action="close-qr-modal" aria-label="Kapat">
+        <span class="ic ic-sm"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
+      </button>
+    </div>
+    <div class="modal-body" id="qrModalBody"></div>
+    <div class="modal-foot" id="qrModalFoot"></div>
+  </section>
+</div>
+
 <div class="toasts" id="toasts"></div>
 
 <script>
@@ -817,13 +936,65 @@ const PREFS_KEY = 'depo.qr.prefs';
 const HIST_KEY = 'depo.qr.history';
 const STOCK_CACHE_KEY = 'depo.qr.stockCache';
 const LOCAL_ORDERS_KEY = 'depo.localOrders';
+const PAYMENT_TERMS = ['Peşin / Cash','Vadeli / Deferred','Havale / EFT','Kredi Kartı','Çek','Açık Hesap'];
+const PAYMENT_MATURITIES = ['','Peşin','15 Gün','30 Gün','45 Gün','60 Gün','90 Gün','120 Gün'];
+const TRANSPORT_TYPES = ['','Tedarikçi / Supplier','Alıcı / Buyer','Kargo','Ambar','Elden Teslim'];
+const fmtQty1 = v => new Intl.NumberFormat('tr-TR',{minimumFractionDigits:1,maximumFractionDigits:2}).format(Number(v)||0);
+const fmtCur2 = v => new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(v)||0);
+function akgLogoSvg(h = 38) {
+  return `<svg height="${h}" viewBox="0 0 260 74" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AKG" style="display:block;max-width:100%;width:auto"><defs><linearGradient id="akgBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1aa3ff"/><stop offset="55%" stop-color="#0084e8"/><stop offset="100%" stop-color="#0066c4"/></linearGradient><linearGradient id="akgMetal" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#dce4e8"/><stop offset="48%" stop-color="#eef3f5"/><stop offset="100%" stop-color="#a8bcc6"/></linearGradient></defs><rect x="27" y="4" width="20" height="4.5" rx="1" fill="#0077d6"/><path d="M10 15 C18 10.5, 27 9.5, 37 9.5 C47 9.5, 56 10.5, 64 15 L59 50 C52 53, 45 53, 43 49 L42 20 C34 23, 28 31, 29 44 C30 49, 25 53, 15 50 Z" fill="url(#akgBlue)" stroke="#0064bd" stroke-width="1.2" stroke-linejoin="round"/><path d="M40 16 C30 22, 26 33, 30 48 C34 55, 42 54, 43 46 C44 37, 42 25, 40 16 Z" fill="#ffffff"/><path d="M14 55 C22 50, 30 52, 35 55 C41 58, 50 58, 59 53 L58.2 57.5 C49 62.5, 40 62.5, 34 59.5 C29 56.5, 22 54.5, 14.8 59.5 Z" fill="url(#akgBlue)"/><path d="M15.4 61.5 C23 56.5, 30 58.5, 35 61.5 C41 64.5, 49.5 64.5, 58 59.8 L57.2 64 C48.5 68.8, 40 68.8, 34 65.8 C29 62.8, 22.5 61, 16.1 65.8 Z" fill="url(#akgBlue)"/><path d="M16.8 67.5 C24 62.8, 30.5 64.8, 35 67.5 C41 70.5, 49 70.5, 56.8 66 L56 70 C48 74.2, 40 74.2, 34 71.2 C29.5 68.5, 23.5 67, 17.6 71.2 Z" fill="url(#akgBlue)"/><text x="72" y="62" font-family="Arial Black, 'Segoe UI Black', Impact, sans-serif" font-size="56" font-weight="900" font-style="italic" letter-spacing="-2.5" fill="url(#akgMetal)" stroke="#7c939e" stroke-width="2.4" paint-order="stroke fill">AKG</text><circle cx="241" cy="18" r="9.5" fill="none" stroke="#859aa4" stroke-width="1.8"/><text x="241" y="22.5" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="800" fill="#859aa4">R</text></svg>`;
+}
+let _akgLogoPngCache = null;
+function akgLogoPngDataUrl() {
+  if (_akgLogoPngCache) return Promise.resolve(_akgLogoPngCache);
+  return new Promise(resolve => {
+    try {
+      const svg = akgLogoSvg(74);
+      const blob = new Blob([svg], {type: 'image/svg+xml;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const c = document.createElement('canvas'); c.width = 520; c.height = 148;
+          const ctx = c.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 520, 148);
+          ctx.drawImage(img, 0, 0, 520, 148);
+          _akgLogoPngCache = c.toDataURL('image/png');
+        } catch {}
+        URL.revokeObjectURL(url); resolve(_akgLogoPngCache || '');
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(''); };
+      img.src = url;
+    } catch { resolve(''); }
+  });
+}
+function loadOrderDefaults() {
+  try {
+    return Object.assign({
+      docCode: 'IZM_350600_LJT_001', department: '', costCenter: '',
+      deliveryPlace: '', paymentTerm: 'Peşin / Cash', paymentMaturity: '', transport: '',
+      managerName: 'FUAT ÇETİN', approval1Name: 'İbrahim Özdemir', approval2Name: 'Yüksel Kurun', approval3Name: 'İbrahim Özdemir'
+    }, JSON.parse(localStorage.getItem('depo.orderDefaults') || '{}'));
+  } catch {
+    return {docCode:'IZM_350600_LJT_001',department:'',costCenter:'',deliveryPlace:'',paymentTerm:'Peşin / Cash',paymentMaturity:'',transport:'',managerName:'FUAT ÇETİN',approval1Name:'İbrahim Özdemir',approval2Name:'Yüksel Kurun',approval3Name:'İbrahim Özdemir'};
+  }
+}
+function saveOrderDefaults(d) {
+  try { localStorage.setItem('depo.orderDefaults', JSON.stringify(d)); } catch {}
+}
+function loadOrderEmailDefaults() {
+  try { return Object.assign({to: '', cc: ''}, JSON.parse(localStorage.getItem('depo.orderEmailDefaults') || '{}')); }
+  catch { return {to: '', cc: ''}; }
+}
+function saveOrderEmailDefaults(d) {
+  try { localStorage.setItem('depo.orderEmailDefaults', JSON.stringify({to: d.to || '', cc: d.cc || ''})); } catch {}
+}
 function loadLocalOrders() {
   try { const a = JSON.parse(localStorage.getItem(LOCAL_ORDERS_KEY) || '[]'); return Array.isArray(a) ? a : []; }
   catch { return []; }
 }
 function saveLocalOrder(order) {
   const list = loadLocalOrders();
-  const idx = list.findIndex(x => x.id === order.id);
+  const idx = list.findIndex(x => x.id === order.id || (order.formNo && norm(x.formNo) === norm(order.formNo)));
   if (idx >= 0) list[idx] = order; else list.unshift(order);
   try { localStorage.setItem(LOCAL_ORDERS_KEY, JSON.stringify(list.slice(0, 120))); } catch {}
   return order;
@@ -831,7 +1002,7 @@ function saveLocalOrder(order) {
 function nextOrderFormNo() {
   const yr = new Date().getFullYear();
   const existing = loadLocalOrders();
-  let maxN = 1;
+  let maxN = 0;
   existing.forEach(o => {
     const m = String(o.formNo || '').match(/(\d+)$/);
     if (m) maxN = Math.max(maxN, Number(m[1]) || 0);
@@ -875,7 +1046,7 @@ function loadStockCache() {
     return c;
   } catch { return null; }
 }
-function saveStockCache(stock, machines, costCenters, machineCostCenters) {
+function saveStockCache(stock, machines, costCenters, machineCostCenters, apiVersion = '', companies = [], units = []) {
   try {
     localStorage.setItem(STOCK_CACHE_KEY, JSON.stringify({
       sig: cacheKeySig(),
@@ -883,7 +1054,10 @@ function saveStockCache(stock, machines, costCenters, machineCostCenters) {
       stock: stock || [],
       machines: machines || [],
       costCenters: costCenters || [],
-      machineCostCenters: machineCostCenters || {}
+      machineCostCenters: machineCostCenters || {},
+      apiVersion: apiVersion || '',
+      companies: companies || [],
+      units: units || []
     }));
   } catch {}
 }
@@ -895,7 +1069,7 @@ function patchCachedStock(itemId, deltaOrRemaining, isAbsolute = false) {
   };
   apply(state.stock);
   const c = loadStockCache();
-  if (c) { apply(c.stock); saveStockCache(c.stock, c.machines, c.costCenters, c.machineCostCenters); }
+  if (c) { apply(c.stock); saveStockCache(c.stock, c.machines, c.costCenters, c.machineCostCenters, c.apiVersion, c.companies, c.units); }
 }
 const vibrate = ms => { try { if (state.prefs.vibrate && navigator.vibrate) navigator.vibrate(ms); } catch {} };
 
@@ -929,7 +1103,10 @@ const SVG = {
   phone: '<rect x="5" y="2" width="14" height="20" rx="3"/><line x1="12" y1="18" x2="12.01" y2="18"/>',
   fileText: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/>',
   plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
-  trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/>'
+  trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/>',
+  mail: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
+  print: '<polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>'
 };
 const ic = (name, cls='') => `<span class="ic ${cls}" aria-hidden="true"><svg viewBox="0 0 24 24">${SVG[name]||''}</svg></span>`;
 
@@ -1032,6 +1209,9 @@ const state = {
   machines: [],
   costCenters: [],
   machineCostCenters: {},
+  companies: [],
+  units: [],
+  apiVersion: '',
   item: null,
   orderDraft: null,
   pendingCheckout: null,
@@ -1233,7 +1413,13 @@ async function api(action, payload = {}, sessionOverride = null) {
     body: JSON.stringify({action, payload, session: sessionOverride !== null ? sessionOverride : state.session})
   });
   const out = await res.json().catch(() => ({ok:false, error:'Sunucu geçerli JSON döndürmedi.'}));
-  if (!res.ok || !out.ok) throw new Error(out.error || ('HTTP ' + res.status));
+  if (!res.ok || !out.ok) {
+    const msg = out.error || ('HTTP ' + res.status);
+    if (action === 'purchaseOrderEmail' && /Bilinmeyen işlem/i.test(msg)) {
+      throw new Error('Canlı Apps Script sürümü PDF mail desteklemiyor. Ana paneldeki Bağlantı sekmesinden güncel Kod.gs (V8.8.3-MAIL) sürümünü dağıtın.');
+    }
+    throw new Error(msg);
+  }
   return out.data;
 }
 function warmupGas() {
@@ -1256,6 +1442,12 @@ async function demoApi(action, p = {}) {
     const u = DEMO.users.find(x => x.pin === clean && x.active);
     if (!u) throw new Error('Geçersiz PIN. (Demo OP: 1111)');
     return {user:{name:u.name, role:u.role}, session:'demo-' + u.role};
+  }
+  if (action === 'purchaseOrderEmail') {
+    const to = String(p.to || '').trim();
+    if (!to) throw new Error('Alıcı e-posta adresi gerekli.');
+    const fn = `${String(p.formNo || p.order?.formNo || 'AKG-SIPARIS').replace(/[^A-Za-z0-9_-]/g, '_')}_AKG_Satinalma_Talep_Formu.pdf`;
+    return {sent: true, demo: true, to, cc: String(p.cc || ''), fileName: fn};
   }
   if (!state.user) throw new Error('Oturum gerekli.');
   if (action === 'bootstrap') {
@@ -1296,7 +1488,7 @@ async function demoApi(action, p = {}) {
     return {completed:true, id:uid('CIK'), remaining:item.stock, autoLogout:state.user.role==='OP'};
   }
   if (action === 'purchaseOrderCreate') {
-    const cleanItems = (Array.isArray(p.items) ? p.items : []).filter(r => String(r.name || '').trim()).map((r, i) => ({
+    const cleanItems = (Array.isArray(p.items) ? p.items : []).filter(r => String(r.name || '').trim() || String(r.code || '').trim()).map((r, i) => ({
       no: i + 1,
       itemId: String(r.itemId || ''),
       name: String(r.name || '').trim(),
@@ -1312,25 +1504,32 @@ async function demoApi(action, p = {}) {
     if (!cleanItems.length) throw new Error('En az 1 malzeme satırı doldurun.');
     const formNo = String(p.formNo || '').trim() || nextOrderFormNo();
     const totalAmount = Number(cleanItems.reduce((s, r) => s + (r.total || 0), 0).toFixed(2));
+    const ap = p.approvals || {};
     const rec = {
       id: uid('SIP'),
       formNo,
-      formCode: p.formCode || 'IZM_350600_LJT_001',
+      docCode: p.docCode || p.formCode || 'IZM_350600_LJT_001',
       requestDate: p.requestDate || todayTr(),
       requestedBy: state.user?.name || String(p.requestedBy || ''),
       department: String(p.department || '').trim(),
       costCenter: String(p.costCenter || p.department || '').trim(),
-      attachmentQty: Number(p.attachmentQty) || 0,
+      attachmentQty: String(p.attachmentQty || '').trim(),
       paymentTerm: p.paymentTerm || 'Peşin / Cash',
       paymentMaturity: p.paymentMaturity || '',
       transport: p.transport || '',
       deliveryPlace: p.deliveryPlace || '',
       details: String(p.details || '').trim(),
-      sigRequirer: state.user?.name || String(p.requestedBy || ''),
-      sigManager: 'FUAT ÇETİN',
-      sigApproval1: 'İbrahim Özdemir',
-      sigApproval2: 'Yüksel Kurun',
-      sigApproval3: 'İbrahim Özdemir',
+      approvals: {
+        requirer: state.user?.name || String(ap.requirer || p.requestedBy || ''),
+        managerName: ap.managerName || 'FUAT ÇETİN',
+        managerDate: ap.managerDate || '',
+        approval1Name: ap.approval1Name || 'İbrahim Özdemir',
+        approval1Date: ap.approval1Date || '',
+        approval2Name: ap.approval2Name || 'Yüksel Kurun',
+        approval2Date: ap.approval2Date || '',
+        approval3Name: ap.approval3Name || 'İbrahim Özdemir',
+        approval3Date: ap.approval3Date || ''
+      },
       items: cleanItems,
       totalAmount,
       currency: cleanItems[0]?.currency || 'TL',
@@ -1341,7 +1540,7 @@ async function demoApi(action, p = {}) {
       updatedAt: nowStr()
     };
     saveLocalOrder(rec);
-    return rec;
+    return {order: rec, formNo: rec.formNo, ...rec};
   }
   throw new Error('Desteklenmeyen işlem: ' + action);
 }
@@ -1508,17 +1707,26 @@ function selectQrCode(code) {
 }
 
 function makeOrderRow(seed = {}) {
+  const qty = Number(seed.qty) || 0;
+  const unitPrice = Number(seed.unitPrice) || 0;
   return {
     itemId: seed.itemId || '',
     name: seed.name || '',
     code: seed.code || '',
     supplier: seed.supplier || '',
-    qty: seed.qty || 1,
-    unit: seed.unit || 'AD',
-    unitPrice: Number(seed.unitPrice) || 0,
+    qty,
+    unit: seed.unit || '',
+    unitPrice,
     currency: seed.currency || 'TL',
+    total: Math.round(qty * unitPrice * 100) / 100,
     deliveryDate: seed.deliveryDate || ''
   };
+}
+
+function padOrderRows(items = [], minRows = 14) {
+  const out = (items || []).map(x => makeOrderRow(x));
+  while (out.length < minRows) out.push(makeOrderRow());
+  return out;
 }
 
 function flatKey(s) {
@@ -1542,29 +1750,61 @@ function resolveCostCenterForDepartment(dept) {
   return ccs.find(c => flatKey(c) === fk) || '';
 }
 
-function startOrderFlow(seedItem = null) {
-  stopCamera();
-  state.tab = 'scan';
-  state.intent = 'order';
-  state.pendingCheckout = null;
-  const seed = seedItem ? makeOrderRow({
+function createOrderDraft(seedItem = null) {
+  const defs = loadOrderDefaults();
+  const reqBy = state.user?.name || '';
+  const seedRows = seedItem ? [makeOrderRow({
     itemId: seedItem.id || '',
     name: seedItem.name || '',
     code: seedItem.code || '',
     supplier: seedItem.company || '',
     qty: Math.max(1, Number(((Number(seedItem.min) || 1) - (Number(seedItem.stock) || 0)).toFixed(2)) || 1),
     unit: seedItem.unit || 'AD',
-    unitPrice: Number(seedItem.unitPrice) || 0
-  }) : makeOrderRow();
-  const seedDept = String(seedItem?.machine || '').split('|')[0].trim();
+    unitPrice: Number(seedItem.unitPrice) || 0,
+    currency: 'TL'
+  })] : [];
+  const items = padOrderRows(seedRows, Math.max(14, seedRows.length));
+  const seedDept = String(seedItem?.machine || '').split('|')[0].trim() || defs.department || '';
   const autoCc = resolveCostCenterForDepartment(seedDept);
-  state.orderDraft = {
+  return {
+    formNo: nextOrderFormNo(),
+    docCode: defs.docCode || 'IZM_350600_LJT_001',
+    requestDate: todayTr(),
+    requestedBy: reqBy,
     department: seedDept,
-    costCenter: autoCc || seedDept,
+    costCenter: autoCc || (seedDept === defs.department ? (defs.costCenter || '') : ''),
+    attachmentQty: '',
+    paymentTerm: defs.paymentTerm || 'Peşin / Cash',
+    paymentMaturity: defs.paymentMaturity || '',
+    transport: defs.transport || '',
+    deliveryPlace: defs.deliveryPlace || '',
     details: seedItem ? `${seedItem.name} (${seedItem.code || seedItem.id}) için malzeme sipariş talebi` : '',
-    items: [seed]
+    approvals: {
+      requirer: reqBy,
+      managerName: defs.managerName || 'FUAT ÇETİN',
+      managerDate: '',
+      approval1Name: defs.approval1Name || 'İbrahim Özdemir',
+      approval1Date: '',
+      approval2Name: defs.approval2Name || 'Yüksel Kurun',
+      approval2Date: '',
+      approval3Name: defs.approval3Name || 'İbrahim Özdemir',
+      approval3Date: ''
+    },
+    items,
+    totalAmount: Math.round(items.reduce((s, x) => s + (Number(x.total) || 0), 0) * 100) / 100,
+    currency: 'TL'
   };
+}
+
+function startOrderFlow(seedItem = null) {
+  stopCamera();
+  state.tab = 'scan';
+  state.intent = 'order';
+  state.pendingCheckout = null;
+  state.orderDraft = createOrderDraft(seedItem);
   if (state.user) {
+    state.orderDraft.requestedBy = state.user.name || '';
+    state.orderDraft.approvals.requirer = state.user.name || '';
     state.step = 'order';
     render();
     return;
@@ -1623,6 +1863,7 @@ function render() {
   updateOnlineUI();
   updateNavUI();
   updateStepper();
+  $('.wrap')?.classList.toggle('wide', state.tab === 'scan' && state.step === 'order');
   const root = $('#view');
   if (state.tab === 'history') {
     stopCamera();
@@ -2080,122 +2321,340 @@ function renderApproval() {
   </section>`;
 }
 
+function openQrModal(title, bodyHtml, footHtml = '') {
+  $('#qrModalTitle').textContent = title;
+  $('#qrModalBody').innerHTML = bodyHtml;
+  const foot = $('#qrModalFoot');
+  foot.innerHTML = footHtml;
+  foot.hidden = !footHtml;
+  $('#qrModal').hidden = false;
+}
+function closeQrModal() {
+  $('#qrModal').hidden = true;
+}
+
 function renderOrder() {
-  const d = state.orderDraft || {department: '', costCenter: '', details: '', items: [makeOrderRow()]};
+  if (!state.orderDraft) state.orderDraft = createOrderDraft();
+  const d = state.orderDraft;
+  const opName = state.user?.name || d.requestedBy || '';
+  d.requestedBy = opName;
+  if (!d.approvals) d.approvals = {};
+  d.approvals.requirer = opName;
   const cleanTxt = s => String(s || '').replace(/\s+/g, ' ').trim();
   const dDeptClean = cleanTxt(d.department);
+  if (dDeptClean && (!d.costCenter || flatKey(d.costCenter) === flatKey(dDeptClean))) {
+    const autoCc = resolveCostCenterForDepartment(dDeptClean);
+    if (autoCc) d.costCenter = autoCc;
+  }
   const machines = (state.machines?.length ? state.machines : DEMO.machines).map(cleanTxt).filter(Boolean);
   const costCenters = [...new Set([...(state.costCenters || []).map(cleanTxt), ...Object.values(state.machineCostCenters || {}).map(cleanTxt), cleanTxt(d.costCenter)].filter(Boolean))];
   const deptOptions = [...new Set([...machines, ...costCenters, dDeptClean].filter(Boolean))];
-  const stockList = state.stock || [];
+  const suppliers = [...new Set(['ÜNLÜ TEKNİK', ...(state.companies || []), ...(state.stock || []).map(x => x.company).filter(Boolean)])];
+  const units = [...new Set(['AD', 'MT', 'KG', 'LİTRE', 'ÇİFT', 'PK', 'SET', ...(state.units || [])])];
   const missingCostMap = state.mode !== 'demo' && !Object.keys(state.machineCostCenters || {}).length;
+  const rowsHtml = (d.items || []).map((it, idx) => `
+    <tr data-po-row="${idx}">
+      <td class="c">${idx + 1}</td>
+      <td><div class="akg-name-cell"><button type="button" class="akg-pick-btn" data-po-pick="${idx}" title="Stoktan Seç">+</button><input data-po-field="name" data-idx="${idx}" value="${esc(it.name)}" placeholder="${idx === 0 ? 'Malzeme adı yazın veya + ile seçin...' : ''}"></div></td>
+      <td><input data-po-field="code" data-idx="${idx}" value="${esc(it.code)}" class="mono"></td>
+      <td><input data-po-field="supplier" data-idx="${idx}" value="${esc(it.supplier)}" list="poSupplierList"></td>
+      <td><input data-po-field="qty" data-idx="${idx}" type="number" step="any" min="0" value="${it.qty ? it.qty : ''}" placeholder="0,0" class="num-in"></td>
+      <td><input data-po-field="unit" data-idx="${idx}" value="${esc(it.unit)}" list="poUnitList" style="text-align:center"></td>
+      <td><input data-po-field="unitPrice" data-idx="${idx}" type="number" step="any" min="0" value="${it.unitPrice ? it.unitPrice : ''}" placeholder="0,00" class="num-in"></td>
+      <td><select data-po-field="currency" data-idx="${idx}">${['TL', 'EUR', 'USD'].map(c => `<option value="${c}" ${(it.currency || 'TL') === c ? 'selected' : ''}>${c}</option>`).join('')}</select></td>
+      <td class="akg-tot-cell" data-po-total="${idx}">${fmtCur2(it.total || 0)}</td>
+      <td><input data-po-field="deliveryDate" data-idx="${idx}" value="${esc(it.deliveryDate)}" placeholder="GG.AA.YYYY"></td>
+    </tr>`).join('');
+  const grandTotal = (d.items || []).reduce((s, x) => s + (Number(x.total) || 0), 0);
   return `
   <section class="card">
     ${renderOpStrip()}
-    <div class="card-head">
-      <div style="display:flex;align-items:center;gap:10px">
-        <img src="./akg-logo.svg" alt="AKG" style="height:26px;width:auto;object-fit:contain;flex:none">
-        <div>
-          <h2>Satın Alma Talep Formu</h2>
-          <p>Sipariş Sayfasına doğrudan düşer</p>
-        </div>
-      </div>
-      <span class="tag blue mono">IZM_350600_LJT_001</span>
-    </div>
     <div class="card-body">
-      ${missingCostMap ? `<div class="callout amber">${ic('alert','ic-sm')}<div><b>Maliyet Merkezi Eşleşmesi Bekliyor</b>Ana sistemdeki Bağlantı sekmesinden güncel <b>Kod.gs (V8.8.2)</b> dağıtıldığında maliyet merkezi otomatik gelir.</div></div>` : ''}
-      <div class="op-lock-box">
-        <div>
-          <small>Talep Eden Kişi (Sipariş Veren OP)</small>
-          <b>${esc(state.user?.name || '')}</b>
+      ${missingCostMap ? `<div class="callout amber">${ic('alert','ic-sm')}<div><b>Maliyet Merkezi Eşleşmesi Hazır Değil</b>Ana paneldeki Bağlantı sekmesinden güncel <b>Kod.gs (V8.8.3-MAIL)</b> sürümünü dağıttığınızda VERİ M sütunu maliyet merkezi otomatik gelir.</div></div>` : ''}
+      <datalist id="poCostCenterList">${costCenters.map(x => `<option value="${esc(x)}"></option>`).join('')}</datalist>
+      <datalist id="poSupplierList">${suppliers.map(x => `<option value="${esc(x)}"></option>`).join('')}</datalist>
+      <datalist id="poUnitList">${units.map(x => `<option value="${esc(x)}"></option>`).join('')}</datalist>
+
+      <div class="po-actions-bar">
+        <div class="button-row">
+          <button type="button" class="btn ghost sm" data-action="ord-add-row">${ic('plus','ic-sm')} Satır Ekle</button>
+          <button type="button" class="btn ghost sm" data-action="reset-scan">Vazgeç</button>
         </div>
-        <span class="tag blue">${ic('lock','ic-sm')} Otomatik</span>
+        <div class="button-row">
+          <button type="button" class="btn ghost sm" data-action="ord-email-draft">${ic('mail','ic-sm')} PDF Mail Gönder</button>
+          <button type="button" class="btn ghost sm" data-action="ord-print-draft">${ic('print','ic-sm')} A4 Yatay Yazdır (AKG)</button>
+          <button type="button" class="btn primary sm" data-action="ord-submit">${ic('check','ic-sm')} Formu Kaydet</button>
+        </div>
       </div>
 
-      <form id="orderCreateForm">
-        <label class="field">
-          <span>Talep Eden Bölüm / Makine *</span>
-          <select class="input" id="ordDept" name="department" required>
-            <option value="">Bölüm / Makine seçiniz...</option>
-            ${deptOptions.map(m => `<option value="${esc(m)}" ${flatKey(dDeptClean) === flatKey(m) ? 'selected' : ''}>${esc(m)}</option>`).join('')}
-          </select>
-        </label>
+      <div class="po-scroll-hint">
+        <span>AKG resmi formu yatay kaydırılabilir</span>
+        <span>← Kaydır →</span>
+      </div>
 
-        <label class="field">
-          <span>Maliyet Merkezi (Bölüm seçilince otomatik dolar)</span>
-          <input class="input" id="ordCost" name="costCenter" list="ordCostCentersList" value="${esc(d.costCenter || '')}" placeholder="Bölüm seçilince otomatik gelir">
-          <datalist id="ordCostCentersList">
-            ${costCenters.map(c => `<option value="${esc(c)}"></option>`).join('')}
-          </datalist>
-        </label>
-
-        <div class="order-items-head">
-          <span>Malzeme Kalemleri (${d.items.length})</span>
-          <button class="btn ghost sm" type="button" data-action="ord-add-row" style="min-height:34px;padding:0 10px;font-size:12.5px">${ic('plus','ic-sm')} Kalem Ekle</button>
-        </div>
-
-        <datalist id="ordStockNames">
-          ${stockList.map(s => `<option value="${esc(s.name)}">${esc(s.code)} · ${esc(s.company || '')}</option>`).join('')}
-        </datalist>
-
-        ${d.items.map((row, idx) => `
-        <div class="order-item-card" data-ord-row="${idx}">
-          <div class="order-item-top">
-            <span class="order-item-num">#${idx + 1} Kalem</span>
-            ${d.items.length > 1 ? `<button class="order-item-del" type="button" data-action="ord-del-row" data-idx="${idx}">${ic('trash','ic-sm')} Sil</button>` : ''}
+      <div class="akg-wrap">
+        <form id="akgOrderForm" class="akg-sheet">
+          <div class="akg-head">
+            <div class="akg-logo-cell">${akgLogoSvg(40)}</div>
+            <div class="akg-title-cell">Satın Alma Talep Formu / Purchase Request Form</div>
+            <div class="akg-doc-cell"><input id="poDocCode" value="${esc(d.docCode || 'IZM_350600_LJT_001')}"></div>
           </div>
-          ${stockList.length ? `
-          <label class="field">
-            <span>Stok Kartından Hızlı Seç (Opsiyonel)</span>
-            <select class="input" data-ord-pick="${idx}">
-              <option value="">— Stok kartı seç veya aşağıya manuel yaz —</option>
-              ${stockList.map(s => `<option value="${esc(s.id)}" ${row.itemId === s.id ? 'selected' : ''}>${esc(s.code)} · ${esc(s.name)} (Stok: ${num(s.stock)} ${esc(s.unit)})</option>`).join('')}
-            </select>
-          </label>` : ''}
-          <label class="field">
-            <span>Malzeme Tanımı *</span>
-            <input class="input" data-ord-field="name" data-idx="${idx}" list="ordStockNames" value="${esc(row.name)}" placeholder="Örn. HİGH 25 HWİN ARABA" required>
-          </label>
-          <div class="order-grid-2">
-            <label class="field">
-              <span>Malzeme Kodu</span>
-              <input class="input mono" data-ord-field="code" data-idx="${idx}" value="${esc(row.code)}" placeholder="Opsiyonel">
-            </label>
-            <label class="field">
-              <span>Tedarikçi Firma</span>
-              <input class="input" data-ord-field="supplier" data-idx="${idx}" value="${esc(row.supplier)}" placeholder="Örn. ÜNLÜ TEKNİK">
-            </label>
+          <div class="akg-meta">
+            <div class="akg-meta-lbl"><span>Talep Tarihi</span><span>Date of Request</span></div>
+            <div class="akg-meta-val"><input id="poRequestDate" value="${esc(d.requestDate || todayTr())}"></div>
+            <div class="akg-meta-lbl"><span>Talep Eden Bölüm</span><span>Department</span></div>
+            <div class="akg-meta-val"><select id="poDepartment"><option value="">Bölüm / Makine seçiniz...</option>${deptOptions.map(x => `<option value="${esc(x)}" ${flatKey(dDeptClean) === flatKey(x) ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select></div>
+            <div class="akg-meta-lbl"><span>Form Numarası</span><span>Form Number</span></div>
+            <div class="akg-meta-val"><input id="poFormNo" value="${esc(d.formNo)}" class="mono" readonly></div>
+            <div class="akg-meta-lbl"><span>Talep Eden Kişi</span><span>Requested by</span></div>
+            <div class="akg-meta-val"><input id="poRequestedBy" value="${esc(opName)}" readonly></div>
+            <div class="akg-meta-lbl"><span>Maliyet Merkezi</span><span>Cost Center</span></div>
+            <div class="akg-meta-val"><input id="poCostCenter" value="${esc(d.costCenter || '')}" list="poCostCenterList" placeholder="Bölüm seçilince otomatik gelir"></div>
+            <div class="akg-meta-lbl"><span>Ekli Doküman Adedi</span><span>Attachment Quantity</span></div>
+            <div class="akg-meta-val"><input id="poAttachmentQty" value="${esc(d.attachmentQty || '')}" placeholder="0"></div>
           </div>
-          <div class="order-grid-qty">
-            <label class="field">
-              <span>Miktar *</span>
-              <input class="input mono" type="number" inputmode="decimal" min="0.01" step="any" data-ord-field="qty" data-idx="${idx}" value="${row.qty || 1}" required>
-            </label>
-            <label class="field">
-              <span>Birim</span>
-              <select class="input" data-ord-field="unit" data-idx="${idx}">
-                ${['AD','METRE','LİTRE','KG','KUTU','SET','ÇİFT','PAKET'].map(u => `<option value="${u}" ${(row.unit || 'AD') === u ? 'selected' : ''}>${u}</option>`).join('')}
-              </select>
-            </label>
+          <table class="akg-tbl">
+            <colgroup>
+              <col style="width:30px"><col style="width:24%"><col style="width:11%"><col style="width:14%">
+              <col style="width:7%"><col style="width:6%"><col style="width:11%"><col style="width:6%">
+              <col style="width:10%"><col style="width:11%">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Malzeme Tanımı<br>Description of Material</th>
+                <th>Malzeme Kodu<br>Material Code</th>
+                <th>Tedarikçi Firma<br>Supplier</th>
+                <th>Miktar<br>Quantity</th>
+                <th>Birim<br>Unit</th>
+                <th>Birim Fiyat (KDV Hariç)<br>Unit Price (VAT Ex.)</th>
+                <th>Para Birimi<br>Currency</th>
+                <th>Toplam Tutar<br>Total Amount</th>
+                <th>Teslim Tarihi<br>Delivery Date</th>
+              </tr>
+            </thead>
+            <tbody id="poRowsBody">${rowsHtml}</tbody>
+            <tfoot>
+              <tr class="akg-total-row">
+                <td colspan="8" class="r">TOPLAM TUTAR (<span class="akg-red">KDV HARİÇ</span>) / TOTAL AMOUNT (<span class="akg-red">VAT EXCLUDED</span>)</td>
+                <td class="akg-grand" id="poGrandTotal">${fmtCur2(grandTotal)}</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+          <div class="akg-pay">
+            <div class="akg-pay-lbl"><span>Ödeme Şekli</span><span>Payment Term</span></div>
+            <div class="akg-pay-val"><select id="poPaymentTerm">${PAYMENT_TERMS.map(x => `<option value="${esc(x)}" ${d.paymentTerm === x ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select></div>
+            <div class="akg-pay-lbl"><span>Ödeme Vadesi</span><span>Payment Maturity</span></div>
+            <div class="akg-pay-val"><select id="poPaymentMaturity">${PAYMENT_MATURITIES.map(x => `<option value="${esc(x)}" ${d.paymentMaturity === x ? 'selected' : ''}>${esc(x || 'Seçiniz')}</option>`).join('')}</select></div>
+            <div class="akg-pay-lbl"><span>Nakliye</span><span>Transport</span></div>
+            <div class="akg-pay-val"><select id="poTransport">${TRANSPORT_TYPES.map(x => `<option value="${esc(x)}" ${d.transport === x ? 'selected' : ''}>${esc(x || 'Seçiniz')}</option>`).join('')}</select></div>
+            <div class="akg-pay-lbl"><span>Teslimat Yeri</span><span>Delivery Place</span></div>
+            <div class="akg-pay-val"><input id="poDeliveryPlace" value="${esc(d.deliveryPlace || '')}" placeholder="Örn: İzmir Fabrika"></div>
           </div>
-          <label class="field">
-            <span>İstenen Teslim Tarihi</span>
-            <input class="input" data-ord-field="deliveryDate" data-idx="${idx}" value="${esc(row.deliveryDate || '')}" placeholder="Örn. ${todayTr()} veya Acil">
-          </label>
-        </div>`).join('')}
+          <div class="akg-details">
+            <div class="akg-details-lbl"><span>Detaylar</span><span>Details</span></div>
+            <div class="akg-details-val"><textarea id="poDetails" placeholder="Kullanılacak makine, arıza veya satın alma gerekçesini yazın...">${esc(d.details || '')}</textarea></div>
+          </div>
+          <div class="akg-sigs">
+            <div class="akg-sig-col">
+              <div class="akg-sig-top">Talep Eden<br>Requirer</div>
+              <div class="akg-sig-sub single"><span>Onay / Approval</span></div>
+              <div class="akg-sig-inputs single"><input id="poSigRequirer" value="${esc(opName)}" readonly></div>
+            </div>
+            <div class="akg-sig-col">
+              <div class="akg-sig-top">Talep Edenin Amiri<br>Manager of Requirer</div>
+              <div class="akg-sig-sub"><span>Onay / Approval</span><span>Tarih / Date</span></div>
+              <div class="akg-sig-inputs"><input id="poSigManager" value="${esc(d.approvals?.managerName || 'FUAT ÇETİN')}"><input id="poSigManagerDate" value="${esc(d.approvals?.managerDate || '')}" placeholder="GG.AA.YYYY"></div>
+            </div>
+            <div class="akg-sig-col">
+              <div class="akg-sig-top">1.Onay /<br>1.Approval</div>
+              <div class="akg-sig-sub"><span>Onay / Approval</span><span>Tarih / Date</span></div>
+              <div class="akg-sig-inputs"><input id="poSig1Name" value="${esc(d.approvals?.approval1Name || 'İbrahim Özdemir')}"><input id="poSig1Date" value="${esc(d.approvals?.approval1Date || '')}" placeholder="GG.AA.YYYY"></div>
+            </div>
+            <div class="akg-sig-col">
+              <div class="akg-sig-top">2.Onay /<br>2.Approval</div>
+              <div class="akg-sig-sub"><span>Onay / Approval</span><span>Tarih / Date</span></div>
+              <div class="akg-sig-inputs"><input id="poSig2Name" value="${esc(d.approvals?.approval2Name || 'Yüksel Kurun')}"><input id="poSig2Date" value="${esc(d.approvals?.approval2Date || '')}" placeholder="GG.AA.YYYY"></div>
+            </div>
+            <div class="akg-sig-col">
+              <div class="akg-sig-top">3.Onay /<br>3.Approval</div>
+              <div class="akg-sig-sub"><span>Onay / Approval</span><span>Tarih / Date</span></div>
+              <div class="akg-sig-inputs"><input id="poSig3Name" value="${esc(d.approvals?.approval3Name || 'İbrahim Özdemir')}"><input id="poSig3Date" value="${esc(d.approvals?.approval3Date || '')}" placeholder="GG.AA.YYYY"></div>
+            </div>
+          </div>
+        </form>
+      </div>
 
-        <label class="field">
-          <span>Detaylar / Kullanım Yeri</span>
-          <textarea class="input" id="ordDetails" name="details" placeholder="Örn. Dizgi makinası sağ ve sol dayama kolları hareket arabalarında kullanılacak">${esc(d.details || '')}</textarea>
-        </label>
-
-        <div class="btn-stack">
-          <button class="btn blue wide" type="submit">${ic('check','ic-sm')} Sipariş Talebini Gönder</button>
-          <button class="btn ghost wide" type="button" data-action="reset-scan">Vazgeç ve QR Ekranına Dön</button>
-        </div>
-      </form>
+      <div class="po-bottom-actions">
+        <button type="button" class="btn ghost" data-action="reset-scan">Vazgeç ve QR Ekranına Dön</button>
+        <button type="button" class="btn ghost" data-action="ord-email-draft">${ic('mail','ic-sm')} PDF Mail Gönder</button>
+        <button type="button" class="btn primary" data-action="ord-submit">${ic('check','ic-sm')} Sipariş Talebini Kaydet</button>
+      </div>
     </div>
   </section>`;
+}
+
+function recalcOrderRow(idx) {
+  const d = state.orderDraft;
+  if (!d || !d.items[idx]) return;
+  const it = d.items[idx];
+  it.total = Math.round((Number(it.qty) || 0) * (Number(it.unitPrice) || 0) * 100) / 100;
+  const cell = $(`[data-po-total="${idx}"]`);
+  if (cell) cell.textContent = fmtCur2(it.total);
+  const grand = d.items.reduce((s, x) => s + (Number(x.total) || 0), 0);
+  d.totalAmount = Math.round(grand * 100) / 100;
+  const gt = $('#poGrandTotal');
+  if (gt) gt.textContent = fmtCur2(grand);
+}
+
+function renderOrderPickerRows(list, rowIdx, q = '') {
+  const rows = list.filter(x => !q || norm([x.name, x.code, x.company, x.shelf, x.category].join(' ')).includes(norm(q))).slice(0, 40);
+  return rows.length
+    ? rows.map(x => `<button type="button" class="po-picker-row" data-po-pick-item="${esc(x.id)}" data-po-pick-row="${rowIdx}"><div><b>${esc(x.name)}</b><small><span class="mono">${esc(x.code)}</span> · ${esc(x.company || 'Firma yok')} · Stok: ${num(x.stock)} / Min: ${num(x.min)} ${esc(x.unit)}</small></div><strong class="mono">${x.unitPrice ? fmtCur2(x.unitPrice) + ' ₺' : '0,00 ₺'}</strong></button>`).join('')
+    : '<div class="empty-box" style="padding:18px"><b>Eşleşen stok kartı bulunamadı</b></div>';
+}
+
+function openOrderStockPicker(rowIdx) {
+  syncOrderDraftFromDom();
+  const list = state.stock || [];
+  openQrModal(
+    'Stok Kartından Satıra Aktar',
+    `<div class="po-search-box">${ic('search','ic-sm')}<input id="poPickSearch" placeholder="Parça adı, kod, tedarikçi veya raf ara..."></div>
+     <div class="po-picker-list" id="poPickList">${renderOrderPickerRows(list, rowIdx, '')}</div>`,
+    `<button type="button" class="btn ghost" data-action="close-qr-modal">Kapat</button>`
+  );
+  $('#qrModal').dataset.poPickRow = String(rowIdx);
+  setTimeout(() => $('#poPickSearch')?.focus(), 60);
+}
+
+function printPurchaseOrder(order) {
+  if (!order) return;
+  const rows = padOrderRows(order.items || [], Math.max(14, (order.items || []).length));
+  const grand = rows.reduce((s, x) => s + (Number(x.total) || 0), 0);
+  const ap = order.approvals || {};
+  const bodyRows = rows.map((it, i) => {
+    const has = !!(it.name || it.code);
+    return `<tr>
+      <td class="c">${i + 1}</td>
+      <td>${esc(it.name)}</td>
+      <td class="c mono">${esc(it.code)}</td>
+      <td class="c">${esc(it.supplier)}</td>
+      <td class="c">${fmtQty1(it.qty)}</td>
+      <td class="c">${has ? esc(it.unit || 'AD') : ''}</td>
+      <td class="c">${fmtCur2(it.unitPrice)}</td>
+      <td class="c">${has ? esc(it.currency || 'TL') : ''}</td>
+      <td class="c">${fmtCur2(it.total)}</td>
+      <td class="c">${esc(it.deliveryDate)}</td>
+    </tr>`;
+  }).join('');
+  const docHtml = `<!doctype html><meta charset="utf-8"><title>${esc(order.formNo || 'Satın Alma Talep Formu')}</title><style>@page{size:A4 landscape;margin:7mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}html,body{margin:0;padding:0;background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;font-size:10px}.sheet{width:100%;border:1.5px solid #000}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #000;padding:3.5px 5px;vertical-align:middle;word-wrap:break-word}.c{text-align:center}.r{text-align:right}.b{font-weight:700}.mono{font-family:monospace}.red{color:#dc2626}.hdr{display:grid;grid-template-columns:170px 1fr 170px;border-bottom:1.5px solid #000}.hdr>div{display:flex;align-items:center;justify-content:center;padding:6px 8px}.hdr>div+div{border-left:1px solid #000}.hdr-title{font-size:19px;font-weight:800}.hdr-doc{font-size:11.5px;font-weight:700;font-family:monospace}.meta{display:grid;grid-template-columns:135px 1fr 135px 1.25fr 140px 1fr;border-bottom:1.5px solid #000}.meta>div{padding:4px 6px;border-right:1px solid #000;border-bottom:1px solid #000;line-height:1.25}.meta>div:nth-child(6n){border-right:0}.meta>div:nth-last-child(-n+6){border-bottom:0}.ml{font-size:9px;font-weight:700}.mv{font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;text-align:center}.mv.left{justify-content:flex-start;text-align:left}.itbl th{font-size:9px;font-weight:700;text-align:center;line-height:1.2;border-top:0}.itbl td{height:20px;font-size:9.8px;font-weight:700}.itbl td:first-child,.itbl th:first-child{border-left:0}.itbl td:last-child,.itbl th:last-child{border-right:0}.totrow td{border-top:1.5px solid #000;border-bottom:1.5px solid #000;padding:6px 7px;font-size:10px;font-weight:800}.totval{font-size:14px;font-weight:800;text-align:center}.pay{display:grid;grid-template-columns:115px 1fr 115px 1fr 80px 1fr 110px 1fr;border-bottom:1px solid #000}.pay>div{padding:4px 6px;border-right:1px solid #000;line-height:1.25;display:flex;flex-direction:column;justify-content:center}.pay>div:last-child{border-right:0}.pv{font-size:10px;font-weight:600;text-align:center;align-items:center}.det{display:grid;grid-template-columns:115px 1fr;border-bottom:1.5px solid #000;min-height:56px}.det>div{padding:6px 8px;display:flex;flex-direction:column;justify-content:center}.det>div:first-child{border-right:1px solid #000;font-size:9.5px;font-weight:700}.det-txt{font-size:11px;font-weight:700;white-space:pre-wrap}.sigs{display:grid;grid-template-columns:1.05fr 1.55fr 1.55fr 1.55fr 1.55fr}.sc{border-right:1px solid #000;display:flex;flex-direction:column}.sc:last-child{border-right:0}.st{padding:4px;text-align:center;font-size:9.5px;font-weight:700;line-height:1.2;border-bottom:1px solid #000}.ss{display:grid;grid-template-columns:1fr 76px;border-bottom:1px dashed #333;font-size:8.5px;font-weight:700;text-align:center}.ss.one{grid-template-columns:1fr}.ss span{padding:2.5px 3px}.ss span+span{border-left:1px dashed #333}.sv{display:grid;grid-template-columns:1fr 76px;min-height:40px}.sv.one{grid-template-columns:1fr}.sv span{display:flex;align-items:center;justify-content:center;text-align:center;padding:4px;font-size:10.5px;font-weight:700}.sv span+span{border-left:1px dashed #333;font-size:9.5px;font-weight:600}</style><div class="sheet"><div class="hdr"><div>${akgLogoSvg(32)}</div><div class="hdr-title">Satın Alma Talep Formu / Purchase Request Form</div><div class="hdr-doc">${esc(order.docCode || 'IZM_350600_LJT_001')}</div></div><div class="meta"><div class="ml">Talep Tarihi<br>Date of Request</div><div class="mv left">${esc(order.requestDate || '')}</div><div class="ml">Talep Eden Bölüm<br>Department</div><div class="mv">${esc(order.department || '')}</div><div class="ml">Form Numarası<br>Form Number</div><div class="mv">${esc(order.formNo || '')}</div><div class="ml">Talep Eden Kişi<br>Requested by</div><div class="mv left">${esc(order.requestedBy || '')}</div><div class="ml">Maliyet Merkezi<br>Cost Center</div><div class="mv">${esc(order.costCenter || '')}</div><div class="ml">Ekli Doküman Adedi<br>Attachment Quantity</div><div class="mv">${esc(order.attachmentQty || '')}</div></div><table class="itbl"><colgroup><col style="width:26px"><col style="width:25%"><col style="width:11%"><col style="width:14%"><col style="width:6.5%"><col style="width:6%"><col style="width:10.5%"><col style="width:6%"><col style="width:9.5%"><col style="width:11.5%"></colgroup><thead><tr><th>#</th><th>Malzeme Tanımı<br>Description of Material</th><th>Malzeme Kodu<br>Material Code</th><th>Tedarikçi Firma<br>Supplier</th><th>Miktar<br>Quantity</th><th>Birim<br>Unit</th><th>Birim Fiyat (KDV Hariç)<br>Unit Price (VAT Ex.)</th><th>Para Birimi<br>Currency</th><th>Toplam Tutar<br>Total Amount</th><th>Teslim Tarihi<br>Delivery Date</th></tr></thead><tbody>${bodyRows}</tbody><tfoot><tr class="totrow"><td colspan="8" class="r">TOPLAM TUTAR (<span class="red">KDV HARİÇ</span>) / TOTAL AMOUNT (<span class="red">VAT EXCLUDED</span>)</td><td class="totval">${fmtCur2(grand)}</td><td></td></tr></tfoot></table><div class="pay"><div class="ml">Ödeme Şekli<br>Payment Term</div><div class="pv">${esc(order.paymentTerm || '')}</div><div class="ml">Ödeme Vadesi<br>Payment Maturity</div><div class="pv">${esc(order.paymentMaturity || '')}</div><div class="ml">Nakliye<br>Transport</div><div class="pv">${esc(order.transport || '')}</div><div class="ml">Teslimat Yeri<br>Delivery Place</div><div class="pv">${esc(order.deliveryPlace || '')}</div></div><div class="det"><div>Detaylar<br>Details</div><div class="det-txt">${esc(order.details || '')}</div></div><div class="sigs"><div class="sc"><div class="st">Talep Eden<br>Requirer</div><div class="ss one"><span>Onay / Approval</span></div><div class="sv one"><span>${esc(ap.requirer || order.requestedBy || '')}</span></div></div><div class="sc"><div class="st">Talep Edenin Amiri<br>Manager of Requirer</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.managerName || 'FUAT ÇETİN')}</span><span>${esc(ap.managerDate || '')}</span></div></div><div class="sc"><div class="st">1.Onay /<br>1.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval1Name || 'İbrahim Özdemir')}</span><span>${esc(ap.approval1Date || '')}</span></div></div><div class="sc"><div class="st">2.Onay /<br>2.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval2Name || 'Yüksel Kurun')}</span><span>${esc(ap.approval2Date || '')}</span></div></div><div class="sc"><div class="st">3.Onay /<br>3.Approval</div><div class="ss"><span>Onay / Approval</span><span>Tarih / Date</span></div><div class="sv"><span>${esc(ap.approval3Name || 'İbrahim Özdemir')}</span><span>${esc(ap.approval3Date || '')}</span></div></div></div></div>`;
+  let frame = $('#orderPrintFrame');
+  if (!frame) {
+    frame = document.createElement('iframe');
+    frame.id = 'orderPrintFrame';
+    frame.setAttribute('aria-hidden', 'true');
+    frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+    document.body.appendChild(frame);
+  }
+  const doc = frame.contentDocument || frame.contentWindow.document;
+  doc.open(); doc.write(docHtml); doc.close();
+  setTimeout(() => {
+    try { frame.contentWindow.focus(); frame.contentWindow.print(); }
+    catch { toast('Yazdırma penceresi açılamadı.', 'err'); }
+  }, 120);
+}
+
+let activeEmailOrder = null;
+let activeEmailSession = null;
+function openOrderEmailModal(order, sessionOverride = null) {
+  if (!order) return;
+  const filled = (order.items || []).filter(x => String(x.name || '').trim() || String(x.code || '').trim());
+  if (!filled.length) return toast('Mail göndermek için formda en az bir malzeme satırı olmalıdır.', 'err');
+  activeEmailOrder = JSON.parse(JSON.stringify(order));
+  activeEmailOrder.items = filled;
+  activeEmailOrder.totalAmount = Math.round(filled.reduce((s, x) => s + (Number(x.total) || 0), 0) * 100) / 100;
+  activeEmailOrder.currency = filled[0]?.currency || order.currency || 'TL';
+  activeEmailSession = sessionOverride !== null ? sessionOverride : state.session;
+  const defs = loadOrderEmailDefaults();
+  const pdfName = `${(activeEmailOrder.formNo || 'AKG-SIPARIS').replace(/[^A-Za-z0-9_-]/g, '_')}_AKG_Satinalma_Talep_Formu.pdf`;
+  const defaultSubj = `Satın Alma Talep Formu - ${activeEmailOrder.formNo}${activeEmailOrder.department ? ' (' + activeEmailOrder.department + ')' : ''}`;
+  const defaultMsg = `Merhaba,\n\n${activeEmailOrder.requestedBy || ''} tarafından oluşturulan ${activeEmailOrder.formNo} numaralı AKG Satın Alma Talep Formu ekte PDF olarak paylaşılmıştır.${activeEmailOrder.details ? '\n\nDetay: ' + activeEmailOrder.details : ''}`;
+  openQrModal(
+    'Sipariş Formunu PDF Olarak Mail Gönder',
+    `<div class="modal-summary">
+      <div>
+        <b>${esc(activeEmailOrder.formNo)} · ${filled.length} kalem</b>
+        <small>${esc(activeEmailOrder.department || 'Bölüm belirtilmedi')}${activeEmailOrder.costCenter ? ' · ' + esc(activeEmailOrder.costCenter) : ''}</small>
+        <small class="mono" style="color:var(--orange);margin-top:3px">PDF Ek: ${esc(pdfName)}</small>
+      </div>
+      <strong>${fmtCur2(activeEmailOrder.totalAmount)} ${esc(activeEmailOrder.currency)}</strong>
+    </div>
+    <form id="orderEmailForm">
+      <label class="field">
+        <span>Alıcı E-posta (Kime) *</span>
+        <input class="input" id="ordMailTo" type="text" value="${esc(defs.to)}" placeholder="satinalma@firma.com, yonetici@firma.com" required>
+        <small style="display:block;color:var(--muted);font-size:11.5px;margin-top:4px">Birden fazla adres için virgül (,) ile ayırın; son adresler hatırlanır.</small>
+      </label>
+      <label class="field">
+        <span>Bilgi / CC (Opsiyonel)</span>
+        <input class="input" id="ordMailCc" type="text" value="${esc(defs.cc)}" placeholder="opsiyonel@firma.com">
+      </label>
+      <label class="field">
+        <span>Konu *</span>
+        <input class="input" id="ordMailSubj" type="text" value="${esc(defaultSubj)}" required>
+      </label>
+      <label class="field">
+        <span>Mesaj</span>
+        <textarea class="input" id="ordMailMsg" rows="4" style="min-height:92px">${esc(defaultMsg)}</textarea>
+      </label>
+    </form>
+    ${state.mode !== 'demo' && state.apiVersion && state.apiVersion !== 'V8.8.3-MAIL' ? `<div class="callout amber" style="margin-top:8px;margin-bottom:0">${ic('alert','ic-sm')}<div><b>Not</b>Canlı PDF mail gönderimi için ana paneldeki Bağlantı sekmesinden güncel <b>Kod.gs (V8.8.3-MAIL)</b> sürümünü dağıtmanız gerekir.</div></div>` : ''}`,
+    `<button type="button" class="btn ghost" data-action="close-qr-modal">Vazgeç</button>
+     <button type="button" class="btn ghost" data-action="ord-email-preview">${ic('print','ic-sm')} PDF Önizle</button>
+     <button type="button" class="btn primary" data-action="ord-email-send">${ic('mail','ic-sm')} PDF Olarak Gönder</button>`
+  );
+}
+
+async function submitOrderEmail() {
+  const f = $('#orderEmailForm');
+  if (!f || !f.reportValidity() || !activeEmailOrder) return;
+  const to = ($('#ordMailTo')?.value || '').trim();
+  const cc = ($('#ordMailCc')?.value || '').trim();
+  const subject = ($('#ordMailSubj')?.value || '').trim();
+  const message = ($('#ordMailMsg')?.value || '').trim();
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const toList = to.split(/[,;\s]+/).map(x => x.trim()).filter(Boolean);
+  if (!toList.length) return toast('Alıcı e-posta adresi girin.', 'err');
+  const badTo = toList.find(x => !emailRe.test(x));
+  if (badTo) return toast('Geçersiz e-posta adresi: ' + badTo, 'err');
+  const ccList = cc.split(/[,;\s]+/).map(x => x.trim()).filter(Boolean);
+  const badCc = ccList.find(x => !emailRe.test(x));
+  if (badCc) return toast('Geçersiz CC e-posta adresi: ' + badCc, 'err');
+  saveOrderEmailDefaults({to: toList.join(', '), cc: ccList.join(', ')});
+  beginSave('AKG PDF hazırlanıyor ve mail gönderiliyor...');
+  try {
+    const logoDataUrl = await akgLogoPngDataUrl();
+    const r = await api('purchaseOrderEmail', {
+      formNo: activeEmailOrder.formNo,
+      order: activeEmailOrder,
+      to: toList.join(','),
+      cc: ccList.join(','),
+      subject,
+      message,
+      logoDataUrl
+    }, activeEmailSession);
+    closeQrModal();
+    endSave(true, 'PDF mail gönderildi ✓');
+    vibrate(50);
+    toast(r?.demo
+      ? `Demo modu: ${r.fileName} için gönderim simüle edildi (gerçek mail için canlı GAS gerekir).`
+      : `PDF mail gönderildi → ${toList.join(', ')} (${r?.fileName || 'PDF'})`);
+  } catch (err) {
+    endSave(false, err.message);
+    vibrate([40, 40, 40]);
+    toast(err.message, 'err');
+  }
 }
 
 function renderReceipt() {
@@ -2222,8 +2681,11 @@ function renderReceipt() {
         <div class="receipt-row"><span>Tarih</span><b class="mono">${esc(r.time)}</b></div>
       </div>
       <div class="btn-stack">
-        ${r.status === 'order' ? `<button class="btn blue wide" type="button" data-action="start-order">${ic('fileText','ic-sm')} Yeni Sipariş Formu Oluştur</button>` : ''}
-        <button class="btn primary wide" type="button" data-action="reset-scan">${ic('scan','ic-sm')} Yeni QR Okut</button>
+        ${r.status === 'order' && r._order ? `
+        <button class="btn primary wide" type="button" data-action="receipt-email-order">${ic('mail','ic-sm')} PDF Olarak Mail Gönder</button>
+        <button class="btn ghost wide" type="button" data-action="receipt-print-order">${ic('print','ic-sm')} A4 Yatay Yazdır (AKG)</button>
+        <button class="btn blue wide" type="button" data-action="start-order">${ic('fileText','ic-sm')} Yeni Sipariş Formu Oluştur</button>` : ''}
+        <button class="btn ${r.status === 'order' && r._order ? 'ghost' : 'primary'} wide" type="button" data-action="reset-scan">${ic('scan','ic-sm')} Yeni QR Okut</button>
       </div>
     </div>
   </section>`;
@@ -2276,12 +2738,18 @@ async function submitOpPin(pinRaw) {
       state.machines = cached.machines?.length ? cached.machines : DEMO.machines;
       state.costCenters = cached.costCenters?.length ? cached.costCenters : (state.mode === 'demo' ? DEMO.costCenters : []);
       state.machineCostCenters = (cached.machineCostCenters && Object.keys(cached.machineCostCenters).length) ? cached.machineCostCenters : (state.mode === 'demo' ? DEMO.machineCostCenters : {});
+      state.companies = cached.companies || [];
+      state.units = cached.units || [];
+      state.apiVersion = cached.apiVersion || '';
       endSave(true, isOrder ? 'Doğrulandı · Sipariş formu hazır' : 'Doğrulandı · Stok hazır');
       vibrate(35);
       if (isOrder) {
-        if (!state.orderDraft) state.orderDraft = {department: '', costCenter: '', details: '', items: [makeOrderRow()]};
+        if (!state.orderDraft) state.orderDraft = createOrderDraft();
+        state.orderDraft.requestedBy = state.user.name || '';
+        if (!state.orderDraft.approvals) state.orderDraft.approvals = {};
+        state.orderDraft.approvals.requirer = state.user.name || '';
         if (state.orderDraft.department && !state.orderDraft.costCenter) {
-          state.orderDraft.costCenter = resolveCostCenterForDepartment(state.orderDraft.department) || state.orderDraft.department;
+          state.orderDraft.costCenter = resolveCostCenterForDepartment(state.orderDraft.department) || '';
         }
         state.step = 'order';
         render();
@@ -2294,13 +2762,19 @@ async function submitOpPin(pinRaw) {
         const freshMac = boot.lists?.machines || state.machines;
         const freshCc = boot.lists?.costCenters || state.costCenters;
         const freshMap = boot.lists?.machineCostCenters || state.machineCostCenters;
-        saveStockCache(boot.stock, freshMac, freshCc, freshMap);
+        const freshComp = boot.lists?.companies || state.companies;
+        const freshUnits = boot.lists?.units || state.units;
+        const freshVer = boot.apiVersion || '';
+        saveStockCache(boot.stock, freshMac, freshCc, freshMap, freshVer, freshComp, freshUnits);
         if (state.session === reqSession) {
           const hadMap = Object.keys(state.machineCostCenters || {}).length;
           state.stock = boot.stock;
           state.machines = freshMac;
           state.costCenters = freshCc;
           state.machineCostCenters = freshMap;
+          state.companies = freshComp;
+          state.units = freshUnits;
+          state.apiVersion = freshVer;
           if (state.step === 'part' && state.item) {
             const fresh = boot.stock.find(x => x.id === state.item.id);
             if (fresh && fresh.stock !== state.item.stock) {
@@ -2328,13 +2802,19 @@ async function submitOpPin(pinRaw) {
     state.machines = boot.lists?.machines || DEMO.machines;
     state.costCenters = boot.lists?.costCenters || (state.mode === 'demo' ? DEMO.costCenters : []);
     state.machineCostCenters = boot.lists?.machineCostCenters || (state.mode === 'demo' ? DEMO.machineCostCenters : {});
-    saveStockCache(state.stock, state.machines, state.costCenters, state.machineCostCenters);
+    state.companies = boot.lists?.companies || [];
+    state.units = boot.lists?.units || [];
+    state.apiVersion = boot.apiVersion || '';
+    saveStockCache(state.stock, state.machines, state.costCenters, state.machineCostCenters, state.apiVersion, state.companies, state.units);
     endSave(true, isOrder ? 'Sipariş formu hazır' : 'Stok bilgisi alındı');
     vibrate(35);
     if (isOrder) {
-      if (!state.orderDraft) state.orderDraft = {department: '', costCenter: '', details: '', items: [makeOrderRow()]};
+      if (!state.orderDraft) state.orderDraft = createOrderDraft();
+      state.orderDraft.requestedBy = state.user.name || '';
+      if (!state.orderDraft.approvals) state.orderDraft.approvals = {};
+      state.orderDraft.approvals.requirer = state.user.name || '';
       if (state.orderDraft.department && !state.orderDraft.costCenter) {
-        state.orderDraft.costCenter = resolveCostCenterForDepartment(state.orderDraft.department) || state.orderDraft.department;
+        state.orderDraft.costCenter = resolveCostCenterForDepartment(state.orderDraft.department) || '';
       }
       state.step = 'order';
       render();
@@ -2351,58 +2831,100 @@ async function submitOpPin(pinRaw) {
 }
 
 function syncOrderDraftFromDom() {
-  if (!state.orderDraft) return;
-  const dept = $('#ordDept'), cost = $('#ordCost'), det = $('#ordDetails');
-  if (dept) state.orderDraft.department = dept.value;
-  if (cost) state.orderDraft.costCenter = cost.value;
-  if (det) state.orderDraft.details = det.value;
-  $$('[data-ord-field]').forEach(el => {
-    const idx = Number(el.dataset.idx), f = el.dataset.ordField;
-    if (state.orderDraft.items[idx]) {
-      state.orderDraft.items[idx][f] = f === 'qty' ? (Number(el.value) || 0) : el.value;
+  const d = state.orderDraft;
+  if (!d || !$('#akgOrderForm')) return d;
+  d.docCode = $('#poDocCode')?.value.trim() || 'IZM_350600_LJT_001';
+  d.requestDate = $('#poRequestDate')?.value.trim() || todayTr();
+  d.department = $('#poDepartment')?.value.trim() || '';
+  d.formNo = $('#poFormNo')?.value.trim() || d.formNo;
+  d.requestedBy = state.user?.name || $('#poRequestedBy')?.value.trim() || d.requestedBy || '';
+  d.costCenter = $('#poCostCenter')?.value.trim() || '';
+  d.attachmentQty = $('#poAttachmentQty')?.value.trim() || '';
+  d.paymentTerm = $('#poPaymentTerm')?.value || 'Peşin / Cash';
+  d.paymentMaturity = $('#poPaymentMaturity')?.value || '';
+  d.transport = $('#poTransport')?.value || '';
+  d.deliveryPlace = $('#poDeliveryPlace')?.value.trim() || '';
+  d.details = $('#poDetails')?.value.trim() || '';
+  d.approvals = {
+    requirer: d.requestedBy,
+    managerName: $('#poSigManager')?.value.trim() || 'FUAT ÇETİN',
+    managerDate: $('#poSigManagerDate')?.value.trim() || '',
+    approval1Name: $('#poSig1Name')?.value.trim() || 'İbrahim Özdemir',
+    approval1Date: $('#poSig1Date')?.value.trim() || '',
+    approval2Name: $('#poSig2Name')?.value.trim() || 'Yüksel Kurun',
+    approval2Date: $('#poSig2Date')?.value.trim() || '',
+    approval3Name: $('#poSig3Name')?.value.trim() || 'İbrahim Özdemir',
+    approval3Date: $('#poSig3Date')?.value.trim() || ''
+  };
+  if ($('#poSigRequirer')) $('#poSigRequirer').value = d.requestedBy;
+  $$('[data-po-field]').forEach(el => {
+    const idx = Number(el.dataset.idx), f = el.dataset.poField;
+    if (d.items[idx]) {
+      d.items[idx][f] = (f === 'qty' || f === 'unitPrice') ? (Number(el.value) || 0) : el.value;
+      d.items[idx].total = Math.round((Number(d.items[idx].qty) || 0) * (Number(d.items[idx].unitPrice) || 0) * 100) / 100;
     }
   });
+  d.totalAmount = Math.round(d.items.reduce((s, x) => s + (Number(x.total) || 0), 0) * 100) / 100;
+  const filled = d.items.filter(x => String(x.name || '').trim() || String(x.code || '').trim());
+  d.currency = filled[0]?.currency || 'TL';
+  return d;
 }
 
 async function submitOrderForm() {
-  syncOrderDraftFromDom();
-  const d = state.orderDraft;
+  const d = syncOrderDraftFromDom();
   if (!d) return;
   const opName = state.user?.name || '';
   if (!opName) return toast('Önce operatör PIN ile giriş yapın.', 'err');
   const dept = String(d.department || '').trim();
-  if (!dept) return toast('Talep eden bölüm veya makineyi girin.', 'err');
-  const validItems = (d.items || []).filter(r => String(r.name || '').trim() && Number(r.qty) > 0).map((r, i) => ({
+  if (!dept) return toast('Talep eden bölüm veya makineyi seçin.', 'err');
+  const filledItems = (d.items || []).filter(r => String(r.name || '').trim() || String(r.code || '').trim()).map((r, i) => ({
     no: i + 1,
     itemId: String(r.itemId || ''),
     name: String(r.name || '').trim(),
     code: String(r.code || '').trim(),
     supplier: String(r.supplier || '').trim(),
-    qty: Number(r.qty) || 1,
+    qty: Number(r.qty) || 0,
     unit: String(r.unit || 'AD').trim() || 'AD',
     unitPrice: Number(r.unitPrice) || 0,
     currency: String(r.currency || 'TL').trim() || 'TL',
-    total: Number(((Number(r.qty) || 1) * (Number(r.unitPrice) || 0)).toFixed(2)),
+    total: Math.round((Number(r.qty) || 0) * (Number(r.unitPrice) || 0) * 100) / 100,
     deliveryDate: String(r.deliveryDate || '').trim()
   }));
-  if (!validItems.length) return toast('En az bir malzeme tanımı ve geçerli miktar girin.', 'err');
+  if (!filledItems.length) return toast('Sipariş formuna en az bir malzeme satırı yazın.', 'err');
+  if (filledItems.some(x => !(x.qty > 0))) return toast('Eklenen her malzeme için 0’dan büyük miktar girin.', 'err');
+
+  saveOrderDefaults({
+    docCode: d.docCode,
+    department: dept,
+    costCenter: d.costCenter || dept,
+    deliveryPlace: d.deliveryPlace,
+    paymentTerm: d.paymentTerm,
+    paymentMaturity: d.paymentMaturity,
+    transport: d.transport,
+    managerName: d.approvals.managerName,
+    approval1Name: d.approvals.approval1Name,
+    approval2Name: d.approvals.approval2Name,
+    approval3Name: d.approvals.approval3Name
+  });
 
   const reqSession = state.session;
   const payload = {
-    formCode: 'IZM_350600_LJT_001',
-    requestDate: todayTr(),
+    formNo: d.formNo,
+    docCode: d.docCode || 'IZM_350600_LJT_001',
+    requestDate: d.requestDate || todayTr(),
     requestedBy: opName,
     department: dept,
     costCenter: String(d.costCenter || '').trim() || dept,
-    attachmentQty: 0,
-    paymentTerm: 'Peşin / Cash',
+    attachmentQty: String(d.attachmentQty || '').trim(),
+    paymentTerm: d.paymentTerm || 'Peşin / Cash',
+    paymentMaturity: d.paymentMaturity || '',
+    transport: d.transport || '',
+    deliveryPlace: d.deliveryPlace || '',
     details: String(d.details || '').trim(),
-    sigRequirer: opName,
-    sigManager: 'FUAT ÇETİN',
-    sigApproval1: 'İbrahim Özdemir',
-    sigApproval2: 'Yüksel Kurun',
-    sigApproval3: 'İbrahim Özdemir',
-    items: validItems,
+    approvals: { ...d.approvals, requirer: opName },
+    items: filledItems,
+    totalAmount: Math.round(filledItems.reduce((s, r) => s + (r.total || 0), 0) * 100) / 100,
+    currency: filledItems[0]?.currency || 'TL',
     source: 'QR_TERMINAL'
   };
 
@@ -2416,9 +2938,7 @@ async function submitOrderForm() {
         const localRec = {
           ...payload,
           id: uid('SIP'),
-          formNo: nextOrderFormNo(),
-          totalAmount: Number(validItems.reduce((s, r) => s + (r.total || 0), 0).toFixed(2)),
-          currency: validItems[0]?.currency || 'TL',
+          formNo: payload.formNo || nextOrderFormNo(),
           status: 'TALEP_OLUSTURULDU',
           createdAt: nowStr(),
           createdBy: opName,
@@ -2426,31 +2946,39 @@ async function submitOrderForm() {
           _localOnly: true
         };
         saveLocalOrder(localRec);
-        res = localRec;
-        toast('Sipariş yerel kaydedildi (Kod.gs V8.8 güncellenince Sheets’e aktarılır).', 'warn');
+        res = {order: localRec, formNo: localRec.formNo};
+        toast('Sipariş yerel kaydedildi (Kod.gs V8.8.3-MAIL güncellenince Sheets’e aktarılır).', 'warn');
       } else {
         throw err;
       }
     }
 
-    const first = validItems[0];
-    const summaryName = validItems.length > 1 ? `${first.name} (+${validItems.length - 1} kalem)` : first.name;
-    const totalQty = validItems.reduce((s, r) => s + (Number(r.qty) || 0), 0);
-    state.receipt = {
+    const savedOrder = {
+      ...payload,
+      ...(res?.order || {}),
+      formNo: res?.order?.formNo || res?.formNo || payload.formNo,
+      items: filledItems,
+      approvals: { ...payload.approvals, ...(res?.order?.approvals || {}) }
+    };
+    const first = filledItems[0];
+    const summaryName = filledItems.length > 1 ? `${first.name || first.code} (+${filledItems.length - 1} kalem)` : (first.name || first.code);
+    const totalQty = filledItems.reduce((s, r) => s + (Number(r.qty) || 0), 0);
+    const historyEntry = {
       status: 'order',
       title: 'Sipariş Talebi Oluşturuldu',
-      subtitle: 'Talep ana sistemdeki Sipariş Sayfasına iletildi.',
-      refId: res?.formNo || res?.id || '',
+      subtitle: 'Talep ana sistemdeki Sipariş Sayfasına iletildi. İsterseniz şimdi PDF olarak mail gönderebilirsiniz.',
+      refId: savedOrder.formNo || res?.id || '',
       itemName: summaryName,
-      itemCode: first.code || `${validItems.length} kalem`,
-      qty: validItems.length === 1 ? first.qty : totalQty,
-      unit: validItems.length === 1 ? first.unit : 'Kalem Toplam',
+      itemCode: first.code || `${filledItems.length} kalem`,
+      qty: filledItems.length === 1 ? first.qty : totalQty,
+      unit: filledItems.length === 1 ? first.unit : 'Kalem Toplam',
       machine: dept,
       operator: opName,
       approvalLabel: 'Talep Oluşturuldu',
       time: nowStr()
     };
-    pushHistory(state.receipt);
+    pushHistory(historyEntry);
+    state.receipt = { ...historyEntry, _order: savedOrder, _session: reqSession };
     endSave(true, `Sipariş kaydedildi (${state.receipt.refId || 'OK'}) ✓`);
     vibrate(60);
     state.user = null;
@@ -2679,7 +3207,8 @@ function updatePinInput(inp, nextVal) {
 
 // Physical keyboard support for PIN screens without opening mobile soft keyboard
 document.addEventListener('keydown', e => {
-  if (!$('#installModal').hidden) return;
+  if (e.key === 'Escape' && !$('#qrModal').hidden) { closeQrModal(); return; }
+  if (!$('#installModal').hidden || !$('#qrModal').hidden) return;
   if (state.tab !== 'scan') return;
   const inp = state.step === 'pin' ? $('#opPinInput') : (state.step === 'approval' && state.approvalTab === 'pin' ? $('#depotPinInput') : null);
   if (!inp) return;
@@ -2758,11 +3287,48 @@ document.addEventListener('click', async e => {
     return;
   }
 
+  const poPickBtn = e.target.closest('[data-po-pick]');
+  if (poPickBtn) {
+    openOrderStockPicker(Number(poPickBtn.dataset.poPick));
+    return;
+  }
+
+  const poPickItem = e.target.closest('[data-po-pick-item]');
+  if (poPickItem && state.orderDraft) {
+    const it = (state.stock || []).find(x => x.id === poPickItem.dataset.poPickItem);
+    const idx = Number(poPickItem.dataset.poPickRow);
+    if (it && state.orderDraft.items[idx]) {
+      const defQty = Math.max(1, Number(((Number(it.min) || 1) - (Number(it.stock) || 0)).toFixed(2)) || 1);
+      state.orderDraft.items[idx] = {
+        ...state.orderDraft.items[idx],
+        itemId: it.id,
+        name: it.name,
+        code: it.code || '',
+        supplier: it.company || '',
+        qty: defQty,
+        unit: it.unit || 'AD',
+        unitPrice: Number(it.unitPrice) || 0,
+        currency: 'TL',
+        total: Math.round(defQty * (Number(it.unitPrice) || 0) * 100) / 100
+      };
+      if (!state.orderDraft.department && it.machine) {
+        const firstMac = String(it.machine).split('|')[0].trim();
+        state.orderDraft.department = firstMac;
+        const autoCc = resolveCostCenterForDepartment(firstMac);
+        if (autoCc) state.orderDraft.costCenter = autoCc;
+      }
+      closeQrModal();
+      render();
+    }
+    return;
+  }
+
   const act = e.target.closest('[data-action]')?.dataset.action;
   if (!act) return;
 
   if (act === 'install-pwa') return triggerInstallPwa();
   if (act === 'close-install') { $('#installModal').hidden = true; return; }
+  if (act === 'close-qr-modal') { closeQrModal(); return; }
   if (act === 'dismiss-install') {
     state.installDismissed = true;
     try { sessionStorage.setItem('depo.qr.installDismissed', '1'); } catch {}
@@ -2788,13 +3354,28 @@ document.addEventListener('click', async e => {
     if (state.orderDraft) { state.orderDraft.items.push(makeOrderRow()); render(); }
     return;
   }
-  if (act === 'ord-del-row') {
-    const idx = Number(e.target.closest('[data-idx]')?.dataset.idx);
-    syncOrderDraftFromDom();
-    if (state.orderDraft && state.orderDraft.items.length > 1 && !Number.isNaN(idx)) {
-      state.orderDraft.items.splice(idx, 1);
-      render();
-    }
+  if (act === 'ord-submit') return submitOrderForm();
+  if (act === 'ord-print-draft') {
+    const d = syncOrderDraftFromDom();
+    if (d) printPurchaseOrder(d);
+    return;
+  }
+  if (act === 'ord-email-draft') {
+    const d = syncOrderDraftFromDom();
+    if (d) openOrderEmailModal(d, state.session);
+    return;
+  }
+  if (act === 'ord-email-preview') {
+    if (activeEmailOrder) printPurchaseOrder(activeEmailOrder);
+    return;
+  }
+  if (act === 'ord-email-send') return submitOrderEmail();
+  if (act === 'receipt-email-order') {
+    if (state.receipt?._order) openOrderEmailModal(state.receipt._order, state.receipt._session || '');
+    return;
+  }
+  if (act === 'receipt-print-order') {
+    if (state.receipt?._order) printPurchaseOrder(state.receipt._order);
     return;
   }
   if (act === 'back-to-part') { state.step = 'part'; return render(); }
@@ -2883,49 +3464,52 @@ document.addEventListener('submit', async e => {
     const extra = pc.requiresManagerFallback ? {managerPin: pin} : {depotApproverPin: pin};
     return executeCheckout({item: pc.item, qty: pc.qty, machine: pc.machine, extra});
   }
-  if (id === 'orderCreateForm') return submitOrderForm();
+  if (id === 'akgOrderForm') return submitOrderForm();
+  if (id === 'orderEmailForm') return submitOrderEmail();
+});
+
+document.addEventListener('input', e => {
+  if (e.target.id === 'poPickSearch') {
+    const rowIdx = Number($('#qrModal')?.dataset.poPickRow || 0);
+    const listEl = $('#poPickList');
+    if (listEl) listEl.innerHTML = renderOrderPickerRows(state.stock || [], rowIdx, e.target.value);
+    return;
+  }
+  if (e.target.dataset?.poField && state.orderDraft) {
+    const idx = Number(e.target.dataset.idx), f = e.target.dataset.poField;
+    if (state.orderDraft.items[idx]) {
+      state.orderDraft.items[idx][f] = (f === 'qty' || f === 'unitPrice') ? (Number(e.target.value) || 0) : e.target.value;
+      if (f === 'qty' || f === 'unitPrice') recalcOrderRow(idx);
+    }
+    return;
+  }
 });
 
 document.addEventListener('change', e => {
-  if (e.target.id === 'ordDept' && state.orderDraft) {
+  if (e.target.id === 'poDepartment' && state.orderDraft) {
     const dep = e.target.value.trim();
     state.orderDraft.department = dep;
     const cc = resolveCostCenterForDepartment(dep);
     if (cc) {
       state.orderDraft.costCenter = cc;
-      if ($('#ordCost')) $('#ordCost').value = cc;
+      if ($('#poCostCenter')) $('#poCostCenter').value = cc;
     }
     return;
   }
-  const pickIdx = e.target.dataset?.ordPick;
-  if (pickIdx !== undefined && state.orderDraft) {
-    syncOrderDraftFromDom();
-    const idx = Number(pickIdx);
-    const it = state.stock.find(s => s.id === e.target.value);
-    if (it && state.orderDraft.items[idx]) {
-      state.orderDraft.items[idx] = {
-        ...state.orderDraft.items[idx],
-        itemId: it.id,
-        name: it.name,
-        code: it.code || '',
-        supplier: it.company || '',
-        unit: it.unit || 'AD',
-        unitPrice: Number(it.unitPrice) || 0,
-        qty: Math.max(1, Number(((Number(it.min) || 1) - (Number(it.stock) || 0)).toFixed(2)) || 1)
-      };
-      if (!state.orderDraft.department && it.machine) {
-        const firstMac = String(it.machine).split('|')[0].trim();
-        state.orderDraft.department = firstMac;
-        const autoCc = resolveCostCenterForDepartment(firstMac);
-        if (autoCc) state.orderDraft.costCenter = autoCc;
-      }
-      render();
+  if (e.target.dataset?.poField && state.orderDraft) {
+    const idx = Number(e.target.dataset.idx), f = e.target.dataset.poField;
+    if (state.orderDraft.items[idx]) {
+      state.orderDraft.items[idx][f] = (f === 'qty' || f === 'unitPrice') ? (Number(e.target.value) || 0) : e.target.value;
+      if (f === 'qty' || f === 'unitPrice') recalcOrderRow(idx);
     }
   }
 });
 
 $('#installModal').addEventListener('click', e => {
   if (e.target === $('#installModal')) $('#installModal').hidden = true;
+});
+$('#qrModal').addEventListener('click', e => {
+  if (e.target === $('#qrModal')) closeQrModal();
 });
 $('#saveBar').addEventListener('click', () => {
   if ($('#saveBar').classList.contains('err')) $('#saveBar').hidden = true;
