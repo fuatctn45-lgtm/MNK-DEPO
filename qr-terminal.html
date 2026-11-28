@@ -758,6 +758,13 @@ textarea.input{height:auto;min-height:76px;padding:11px 14px;resize:vertical;lin
 .modal-summary b{display:block;font-size:14.5px;color:var(--ink)}
 .modal-summary small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
 .modal-summary strong{font-size:16px;font-weight:800;color:var(--ink);white-space:nowrap}
+.mail-preset-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.mail-preset-head span{font-size:11.5px;font-weight:700;color:var(--muted)}
+.mail-preset-head button{border:0;background:transparent;color:var(--orange);font-size:12px;font-weight:700;cursor:pointer;padding:2px 4px}
+.mail-presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.mail-chip{display:inline-flex;align-items:center;gap:5px;padding:7px 10px;border-radius:9px;border:1.5px solid var(--border);background:#fff;color:var(--ink-2);font-size:12.5px;font-weight:700;cursor:pointer;transition:all .12s}
+.mail-chip:hover,.mail-chip:active{border-color:var(--orange);color:var(--orange)}
+.mail-chip.active{background:var(--orange-soft);border-color:var(--orange);color:#C2410C}
 
 /* Toasts */
 .toasts{
@@ -981,9 +988,13 @@ function loadOrderDefaults() {
 function saveOrderDefaults(d) {
   try { localStorage.setItem('depo.orderDefaults', JSON.stringify(d)); } catch {}
 }
+const PRESET_ORDER_EMAILS = ['akgbkm@outlook.com', 'fuat.cetin@akg-turkey.com', 'aykut.oz@akg-turkey.com'];
 function loadOrderEmailDefaults() {
-  try { return Object.assign({to: '', cc: ''}, JSON.parse(localStorage.getItem('depo.orderEmailDefaults') || '{}')); }
-  catch { return {to: '', cc: ''}; }
+  try {
+    const raw = localStorage.getItem('depo.orderEmailDefaults');
+    if (raw === null) return {to: PRESET_ORDER_EMAILS.join(', '), cc: ''};
+    return Object.assign({to: '', cc: ''}, JSON.parse(raw || '{}'));
+  } catch { return {to: PRESET_ORDER_EMAILS.join(', '), cc: ''}; }
 }
 function saveOrderEmailDefaults(d) {
   try { localStorage.setItem('depo.orderEmailDefaults', JSON.stringify({to: d.to || '', cc: d.cc || ''})); } catch {}
@@ -2567,6 +2578,47 @@ function printPurchaseOrder(order) {
 
 let activeEmailOrder = null;
 let activeEmailSession = null;
+function parseMailAddresses(s) {
+  return String(s || '').split(/[,;\s]+/).map(x => x.trim()).filter(Boolean);
+}
+function syncMailPresetChips() {
+  const inp = $('#ordMailTo');
+  if (!inp) return;
+  const cur = parseMailAddresses(inp.value).map(x => x.toLowerCase());
+  $$('[data-mail-preset]').forEach(btn => {
+    const on = cur.includes(String(btn.dataset.mailPreset || '').toLowerCase());
+    btn.classList.toggle('active', on);
+    const mark = btn.querySelector('i');
+    if (mark) mark.textContent = on ? '✓' : '+';
+  });
+  const allBtn = $('[data-action="ord-email-all"]');
+  if (allBtn) {
+    const allOn = PRESET_ORDER_EMAILS.every(em => cur.includes(em.toLowerCase()));
+    allBtn.textContent = allOn ? 'Kayıtlıları Temizle' : 'Tümünü Seç';
+  }
+}
+function toggleMailPreset(email) {
+  const inp = $('#ordMailTo');
+  if (!inp) return;
+  const list = parseMailAddresses(inp.value);
+  const low = email.toLowerCase();
+  const idx = list.findIndex(x => x.toLowerCase() === low);
+  if (idx >= 0) list.splice(idx, 1); else list.push(email);
+  inp.value = list.join(', ');
+  syncMailPresetChips();
+}
+function toggleAllMailPresets() {
+  const inp = $('#ordMailTo');
+  if (!inp) return;
+  const list = parseMailAddresses(inp.value);
+  const lower = list.map(x => x.toLowerCase());
+  const allOn = PRESET_ORDER_EMAILS.every(em => lower.includes(em.toLowerCase()));
+  const next = allOn
+    ? list.filter(x => !PRESET_ORDER_EMAILS.some(p => p.toLowerCase() === x.toLowerCase()))
+    : [...list, ...PRESET_ORDER_EMAILS.filter(p => !lower.includes(p.toLowerCase()))];
+  inp.value = next.join(', ');
+  syncMailPresetChips();
+}
 function openOrderEmailModal(order, sessionOverride = null) {
   if (!order) return;
   const filled = (order.items || []).filter(x => String(x.name || '').trim() || String(x.code || '').trim());
@@ -2577,6 +2629,8 @@ function openOrderEmailModal(order, sessionOverride = null) {
   activeEmailOrder.currency = filled[0]?.currency || order.currency || 'TL';
   activeEmailSession = sessionOverride !== null ? sessionOverride : state.session;
   const defs = loadOrderEmailDefaults();
+  const initList = parseMailAddresses(defs.to).map(x => x.toLowerCase());
+  const allOn = PRESET_ORDER_EMAILS.every(em => initList.includes(em.toLowerCase()));
   const pdfName = `${(activeEmailOrder.formNo || 'AKG-SIPARIS').replace(/[^A-Za-z0-9_-]/g, '_')}_AKG_Satinalma_Talep_Formu.pdf`;
   const defaultSubj = `Satın Alma Talep Formu - ${activeEmailOrder.formNo}${activeEmailOrder.department ? ' (' + activeEmailOrder.department + ')' : ''}`;
   const defaultMsg = `Merhaba,\n\n${activeEmailOrder.requestedBy || ''} tarafından oluşturulan ${activeEmailOrder.formNo} numaralı AKG Satın Alma Talep Formu ekte PDF olarak paylaşılmıştır.${activeEmailOrder.details ? '\n\nDetay: ' + activeEmailOrder.details : ''}`;
@@ -2591,10 +2645,15 @@ function openOrderEmailModal(order, sessionOverride = null) {
       <strong>${fmtCur2(activeEmailOrder.totalAmount)} ${esc(activeEmailOrder.currency)}</strong>
     </div>
     <form id="orderEmailForm">
+      <div class="mail-preset-head">
+        <span>Kayıtlı Alıcılar (Tıklayıp seçin / çıkarın)</span>
+        <button type="button" data-action="ord-email-all">${allOn ? 'Kayıtlıları Temizle' : 'Tümünü Seç'}</button>
+      </div>
+      <div class="mail-presets">${PRESET_ORDER_EMAILS.map(em => { const on = initList.includes(em.toLowerCase()); return `<button type="button" class="mail-chip ${on ? 'active' : ''}" data-mail-preset="${esc(em)}"><i style="font-style:normal">${on ? '✓' : '+'}</i><span>${esc(em)}</span></button>`; }).join('')}</div>
       <label class="field">
         <span>Alıcı E-posta (Kime) *</span>
-        <input class="input" id="ordMailTo" type="text" value="${esc(defs.to)}" placeholder="satinalma@firma.com, yonetici@firma.com" required>
-        <small style="display:block;color:var(--muted);font-size:11.5px;margin-top:4px">Birden fazla adres için virgül (,) ile ayırın; son adresler hatırlanır.</small>
+        <input class="input" id="ordMailTo" type="text" value="${esc(defs.to)}" placeholder="akgbkm@outlook.com, fuat.cetin@akg-turkey.com" required>
+        <small style="display:block;color:var(--muted);font-size:11.5px;margin-top:4px">Yukarıdan seçebilir veya virgül (,) ile farklı adres ekleyebilirsiniz.</small>
       </label>
       <label class="field">
         <span>Bilgi / CC (Opsiyonel)</span>
@@ -3287,6 +3346,13 @@ document.addEventListener('click', async e => {
     return;
   }
 
+  const mailPreset = e.target.closest('[data-mail-preset]');
+  if (mailPreset) {
+    vibrate(10);
+    toggleMailPreset(mailPreset.dataset.mailPreset);
+    return;
+  }
+
   const poPickBtn = e.target.closest('[data-po-pick]');
   if (poPickBtn) {
     openOrderStockPicker(Number(poPickBtn.dataset.poPick));
@@ -3370,6 +3436,7 @@ document.addEventListener('click', async e => {
     return;
   }
   if (act === 'ord-email-send') return submitOrderEmail();
+  if (act === 'ord-email-all') return toggleAllMailPresets();
   if (act === 'receipt-email-order') {
     if (state.receipt?._order) openOrderEmailModal(state.receipt._order, state.receipt._session || '');
     return;
@@ -3469,6 +3536,10 @@ document.addEventListener('submit', async e => {
 });
 
 document.addEventListener('input', e => {
+  if (e.target.id === 'ordMailTo') {
+    syncMailPresetChips();
+    return;
+  }
   if (e.target.id === 'poPickSearch') {
     const rowIdx = Number($('#qrModal')?.dataset.poPickRow || 0);
     const listEl = $('#poPickList');
